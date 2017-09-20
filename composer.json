@@ -1,0 +1,13 @@
+{
+    "name": "jrhenderson1988/blixt",
+    "description": "A search engine, inspired by Apache Lucene, written in PHP",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jonathon Henderson",
+            "email": "jrhenderson1988@hotmail.com"
+        }
+    ],
+    "require": {}
+}
