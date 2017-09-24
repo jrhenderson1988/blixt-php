@@ -2,7 +2,7 @@
 
 namespace Blixt\Storage;
 
-class MysqlStorage implements StorageInterface
+class MysqlStorage extends AbstractStorage implements StorageInterface
 {
 
 }

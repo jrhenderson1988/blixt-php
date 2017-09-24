@@ -1,6 +1,6 @@
 <?php
 
-namespace Blixt\Tokenization\Tokenizers;
+namespace Blixt\Tokenization;
 
 abstract class AbstractTokenizer
 {

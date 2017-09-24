@@ -1,8 +1,7 @@
 <?php
 
-namespace Blixt\Tokenization\Tokenizers;
+namespace Blixt\Tokenization;
 
-use Blixt\Tokenization\Token;
 use Illuminate\Support\Collection;
 
 class DefaultTokenizer extends AbstractTokenizer implements TokenizerInterface
@@ -12,7 +11,7 @@ class DefaultTokenizer extends AbstractTokenizer implements TokenizerInterface
      *
      * @param string $text
      *
-     * @return \Blixt\Tokenization\TokenCollection
+     * @return \Illuminate\Support\Collection
      */
     public function tokenize($text)
     {

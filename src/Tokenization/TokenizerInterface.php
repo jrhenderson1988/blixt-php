@@ -1,6 +1,6 @@
 <?php
 
-namespace Blixt\Tokenization\Tokenizers;
+namespace Blixt\Tokenization;
 
 interface TokenizerInterface
 {
@@ -9,7 +9,7 @@ interface TokenizerInterface
      *
      * @param string $text
      *
-     * @return \Blixt\Tokenization\TokenCollection
+     * @return \Illuminate\Support\Collection
      */
     public function tokenize($text);
 }
