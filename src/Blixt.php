@@ -67,8 +67,25 @@ class Blixt
         $this->tokenizer = $tokenizer;
     }
 
+    /**
+     * Open an existing index (or create one if it does not exist).
+     *
+     * @param string $name
+     *
+     * @return \Blixt\Index
+     */
     public function open($name)
     {
         return new Index($name, $this->storage);
+    }
+
+    /**
+     * Destroy an existing index.
+     *
+     * @param string $name
+     */
+    public function destroy($name)
+    {
+
     }
 }
