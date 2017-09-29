@@ -3,15 +3,16 @@
 namespace Blixt;
 
 use Blixt\Stemming\StemmerInterface;
+use Blixt\Storage\StorageFactoryInterface;
 use Blixt\Storage\StorageInterface;
 use Blixt\Tokenization\TokenizerInterface;
 
 class Blixt
 {
     /**
-     * @var \Blixt\Storage\StorageInterface
+     * @var \Blixt\Storage\StorageFactoryInterface
      */
-    protected $storage;
+    protected $storageFactory;
 
     /**
      * @var \Blixt\Stemming\StemmerInterface
@@ -26,15 +27,15 @@ class Blixt
     /**
      * Blixt constructor.
      *
-     * @param \Blixt\Storage\StorageInterface        $storage
+     * @param \Blixt\Storage\StorageFactoryInterface $storageFactory
      * @param \Blixt\Stemming\StemmerInterface       $stemmer
      * @param \Blixt\Tokenization\TokenizerInterface $tokenizer
      */
-    public function __construct(StorageInterface $storage, StemmerInterface $stemmer, TokenizerInterface $tokenizer)
+    public function __construct(StorageFactoryInterface $storageFactory, StemmerInterface $stemmer, TokenizerInterface $tokenizer)
     {
-        $this->storage = $storage;
-        $this->stemmer = $stemmer;
-        $this->tokenizer = $tokenizer;
+        $this->setStorageFactory($storageFactory);
+        $this->setStemmer($stemmer);
+        $this->setTokenizer($tokenizer);
     }
 
     /**
@@ -42,9 +43,9 @@ class Blixt
      *
      * @param \Blixt\Storage\StorageInterface $storage
      */
-    public function setStorage(StorageInterface $storage)
+    public function setStorageFactory(StorageInterface $storage)
     {
-        $this->storage = $storage;
+        $this->storageFactory = $storage;
     }
 
     /**
@@ -76,7 +77,7 @@ class Blixt
      */
     public function open($name)
     {
-        return new Index($name, $this->storage);
+        return new Index($name, $this->storageFactory);
     }
 
     /**
