@@ -2,16 +2,16 @@
 
 namespace Blixt;
 
-use Blixt\Stemming\StemmerInterface;
-use Blixt\Storage\StorageInterface;
-use Blixt\Tokenization\TokenizerInterface;
+use Blixt\Stemming\StemmerInterface as Stemmer;
+use Blixt\Storage\BuilderInterface as StorageBuilder;
+use Blixt\Tokenization\TokenizerInterface as Tokenizer;
 
 class Blixt
 {
     /**
-     * @var \Blixt\Storage\StorageFactoryInterface
+     * @var \Blixt\Storage\BuilderInterface
      */
-    protected $storage;
+    protected $storageBuilder;
 
     /**
      * @var \Blixt\Stemming\StemmerInterface
@@ -26,13 +26,13 @@ class Blixt
     /**
      * Blixt constructor.
      *
-     * @param \Blixt\Storage\StorageInterface        $storage
+     * @param \Blixt\Storage\BuilderInterface        $storage
      * @param \Blixt\Stemming\StemmerInterface       $stemmer
      * @param \Blixt\Tokenization\TokenizerInterface $tokenizer
      */
-    public function __construct(StorageInterface $storage, StemmerInterface $stemmer, TokenizerInterface $tokenizer)
+    public function __construct(StorageBuilder $storage, Stemmer $stemmer = null, Tokenizer $tokenizer = null)
     {
-        $this->setStorage($storage);
+        $this->setStorageBuilder($storage);
         $this->setStemmer($stemmer);
         $this->setTokenizer($tokenizer);
     }
@@ -40,11 +40,11 @@ class Blixt
     /**
      * Set the storage engine.
      *
-     * @param \Blixt\Storage\StorageInterface $storage
+     * @param \Blixt\Storage\BuilderInterface $storage
      */
-    public function setStorage(StorageInterface $storage)
+    public function setStorageBuilder(StorageBuilder $storage)
     {
-        $this->storage = $storage;
+        $this->storageBuilder = $storage;
     }
 
     /**
@@ -52,7 +52,7 @@ class Blixt
      *
      * @param \Blixt\Stemming\StemmerInterface $stemmer
      */
-    public function setStemmer(StemmerInterface $stemmer)
+    public function setStemmer(Stemmer $stemmer)
     {
         $this->stemmer = $stemmer;
     }
@@ -62,7 +62,7 @@ class Blixt
      *
      * @param \Blixt\Tokenization\TokenizerInterface $tokenizer
      */
-    public function setTokenizer(TokenizerInterface $tokenizer)
+    public function setTokenizer(Tokenizer $tokenizer)
     {
         $this->tokenizer = $tokenizer;
     }

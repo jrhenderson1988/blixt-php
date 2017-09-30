@@ -1,11 +1,11 @@
 <?php
 
-namespace Blixt\Storage;
+namespace Blixt\Storage\Drivers;
 
 use Blixt\Exceptions\UnspecifiedIndexException;
 use InvalidArgumentException;
 
-class SQLiteStorage extends AbstractStorage implements StorageInterface
+class SQLiteDriver extends Driver implements DriverInterface
 {
     /**
      * The directory where the indexes are found.
@@ -21,7 +21,7 @@ class SQLiteStorage extends AbstractStorage implements StorageInterface
      */
     protected $index;
 
-    protected $pdo;
+    protected $connection;
 
     /**
      * SQLiteStorage constructor.
@@ -45,21 +45,7 @@ class SQLiteStorage extends AbstractStorage implements StorageInterface
         // TODO - Disconnect PDO and set it to null
     }
 
-    /**
-     * Set the path
-     *
-     * @param string $directory
-     */
-    public function setDirectory($directory)
-    {
-        if (!is_dir($directory)) {
-            throw new InvalidArgumentException(
-                'The provided directory does not exist.'
-            );
-        }
 
-        $this->directory = rtrim($directory, '/\\');
-    }
 
     /**
      * Get the path.

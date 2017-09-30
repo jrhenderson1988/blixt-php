@@ -1,8 +1,8 @@
 <?php
 
-namespace Blixt\Storage;
+namespace Blixt\Storage\Drivers;
 
-interface StorageInterface
+interface DriverInterface
 {
     public function setIndex($index);
     public function getIndex();
