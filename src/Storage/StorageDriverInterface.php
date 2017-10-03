@@ -1,11 +1,9 @@
 <?php
 
-namespace Blixt\Storage\Drivers;
+namespace Blixt\Storage;
 
 interface StorageDriverInterface
 {
-    public function setIndex($index);
-    public function getIndex();
     public function exists();
     public function create();
 }

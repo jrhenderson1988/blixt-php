@@ -11,7 +11,7 @@ class Blixt
     /**
      * @var \Blixt\Storage\StorageFactoryInterface
      */
-    protected $storageBuilder;
+    protected $storageFactory;
 
     /**
      * @var \Blixt\Stemming\StemmerInterface
@@ -38,13 +38,23 @@ class Blixt
     }
 
     /**
-     * Set the storage engine.
+     * Set the storage factory responsible for creating the storage driver.
      *
      * @param \Blixt\Storage\StorageFactoryInterface $storage
      */
     public function setStorageFactory(StorageFactory $storage)
     {
-        $this->storageBuilder = $storage;
+        $this->storageFactory = $storage;
+    }
+
+    /**
+     * Get the storage factory.
+     *
+     * @return \Blixt\Storage\StorageFactoryInterface
+     */
+    public function getStorageFactory()
+    {
+        return $this->storageFactory;
     }
 
     /**
@@ -58,6 +68,16 @@ class Blixt
     }
 
     /**
+     * Get the stemmer.
+     *
+     * @return \Blixt\Stemming\StemmerInterface
+     */
+    public function getStemmer()
+    {
+        return $this->stemmer;
+    }
+
+    /**
      * Set the tokenizer.
      *
      * @param \Blixt\Tokenization\TokenizerInterface $tokenizer
@@ -65,6 +85,16 @@ class Blixt
     public function setTokenizer(Tokenizer $tokenizer)
     {
         $this->tokenizer = $tokenizer;
+    }
+
+    /**
+     * Get the tokenizer.
+     *
+     * @return \Blixt\Tokenization\TokenizerInterface
+     */
+    public function getTokenizer()
+    {
+        return $this->tokenizer;
     }
 
     /**
@@ -76,7 +106,9 @@ class Blixt
      */
     public function open($name)
     {
-        return new Index($name, $this->storage);
+        return new Index(
+            $name, $this->getStorageFactory()
+        );
     }
 
     /**

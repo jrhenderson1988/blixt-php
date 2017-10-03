@@ -7,7 +7,9 @@ interface StorageFactoryInterface
     /**
      * Build a storage driver.
      *
-     * @return \Blixt\Storage\Drivers\StorageDriverInterface
+     * @param string $name
+     *
+     * @return \Blixt\Storage\StorageDriverInterface
      */
-    public function create();
+    public function create($name);
 }

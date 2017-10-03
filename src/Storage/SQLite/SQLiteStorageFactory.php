@@ -1,8 +1,8 @@
 <?php
 
-namespace Blixt\Storage;
+namespace Blixt\Storage\SQLite;
 
-use Blixt\Storage\Drivers\SQLiteStorageDriver;
+use Blixt\Storage\StorageFactoryInterface;
 use InvalidArgumentException;
 
 class SQLiteStorageFactory implements StorageFactoryInterface
@@ -31,9 +31,9 @@ class SQLiteStorageFactory implements StorageFactoryInterface
      */
     public function setDirectory($directory)
     {
-        if (!is_dir($directory)) {
+        if (empty($directory)) {
             throw new InvalidArgumentException(
-                'The provided directory does not exist.'
+                'The provided directory may not be empty.'
             );
         }
 
@@ -41,12 +41,26 @@ class SQLiteStorageFactory implements StorageFactoryInterface
     }
 
     /**
+     * Get the directory.
+     *
+     * @return string
+     */
+    protected function getDirectory()
+    {
+        return $this->directory;
+    }
+
+    /**
      * Build a storage driver.
      *
-     * @return \Blixt\Storage\Drivers\SQLiteStorageDriver
+     * @param string $name
+     *
+     * @return \Blixt\Storage\SQLite\SQLiteStorageDriver
      */
-    public function create()
+    public function create($name)
     {
-        return new SQLiteStorageDriver();
+        return new SQLiteStorageDriver(
+            $this->getDirectory(), $name
+        );
     }
 }

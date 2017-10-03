@@ -5,7 +5,13 @@ class BlixtTest extends TestCase
     /** @test */
     public function testSomething()
     {
-        $tokenizer = new \Blixt\Tokenization\Tokenizers\DefaultTokenizer();
-        var_dump($tokenizer->tokenize('this is a test string'));
+        $blixt = new \Blixt\Blixt(
+            new \Blixt\Storage\SQLite\SQLiteStorageFactory(__DIR__),
+            new \Blixt\Stemming\EnglishStemmer(),
+            new \Blixt\Tokenization\DefaultTokenizer()
+        );
+
+        $blixt->open('test.index');
+        var_dump($blixt);die();
     }
 }
