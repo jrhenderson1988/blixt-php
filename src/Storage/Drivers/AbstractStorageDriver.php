@@ -2,7 +2,7 @@
 
 namespace Blixt\Storage\Drivers;
 
-abstract class Driver
+abstract class AbstractStorageDriver
 {
 
 }

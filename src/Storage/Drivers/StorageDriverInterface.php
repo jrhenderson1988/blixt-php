@@ -2,7 +2,7 @@
 
 namespace Blixt\Storage\Drivers;
 
-interface DriverInterface
+interface StorageDriverInterface
 {
     public function setIndex($index);
     public function getIndex();

@@ -3,9 +3,8 @@
 namespace Blixt\Storage\Drivers;
 
 use Blixt\Exceptions\UnspecifiedIndexException;
-use InvalidArgumentException;
 
-class SQLiteDriver extends Driver implements DriverInterface
+class SQLiteStorageDriver extends AbstractStorageDriver implements StorageDriverInterface
 {
     /**
      * The directory where the indexes are found.

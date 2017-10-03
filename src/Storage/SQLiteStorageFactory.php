@@ -2,10 +2,10 @@
 
 namespace Blixt\Storage;
 
-use Blixt\Storage\Drivers\SQLiteDriver;
+use Blixt\Storage\Drivers\SQLiteStorageDriver;
 use InvalidArgumentException;
 
-class SQLiteBuilder implements BuilderInterface
+class SQLiteStorageFactory implements StorageFactoryInterface
 {
     /**
      * The directory where the index files are located.
@@ -43,10 +43,10 @@ class SQLiteBuilder implements BuilderInterface
     /**
      * Build a storage driver.
      *
-     * @return \Blixt\Storage\Drivers\SQLiteDriver
+     * @return \Blixt\Storage\Drivers\SQLiteStorageDriver
      */
-    public function build()
+    public function create()
     {
-        return new SQLiteDriver();
+        return new SQLiteStorageDriver();
     }
 }
