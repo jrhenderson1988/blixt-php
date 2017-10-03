@@ -21,15 +21,14 @@ class EnglishStemmer implements StemmerInterface
      *
      * @var string
      */
-    protected $consonantRegex = '(?:[bcdfghjklmnpqrstvwxz]|(?<=[aeiou])y|^y)';
-
+    const CONSONANT = '(?:[bcdfghjklmnpqrstvwxz]|(?<=[aeiou])y|^y)';
 
     /**
      * Regex for matching a vowel.
      *
      * @var string
      */
-    protected $vowelRegex = '(?:[aeiou]|(?<![aeiou])y)';
+    const VOWEL = '(?:[aeiou]|(?<![aeiou])y)';
 
     /**
      * Stems a word. Simple huh?
@@ -87,10 +86,8 @@ class EnglishStemmer implements StemmerInterface
     protected function step1b($word)
     {
         if (mb_substr($word, -2, 1) != 'e' || !$this->replace($word, 'eed', 'ee', 0)) {
-            $v = $this->vowelRegex;
-
-            if ((preg_match("#$v+#", mb_substr($word, 0, -3)) && $this->replace($word, 'ing', ''))
-                || (preg_match("#$v+#", mb_substr($word, 0, -2)) && $this->replace($word, 'ed', ''))) {
+            if ((preg_match("#" . self::VOWEL . "+#", mb_substr($word, 0, -3)) && $this->replace($word, 'ing', ''))
+                || (preg_match("#" . self::VOWEL . "+#", mb_substr($word, 0, -2)) && $this->replace($word, 'ed', ''))) {
 
                 if (!$this->replace($word, 'at', 'ate')
                     && !$this->replace($word, 'bl', 'ble')
@@ -123,7 +120,7 @@ class EnglishStemmer implements StemmerInterface
      */
     protected function step1c($word)
     {
-        if (mb_substr($word, -1) == 'y' && preg_match("#{$this->vowelRegex}+#", mb_substr($word, 0, -1))) {
+        if (mb_substr($word, -1) == 'y' && preg_match("#" . self::VOWEL . "+#", mb_substr($word, 0, -1))) {
             $this->replace($word, 'y', 'i');
         }
 
@@ -386,11 +383,11 @@ class EnglishStemmer implements StemmerInterface
      */
     protected function m($string)
     {
-        $string = preg_replace("#^{$this->consonantRegex}+#", '', $string);
+        $string = preg_replace("#^" . self::CONSONANT . "+#", '', $string);
 
-        $string = preg_replace("#{$this->vowelRegex}+$#", '', $string);
+        $string = preg_replace("#" . self::VOWEL . "+$#", '', $string);
 
-        preg_match_all("#({$this->vowelRegex}+{$this->consonantRegex}+)#", $string, $matches);
+        preg_match_all("#(" . self::VOWEL . "+" . self::CONSONANT . "#", $string, $matches);
 
         return count($matches[1]);
     }
@@ -406,7 +403,7 @@ class EnglishStemmer implements StemmerInterface
      */
     protected function doubleConsonant($string)
     {
-        return preg_match("#{$this->consonantRegex}{2}$#", $string, $matches) && $matches[0][0] == $matches[0][1];
+        return preg_match("#" . self::CONSONANT . "{2}$#", $string, $matches) && $matches[0][0] == $matches[0][1];
     }
 
     /**
@@ -418,7 +415,7 @@ class EnglishStemmer implements StemmerInterface
      */
     protected function cvc($string)
     {
-        return preg_match("#({$this->consonantRegex}{$this->vowelRegex}{$this->consonantRegex})$#", $string, $matches)
+        return preg_match("#(" . self::CONSONANT . self::VOWEL . self::CONSONANT . "$#", $string, $matches)
             && mb_strlen($matches[1]) == 3
             && $matches[1][2] != 'w'
             && $matches[1][2] != 'x'
