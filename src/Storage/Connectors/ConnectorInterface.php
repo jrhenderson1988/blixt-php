@@ -1,15 +1,15 @@
 <?php
 
-namespace Blixt\Storage;
+namespace Blixt\Storage\Connectors;
 
-interface StorageFactoryInterface
+interface ConnectorInterface
 {
     /**
      * Build a storage driver.
      *
      * @param string $name
      *
-     * @return \Blixt\Storage\StorageDriverInterface
+     * @return \Blixt\Storage\Engines\EngineInterface
      */
     public function create($name);
 }

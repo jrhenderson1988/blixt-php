@@ -3,15 +3,15 @@
 namespace Blixt;
 
 use Blixt\Stemming\StemmerInterface as Stemmer;
-use Blixt\Storage\StorageFactoryInterface as StorageFactory;
+use Blixt\Storage\Connectors\ConnectorInterface as Connector;
 use Blixt\Tokenization\TokenizerInterface as Tokenizer;
 
 class Blixt
 {
     /**
-     * @var \Blixt\Storage\StorageFactoryInterface
+     * @var \Blixt\Storage\Connectors\ConnectorInterface
      */
-    protected $storageFactory;
+    protected $storageConnector;
 
     /**
      * @var \Blixt\Stemming\StemmerInterface
@@ -26,13 +26,13 @@ class Blixt
     /**
      * Blixt constructor.
      *
-     * @param \Blixt\Storage\StorageFactoryInterface $storage
-     * @param \Blixt\Stemming\StemmerInterface       $stemmer
-     * @param \Blixt\Tokenization\TokenizerInterface $tokenizer
+     * @param \Blixt\Storage\Connectors\ConnectorInterface $storage
+     * @param \Blixt\Stemming\StemmerInterface             $stemmer
+     * @param \Blixt\Tokenization\TokenizerInterface       $tokenizer
      */
-    public function __construct(StorageFactory $storage, Stemmer $stemmer = null, Tokenizer $tokenizer = null)
+    public function __construct(Connector $storage, Stemmer $stemmer = null, Tokenizer $tokenizer = null)
     {
-        $this->setStorageFactory($storage);
+        $this->setStorageConnector($storage);
         $this->setStemmer($stemmer);
         $this->setTokenizer($tokenizer);
     }
@@ -40,21 +40,21 @@ class Blixt
     /**
      * Set the storage factory responsible for creating the storage driver.
      *
-     * @param \Blixt\Storage\StorageFactoryInterface $storage
+     * @param \Blixt\Storage\Connectors\ConnectorInterface $storage
      */
-    public function setStorageFactory(StorageFactory $storage)
+    public function setStorageConnector(Connector $storage)
     {
-        $this->storageFactory = $storage;
+        $this->storageConnector = $storage;
     }
 
     /**
-     * Get the storage factory.
+     * Get the storage connector.
      *
-     * @return \Blixt\Storage\StorageFactoryInterface
+     * @return \Blixt\Storage\Connectors\ConnectorInterface
      */
-    public function getStorageFactory()
+    public function getStorageConnector()
     {
-        return $this->storageFactory;
+        return $this->storageConnector;
     }
 
     /**
@@ -107,7 +107,7 @@ class Blixt
     public function open($name)
     {
         return new Index(
-            $name, $this->getStorageFactory()
+            $name, $this->getStorageConnector()
         );
     }
 

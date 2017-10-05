@@ -1,8 +1,8 @@
 <?php
 
-namespace Blixt\Storage;
+namespace Blixt\Storage\Engines;
 
-interface StorageDriverInterface
+interface EngineInterface
 {
     public function exists();
     public function create();

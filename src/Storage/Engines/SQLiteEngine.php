@@ -1,11 +1,12 @@
 <?php
 
-namespace Blixt\Storage\SQLite;
+namespace Blixt\Storage\Engines;
 
-use Blixt\Storage\StorageDriverInterface;
+use Blixt\Exceptions\IndexAlreadyExistsException;
+use Blixt\Storage\Connections\SQLiteConnection;
 use InvalidArgumentException;
 
-class SQLiteStorageDriver implements StorageDriverInterface
+class SQLiteEngine implements EngineInterface
 {
     /**
      * The directory where the indexes are found.
@@ -24,7 +25,7 @@ class SQLiteStorageDriver implements StorageDriverInterface
     /**
      * The database connection.
      *
-     * @var \PDO
+     * @var \Blixt\Storage\Connections\SQLiteConnection
      */
     protected $connection;
 
@@ -87,7 +88,7 @@ class SQLiteStorageDriver implements StorageDriverInterface
      *
      * @return string
      */
-    public function directory()
+    public function getDirectory()
     {
         return $this->directory;
     }
@@ -97,7 +98,7 @@ class SQLiteStorageDriver implements StorageDriverInterface
      *
      * @return string
      */
-    public function name()
+    public function getName()
     {
         return $this->name;
     }
@@ -107,9 +108,9 @@ class SQLiteStorageDriver implements StorageDriverInterface
      *
      * @return string
      */
-    public function path()
+    public function getPath()
     {
-        return $this->directory() . DIRECTORY_SEPARATOR . $this->name();
+        return $this->getDirectory() . DIRECTORY_SEPARATOR . $this->getName();
     }
 
     /**
@@ -125,7 +126,7 @@ class SQLiteStorageDriver implements StorageDriverInterface
     protected function checkExistence()
     {
         return $this->exists = file_exists(
-            $this->path()
+            $this->getPath()
         );
     }
 
@@ -142,10 +143,10 @@ class SQLiteStorageDriver implements StorageDriverInterface
     public function create()
     {
         if ($this->exists()) {
-            throw new \Exception('Index already exists...');
+            throw new IndexAlreadyExistsException();
         }
 
-        die('creating: ' . $this->path());
+        $this->connection();
 
         // After creating the index, check again for its existence. This will set our internal $exists property to true
         // and we will from now on be able to get a connection to the index. If creating the index somehow failed, this
@@ -153,11 +154,26 @@ class SQLiteStorageDriver implements StorageDriverInterface
         $this->checkExistence();
     }
 
+    /**
+     * Get the connection, creating it in the process if it has not yet been created.
+     *
+     * @return \Blixt\Storage\Connections\SQLiteConnection
+     */
     protected function connection()
     {
-        if (!$this->exists()) {
-            throw new \Exception('Index does not exist, call create first');
+        if (!$this->connection) {
+            $this->connection = new SQLiteConnection('sqlite:' . $this->getPath());
         }
+
+        return $this->connection;
+    }
+
+    /**
+     * Disconnect the connection by setting it to null.
+     */
+    public function disconnect()
+    {
+        $this->connection = null;
     }
 
 

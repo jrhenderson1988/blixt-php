@@ -1,11 +1,11 @@
 <?php
 
-namespace Blixt\Storage\SQLite;
+namespace Blixt\Storage\Connectors;
 
-use Blixt\Storage\StorageFactoryInterface;
+use Blixt\Storage\Engines\SQLiteEngine;
 use InvalidArgumentException;
 
-class SQLiteStorageFactory implements StorageFactoryInterface
+class SQLiteConnector implements ConnectorInterface
 {
     /**
      * The directory where the index files are located.
@@ -55,11 +55,11 @@ class SQLiteStorageFactory implements StorageFactoryInterface
      *
      * @param string $name
      *
-     * @return \Blixt\Storage\SQLite\SQLiteStorageDriver
+     * @return \Blixt\Storage\Engines\SQLiteEngine
      */
     public function create($name)
     {
-        return new SQLiteStorageDriver(
+        return new SQLiteEngine(
             $this->getDirectory(), $name
         );
     }
