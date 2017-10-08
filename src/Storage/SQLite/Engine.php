@@ -4,8 +4,10 @@ namespace Blixt\Storage\SQLite;
 
 use Blixt\Exceptions\IndexAlreadyExistsException;
 use Blixt\Storage\EngineInterface;
+use Exception;
 use InvalidArgumentException;
 use PDO;
+use Throwable;
 
 class Engine implements EngineInterface
 {
@@ -195,5 +197,42 @@ class Engine implements EngineInterface
         return unlink(
             $this->getPath()
         );
+    }
+
+    /**
+     * Run the provided callback in a transaction. The callback is passed this storage engine instance. Whatever the
+     * callback returns, if anything, is returned from the transaction method. Any exceptions that are thrown are caught
+     * and the transaction is rolled back before the exception is re-thrown.
+     *
+     * @param callable $callback
+     *
+     * @return mixed
+     * @throws \Exception
+     * @throws \Throwable
+     */
+    protected function transaction(callable $callback)
+    {
+        $this->connection()->beginTransaction();
+
+        try {
+            $response = $callback($this);
+
+            $this->connection()->commit();
+
+            return $response;
+        } catch (Exception $ex) {
+            $this->connection()->rollBack();
+
+            throw $ex;
+        } catch (Throwable $ex) {
+            $this->connection()->rollBack();
+
+            throw $ex;
+        }
+    }
+
+    protected function createSchema()
+    {
+
     }
 }
