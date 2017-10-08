@@ -2,7 +2,7 @@
 
 namespace Blixt;
 
-use Blixt\Storage\Connectors\ConnectorInterface;
+use Blixt\Storage\FactoryInterface as StorageFactory;
 
 class Index
 {
@@ -12,17 +12,17 @@ class Index
     protected $name;
 
     /**
-     * @var \Blixt\Storage\Engines\EngineInterface
+     * @var \Blixt\Storage\EngineInterface
      */
     protected $storage;
 
     /**
      * Index constructor.
      *
-     * @param string                                       $name
-     * @param \Blixt\Storage\Connectors\ConnectorInterface $connector
+     * @param string                          $name
+     * @param \Blixt\Storage\FactoryInterface $connector
      */
-    public function __construct($name, ConnectorInterface $connector)
+    public function __construct($name, StorageFactory $connector)
     {
         $this->name = $name;
         $this->storage = $connector->create($name);
@@ -31,6 +31,8 @@ class Index
             $this->storage->create();
         }
     }
+
+
 
     public function addDocument()
     {
@@ -45,5 +47,10 @@ class Index
     public function search()
     {
 
+    }
+
+    public function destroy()
+    {
+        return $this->storage->destroy();
     }
 }

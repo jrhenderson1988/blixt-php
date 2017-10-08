@@ -1,15 +1,15 @@
 <?php
 
-namespace Blixt\Storage\Connectors;
+namespace Blixt\Storage;
 
-interface ConnectorInterface
+interface FactoryInterface
 {
     /**
      * Create a storage engine for the given index name.
      *
      * @param string $name
      *
-     * @return \Blixt\Storage\Engines\EngineInterface
+     * @return \Blixt\Storage\EngineInterface
      */
     public function create($name);
 }

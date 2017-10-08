@@ -1,12 +1,13 @@
 <?php
 
-namespace Blixt\Storage\Engines;
+namespace Blixt\Storage\SQLite;
 
 use Blixt\Exceptions\IndexAlreadyExistsException;
+use Blixt\Storage\EngineInterface;
 use InvalidArgumentException;
 use PDO;
 
-class SQLiteEngine implements EngineInterface
+class Engine implements EngineInterface
 {
     /**
      * The directory where the indexes are found.
@@ -167,7 +168,7 @@ class SQLiteEngine implements EngineInterface
     protected function connection()
     {
         if (!$this->connection) {
-            $this->connection = new PDO('sqlite:' . $this->getPath(), [
+            $this->connection = new PDO('sqlite:' . $this->getPath(), null, null, [
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
             ]);
@@ -182,5 +183,17 @@ class SQLiteEngine implements EngineInterface
     public function disconnect()
     {
         $this->connection = null;
+    }
+
+    /**
+     * Destroy the storage represented by the engine.
+     */
+    public function destroy()
+    {
+        $this->disconnect();
+
+        return unlink(
+            $this->getPath()
+        );
     }
 }
