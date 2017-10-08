@@ -18,12 +18,22 @@ class DefaultTokenizer extends AbstractTokenizer implements TokenizerInterface
         $tokens = new Collection();
 
         $i = 0;
-        foreach (preg_split('/[^\\p{L}\\p{N}]+/u', mb_strtolower(trim($text)), -1, PREG_SPLIT_NO_EMPTY) as $term) {
+        foreach ($this->split($this->normalize($text)) as $term) {
             $tokens->push(
                 new Token($term, $i++)
             );
         }
 
         return $tokens;
+    }
+
+    protected function normalize($text)
+    {
+        return mb_strtolower(trim($text));
+    }
+
+    protected function split($text)
+    {
+        return preg_split('/[^\\p{L}\\p{N}]+/u', $text, -1, PREG_SPLIT_NO_EMPTY);
     }
 }

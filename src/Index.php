@@ -2,7 +2,6 @@
 
 namespace Blixt;
 
-
 use Blixt\Storage\Connectors\ConnectorInterface;
 
 class Index
@@ -13,7 +12,7 @@ class Index
     protected $name;
 
     /**
-     * @var \Blixt\Storage\Connectors\ConnectorInterface
+     * @var \Blixt\Storage\Engines\EngineInterface
      */
     protected $storage;
 
@@ -28,13 +27,23 @@ class Index
         $this->name = $name;
         $this->storage = $connector->create($name);
 
-        $this->install();
-    }
-
-    protected function install()
-    {
         if (!$this->storage->exists()) {
             $this->storage->create();
         }
+    }
+
+    public function addDocument()
+    {
+
+    }
+
+    public function addDocuments()
+    {
+
+    }
+
+    public function search()
+    {
+
     }
 }

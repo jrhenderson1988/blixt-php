@@ -3,8 +3,8 @@
 namespace Blixt\Storage\Engines;
 
 use Blixt\Exceptions\IndexAlreadyExistsException;
-use Blixt\Storage\Connections\SQLiteConnection;
 use InvalidArgumentException;
+use PDO;
 
 class SQLiteEngine implements EngineInterface
 {
@@ -25,7 +25,7 @@ class SQLiteEngine implements EngineInterface
     /**
      * The database connection.
      *
-     * @var \Blixt\Storage\Connections\SQLiteConnection
+     * @var \PDO
      */
     protected $connection;
 
@@ -140,6 +140,11 @@ class SQLiteEngine implements EngineInterface
         return $this->exists;
     }
 
+    /**
+     * Create the SQLite file and database connection for the name and path.
+     *
+     * @throws \Blixt\Exceptions\IndexAlreadyExistsException
+     */
     public function create()
     {
         if ($this->exists()) {
@@ -157,12 +162,15 @@ class SQLiteEngine implements EngineInterface
     /**
      * Get the connection, creating it in the process if it has not yet been created.
      *
-     * @return \Blixt\Storage\Connections\SQLiteConnection
+     * @return \PDO
      */
     protected function connection()
     {
         if (!$this->connection) {
-            $this->connection = new SQLiteConnection('sqlite:' . $this->getPath());
+            $this->connection = new PDO('sqlite:' . $this->getPath(), [
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+            ]);
         }
 
         return $this->connection;
@@ -175,37 +183,4 @@ class SQLiteEngine implements EngineInterface
     {
         $this->connection = null;
     }
-
-
-
-//    protected function connected()
-//    {
-//        return !! $this->connection && $this->connection instanceof \PDO;
-//    }
-//
-//    protected function connect()
-//    {
-//        return $this->connection = new \PDO(
-//            'sqlite:'
-//        );
-//    }
-//
-//    /**
-//     * Creates a connection to the SQLite file, creating the file if it does not exist.
-//     *
-//     * @return mixed
-//     */
-//    protected function connection()
-//    {
-//        if (!$this->connected()) {
-//            return $this->connect();
-//        }
-//
-//        return $this->connection;
-//    }
-//
-//    protected function disconnect()
-//    {
-//        // Disconnect from the SQLite database.
-//    }
 }
