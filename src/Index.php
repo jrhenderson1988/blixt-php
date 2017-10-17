@@ -2,6 +2,7 @@
 
 namespace Blixt;
 
+use Blixt\Documents\Document;
 use Blixt\Storage\FactoryInterface as StorageFactory;
 
 class Index
@@ -32,11 +33,9 @@ class Index
         }
     }
 
-
-
-    public function addDocument()
+    public function addDocument(Document $document)
     {
-
+        return $this->storage->addDocument($document);
     }
 
     public function addDocuments()

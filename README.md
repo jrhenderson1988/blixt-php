@@ -68,3 +68,29 @@ Example:
 | 4  | 3            | 4       | 2        |
 | 5  | 3            | 5       | 3        |
 | 5  | 3            | 1       | 4        |
+
+### Notes
+Suggested methods for storage engine interface:
+
+- findTerm(name)
+- findTerms(names)
+- createTerm(name)
+- createTerms(names)
+
+- findSchema(name)
+- createSchema(name)
+
+- findColumn(schema_id, name)
+- findColumns(schema_id, names)
+- createColumn(schema_id, name)
+- createColumns(schema_id, names)
+
+- findDocument(schema_id, primary_key)
+- findDocuments(schema_id, primary_keys)
+- createDocument(schema_id, primary_key)
+- createDocuments(schema_id, primary_keys)
+
+- findAttribute(document_id, column_id)
+- findAttributes(document_id, column_ids)
+- createAttribute(document_id, column_id, value)
+- createAttributes(document_id, column_id, value)

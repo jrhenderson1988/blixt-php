@@ -24,7 +24,14 @@ class Field
      */
     protected $stored;
 
-
+    /**
+     * Field constructor.
+     *
+     * @param string $key
+     * @param mixed  $value
+     * @param bool   $indexed
+     * @param bool   $stored
+     */
     public function __construct($key, $value, $indexed = true, $stored = true)
     {
         $this->setKey($key);
@@ -112,7 +119,4 @@ class Field
     {
         $this->stored = !! $stored;
     }
-
-
-
 }

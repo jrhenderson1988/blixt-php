@@ -3,11 +3,11 @@
 namespace Blixt\Storage\SQLite;
 
 use Blixt\Exceptions\IndexAlreadyExistsException;
+use Blixt\Exceptions\StorageException;
 use Blixt\Storage\EngineInterface;
 use Exception;
 use InvalidArgumentException;
 use PDO;
-use Throwable;
 
 class Engine implements EngineInterface
 {
@@ -154,12 +154,16 @@ class Engine implements EngineInterface
             throw new IndexAlreadyExistsException();
         }
 
-        $this->connection();
+        $this->transaction(function ($engine) {
+            // Create the tables
+        });
 
         // After creating the index, check again for its existence. This will set our internal $exists property to true
         // and we will from now on be able to get a connection to the index. If creating the index somehow failed, this
         // would set our $exists property to false and methods requiring a connection would continue to fail.
         $this->checkExistence();
+
+        return true;
     }
 
     /**
@@ -223,11 +227,9 @@ class Engine implements EngineInterface
         } catch (Exception $ex) {
             $this->connection()->rollBack();
 
-            throw $ex;
-        } catch (Throwable $ex) {
-            $this->connection()->rollBack();
-
-            throw $ex;
+            throw new StorageException(
+                $ex->getMessage(), $ex->getCode(), $ex
+            );
         }
     }
 

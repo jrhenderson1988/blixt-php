@@ -73,9 +73,7 @@ class Document
         }
 
         foreach (new Collection($fields instanceof Field ? [$fields] : $fields) as $field) {
-            foreach ($fields as $field) {
-                $this->addField($field);
-            }
+            $this->addField($field);
         }
     }
 
