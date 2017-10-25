@@ -1,96 +1,80 @@
-# blixt
+# Blixt
 
-- **terms:** id, name
+## Structure
+
+- **words:** id, name
 - **schemas:** id, name
 - **columns:** id, schema_id, name, weight
+- **term** id, schema_id, term_id
 - **documents:** id, schema_id, primary_key
-- **attributes:** id, document_id, column_id, value
-- **attribute_term:** id, attribute_id, term_id, position
+- **field:** id, document_id, column_id, value
+- **field_term:** id, attribute_id, term_id, frequency
+- **occurrences** id, field_term_id, position
 
+### Word
 
-Example:
+A word is a stemmed word, appearing somewhere in the index.
 
-    Schema: user
-    Primary key: 1
-    Attributes:
-        id: 1 (Primary key, not indexed)
-        name: Jonathon Henderson (indexed)
-        about: This is about Jonathon (indexed)
-        age: 29 (not indexed)
+### Schema
 
-- terms
+A schema represents a document type. Examples of schemas would be product or user.
 
-| id | name      |
-|----|-----------|
-| 1  | jonathon  |
-| 2  | henderson |
-| 3  | this      |
-| 4  | is        |
-| 5  | about     |
+### Term
 
-- schemas
+A term represents a word in a schema. For example, if we have a word record for "run" that appears in a field for a user
+document, we would have a record in the terms table that refers to the word_id for "run" and the schema_id for user. A
+term also stores the total number of fields for which the word appears in the schema.
 
-| id | name |
-|----|------|
-| 1  | user |
+### Column
 
-- columns
+Columns are used to define the available fields within a schema. For example, we could have first name, last name and
+address columns in a user schema. A column can be given a weight to affect the outcome of a search against the index, to
+strengthen or weaken the influence of values in a column.
 
-| id | schema_id | name  | weight |
-|----|-----------|-------|--------|
-| 1  | 1         | id    | 1      |
-| 2  | 1         | name  | 1      |
-| 3  | 1         | about | 1      |
-| 4  | 1         | age   | 1      |
+### Document
 
-- documents
+A document represents an instance of a schema. For example, given a user schema, we could have documents for Joe Bloggs
+and Jane Doe each with their own fields. A document must always have a unique key (within that particular schema) that 
+we can use to look up a document in the index in order to avoid duplicates and to refer to records outside of the search
+index.
 
-| id | schema_id | primary_key |
-|----|-----------|-------------|
-| 1  | 1         | 1           |
+### Field
 
-- attributes
+A document can contain many fields, which represent values of the columns in the schema. For example, given a user
+schema, that defines a set of columns for first name and last name, and a document within that schema representing a
+person, Joe Bloggs. We would have 2 fields, one for each column giving the values of each for the document, in this case
+the first name column for the document as "Joe" and the last name column as "Bloggs".
 
-| id | document_id | column_id | value                  |
-|----|-------------|-----------|------------------------|
-| 1  | 1           | 1         | 1                      |
-| 2  | 1           | 2         | Jonathon Henderson     |
-| 3  | 1           | 3         | This is about Jonathon |
-| 4  | 1           | 4         | 29                     |
+Depending on the requirements a field can be either stored or not. If a field is stored, its value is present whereas if
+a field is not stored, its value is missing. Indexing can occur regardless of whether the field is stored or not as the
+value of the field is analysed at index time and references to terms and positions etc. are stored in other tables.
 
-- attribute_term
+The total number of terms that appear in a field, including duplicates, is stored.
 
-| id | attribute_id | term_id | position |
-|----|--------------|---------|----------|
-| 1  | 2            | 1       | 1        |
-| 2  | 2            | 2       | 2        |
-| 3  | 3            | 3       | 1        |
-| 4  | 3            | 4       | 2        |
-| 5  | 3            | 5       | 3        |
-| 5  | 3            | 1       | 4        |
+### Field Term (Token? Instance? Unique Occurrence?)
 
-### Notes
-Suggested methods for storage engine interface:
+A field-term, represents the existence of a term in a field. A reference to both the field and the term is stored.
+There can be no duplicate field-term records. Multiple instances of a term appearing in a field is handled by the
+occurrence table.
 
-- findTerm(name)
-- findTerms(names)
-- createTerm(name)
-- createTerms(names)
+An field-term record also stores the number of times (frequency) the referenced term appears in the referenced field.
 
-- findSchema(name)
-- createSchema(name)
+### Occurrence
 
-- findColumn(schema_id, name)
-- findColumns(schema_id, names)
-- createColumn(schema_id, name)
-- createColumns(schema_id, names)
+An occurrence record represents each instance of a term appearing in a field. It includes the position that the term 
+appears in the field (where each full term is counted as 1, rather than physical character position). The number of 
+times (frequency) a term appears in a field can be derived from counting the number of occurrence records we have for a 
+field-term.
 
-- findDocument(schema_id, primary_key)
-- findDocuments(schema_id, primary_keys)
-- createDocument(schema_id, primary_key)
-- createDocuments(schema_id, primary_keys)
+## Notes
 
-- findAttribute(document_id, column_id)
-- findAttributes(document_id, column_ids)
-- createAttribute(document_id, column_id, value)
-- createAttributes(document_id, column_id, value)
+Different types of queries to implement:
+- One word query (Match one word)
+- Phrase query (Match some of the words)
+- Full Phrase query (Matches all of the words)
+- Boolean query
+
+## Reading
+
+- https://www.elastic.co/guide/en/elasticsearch/guide/current/scoring-theory.html
+- http://aakashjapi.com/fuckin-search-engines-how-do-they-work/

@@ -232,9 +232,4 @@ class Engine implements EngineInterface
             );
         }
     }
-
-    protected function createSchema()
-    {
-
-    }
 }
