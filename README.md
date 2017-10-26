@@ -5,10 +5,10 @@
 - **words:** id, name
 - **schemas:** id, name
 - **columns:** id, schema_id, name, weight
-- **term** id, schema_id, term_id
+- **terms** id, schema_id, term_id
 - **documents:** id, schema_id, primary_key
 - **field:** id, document_id, column_id, value
-- **field_term:** id, attribute_id, term_id, frequency
+- **presences:** id, attribute_id, term_id, frequency
 - **occurrences** id, field_term_id, position
 
 ### Word
@@ -29,7 +29,8 @@ term also stores the total number of fields for which the word appears in the sc
 
 Columns are used to define the available fields within a schema. For example, we could have first name, last name and
 address columns in a user schema. A column can be given a weight to affect the outcome of a search against the index, to
-strengthen or weaken the influence of values in a column.
+strengthen or weaken the influence of values in a column. A column can also be given a type, which we can further use to
+cast corresponding values, especially when making comparisons.
 
 ### Document
 
@@ -51,13 +52,13 @@ value of the field is analysed at index time and references to terms and positio
 
 The total number of terms that appear in a field, including duplicates, is stored.
 
-### Field Term (Token? Instance? Unique Occurrence?)
+### Presence
 
-A field-term, represents the existence of a term in a field. A reference to both the field and the term is stored.
-There can be no duplicate field-term records. Multiple instances of a term appearing in a field is handled by the
-occurrence table.
+A presence, represents the existence of a term in a field. A reference to both the field and the term is stored. There
+can be no duplicate presence records. Multiple instances of a term appearing in a field is handled by the occurrence
+table.
 
-An field-term record also stores the number of times (frequency) the referenced term appears in the referenced field.
+An presence record also stores the number of times (frequency) the referenced term appears in the referenced field.
 
 ### Occurrence
 
