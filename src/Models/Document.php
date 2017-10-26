@@ -30,16 +30,6 @@ class Document extends Model
     }
 
     /**
-     * Set the Schema ID.
-     *
-     * @param int|mixed $schemaId
-     */
-    public function setSchemaId($schemaId)
-    {
-        $this->schemaId = intval($schemaId);
-    }
-
-    /**
      * Get the Schema ID.
      *
      * @return int
@@ -50,13 +40,13 @@ class Document extends Model
     }
 
     /**
-     * Set the key.
+     * Set the Schema ID.
      *
-     * @param mixed $key
+     * @param int|mixed $schemaId
      */
-    public function setKey($key)
+    public function setSchemaId($schemaId)
     {
-        $this->key = $key;
+        $this->schemaId = intval($schemaId);
     }
 
     /**
@@ -67,5 +57,15 @@ class Document extends Model
     public function getKey()
     {
         return $this->key;
+    }
+
+    /**
+     * Set the key.
+     *
+     * @param mixed $key
+     */
+    public function setKey($key)
+    {
+        $this->key = $key;
     }
 }

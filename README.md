@@ -2,14 +2,14 @@
 
 ## Structure
 
-- **words:** id, name
+- **words:** id, word
 - **schemas:** id, name
-- **columns:** id, schema_id, name, weight
-- **terms** id, schema_id, term_id
-- **documents:** id, schema_id, primary_key
+- **columns:** id, schema_id, name, weight, stored, indexed
+- **terms** id, schema_id, word_id
+- **documents:** id, schema_id, key
 - **field:** id, document_id, column_id, value
-- **presences:** id, attribute_id, term_id, frequency
-- **occurrences** id, field_term_id, position
+- **presences:** id, field_id, term_id, frequency
+- **occurrences** id, presence_id, position
 
 ### Word
 

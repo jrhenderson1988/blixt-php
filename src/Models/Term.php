@@ -5,40 +5,96 @@ namespace Blixt\Models;
 class Term extends Model
 {
     /**
-     * @var string
+     * @var int
      */
-    protected $name;
+    protected $schemaId;
+
+    /**
+     * @var int
+     */
+    protected $wordId;
+
+    /**
+     * @var int
+     */
+    protected $fieldCount;
 
     /**
      * Term constructor.
      *
-     * @param int|mixed    $id
-     * @param string|mixed $name
+     * @param int|mixed $id
+     * @param int|mixed $schemaId
+     * @param int|mixed $wordId
+     * @param int|mixed $fieldCount
+     *
+     * @internal param mixed|string $name
      */
-    public function __construct($id, $name)
+    public function __construct($id, $schemaId, $wordId, $fieldCount)
     {
         parent::__construct($id);
 
-        $this->setName($name);
+        $this->setSchemaId($schemaId);
+        $this->setWordId($wordId);
+        $this->setFieldCount($fieldCount);
     }
 
     /**
-     * Set the name.
+     * Get the Schema ID.
      *
-     * @param string|mixed $name
+     * @return int
      */
-    public function setName($name)
+    public function getSchemaId()
     {
-        $this->name = strval($name);
+        return $this->schemaId;
     }
 
     /**
-     * Get the name.
+     * Set the Schema ID.
      *
-     * @return string
+     * @param int|mixed $schemaId
      */
-    public function getName()
+    public function setSchemaId($schemaId)
     {
-        return $this->name;
+        $this->schemaId = intval($schemaId);
+    }
+
+    /**
+     * Get the Word ID.
+     *
+     * @return int
+     */
+    public function getWordId()
+    {
+        return $this->wordId;
+    }
+
+    /**
+     * Get the Word ID.
+     *
+     * @param int|mixed $wordId
+     */
+    public function setWordId($wordId)
+    {
+        $this->wordId = intval($wordId);
+    }
+
+    /**
+     * Get the field count.
+     *
+     * @return int
+     */
+    public function getFieldCount()
+    {
+        return $this->fieldCount;
+    }
+
+    /**
+     * Set the field count.
+     *
+     * @param int|mixed $fieldCount
+     */
+    public function setFieldCount($fieldCount)
+    {
+        $this->fieldCount = intval($fieldCount);
     }
 }

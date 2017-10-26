@@ -2,7 +2,7 @@
 
 namespace Blixt\Models;
 
-class Attribute extends Model
+class Field extends Model
 {
     /**
      * @var int
@@ -15,7 +15,7 @@ class Attribute extends Model
     protected $columnId;
 
     /**
-     * @var mixed
+     * @var mixed|null
      */
     protected $value;
 
@@ -27,23 +27,13 @@ class Attribute extends Model
      * @param int|mixed $columnId
      * @param mixed     $value
      */
-    public function __construct($id, $documentId, $columnId, $value)
+    public function __construct($id, $documentId, $columnId, $value = null)
     {
         parent::__construct($id);
 
         $this->setDocumentId($documentId);
         $this->setColumnId($columnId);
         $this->setValue($value);
-    }
-
-    /**
-     * Set the Document ID.
-     *
-     * @param int|mixed $documentId
-     */
-    public function setDocumentId($documentId)
-    {
-        $this->documentId = intval($documentId);
     }
 
     /**
@@ -57,13 +47,13 @@ class Attribute extends Model
     }
 
     /**
-     * Set the Column ID.
+     * Set the Document ID.
      *
-     * @param int|mixed $columnId
+     * @param int|mixed $documentId
      */
-    public function setColumnId($columnId)
+    public function setDocumentId($documentId)
     {
-        $this->columnId = intval($columnId);
+        $this->documentId = intval($documentId);
     }
 
     /**
@@ -77,22 +67,32 @@ class Attribute extends Model
     }
 
     /**
+     * Set the Column ID.
+     *
+     * @param int|mixed $columnId
+     */
+    public function setColumnId($columnId)
+    {
+        $this->columnId = intval($columnId);
+    }
+
+    /**
+     * Set the value.
+     *
+     * @return mixed|null
+     */
+    public function getValue()
+    {
+        return $this->value;
+    }
+
+    /**
      * Set the value.
      *
      * @param mixed $value
      */
     public function setValue($value)
     {
-        $this->value = $value;
-    }
-
-    /**
-     * Set the value.
-     *
-     * @return mixed
-     */
-    public function getValue()
-    {
-        return $this->value;
+        $this->value = is_null($value) || $value === '' ? null : $value;
     }
 }

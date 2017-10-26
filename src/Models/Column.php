@@ -20,30 +20,34 @@ class Column extends Model
     protected $weight;
 
     /**
+     * @var bool
+     */
+    protected $indexed;
+
+    /**
+     * @var bool
+     */
+    protected $stored;
+
+    /**
      * Column constructor.
      *
      * @param int|mixed    $id
      * @param int|mixed    $schemaId
      * @param string|mixed $name
+     * @param bool|mixed   $indexed
+     * @param bool|mixed   $stored
      * @param float|mixed  $weight
      */
-    public function __construct($id, $schemaId, $name, $weight = 1)
+    public function __construct($id, $schemaId, $name, $indexed = true, $stored = false, $weight = 1)
     {
         parent::__construct($id);
 
         $this->setSchemaId($schemaId);
         $this->setName($name);
+        $this->setIndexed($indexed);
+        $this->setStored($stored);
         $this->setWeight($weight);
-    }
-
-    /**
-     * Set the Schema ID.
-     *
-     * @param int|mixed $schemaId
-     */
-    public function setSchemaId($schemaId)
-    {
-        $this->schemaId = intval($schemaId);
     }
 
     /**
@@ -57,13 +61,13 @@ class Column extends Model
     }
 
     /**
-     * Set the name.
+     * Set the Schema ID.
      *
-     * @param string|mixed $name
+     * @param int|mixed $schemaId
      */
-    public function setName($name)
+    public function setSchemaId($schemaId)
     {
-        $this->name = strval($name);
+        $this->schemaId = intval($schemaId);
     }
 
     /**
@@ -74,6 +78,56 @@ class Column extends Model
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * Set the name.
+     *
+     * @param string|mixed $name
+     */
+    public function setName($name)
+    {
+        $this->name = strval($name);
+    }
+
+    /**
+     * Tell if this column should be indexed.
+     *
+     * @return bool
+     */
+    public function isIndexed()
+    {
+        return $this->indexed;
+    }
+
+    /**
+     * Set whether this column should be indexed.
+     *
+     * @param bool|mixed $indexed
+     */
+    public function setIndexed($indexed)
+    {
+        $this->indexed = !! $indexed;
+    }
+
+    /**
+     * Tell if this column is stored.
+     *
+     * @return bool
+     */
+    public function isStored()
+    {
+        return $this->stored;
+    }
+
+    /**
+     * Set whether this column is stored.
+     *
+     * @param bool|mixed $stored
+     */
+    public function setStored($stored)
+    {
+        $this->stored = !! $stored;
     }
 
     /**
