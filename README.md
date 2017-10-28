@@ -7,7 +7,7 @@
 - **columns:** id, schema_id, name, weight, stored, indexed
 - **terms** id, schema_id, word_id
 - **documents:** id, schema_id, key
-- **field:** id, document_id, column_id, value
+- **fields:** id, document_id, column_id, value
 - **presences:** id, field_id, term_id, frequency
 - **occurrences** id, presence_id, position
 

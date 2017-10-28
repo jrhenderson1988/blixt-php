@@ -3,16 +3,22 @@
 class BlixtTest extends TestCase
 {
     /** @test */
-    public function testSomething()
+    public function testOpenAndDestroyIndex()
     {
+        $directory = __DIR__ . DIRECTORY_SEPARATOR . 'data';
+        $filename = md5(str_random(10)) . '.index';
+        $path = $directory . DIRECTORY_SEPARATOR . $filename;
+
         $blixt = new \Blixt\Blixt(
-            new \Blixt\Storage\SQLite\Factory(__DIR__),
+            new \Blixt\Storage\SQLite\Factory($directory),
             new \Blixt\Stemming\EnglishStemmer(),
             new \Blixt\Tokenization\DefaultTokenizer()
         );
 
-        $index = $blixt->open('test.index');
-        var_dump($blixt, $index);
+        $index = $blixt->open($filename);
+        $this->assertFileExists($path);
+
         $index->destroy();
+        $this->assertFileNotExists($path);
     }
 }

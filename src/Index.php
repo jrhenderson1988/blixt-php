@@ -29,7 +29,15 @@ class Index
         $this->storage = $connector->create($name);
 
         if (!$this->storage->exists()) {
-            $this->storage->create();
+            $this->storage->beginTransaction();
+            try {
+                $this->storage->create();
+                $this->storage->commitTransaction();
+            } catch (\Exception $ex) {
+                $this->storage->rollBackTransaction();
+
+                throw $ex;
+            }
         }
     }
 

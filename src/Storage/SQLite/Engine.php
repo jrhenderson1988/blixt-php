@@ -3,11 +3,8 @@
 namespace Blixt\Storage\SQLite;
 
 use Blixt\Exceptions\IndexAlreadyExistsException;
-use Blixt\Exceptions\StorageException;
 use Blixt\Storage\EngineInterface;
-use Exception;
 use InvalidArgumentException;
-use PDO;
 
 class Engine implements EngineInterface
 {
@@ -38,6 +35,13 @@ class Engine implements EngineInterface
      * @var bool
      */
     protected $exists;
+
+    /**
+     * Is the engine currently in a transaction?
+     *
+     * @var bool
+     */
+    protected $inTransaction = false;
 
     /**
      * SQLiteStorage constructor.
@@ -154,9 +158,74 @@ class Engine implements EngineInterface
             throw new IndexAlreadyExistsException();
         }
 
-        $this->transaction(function ($engine) {
-            // Create the tables
-        });
+        $this->connection()->statement(
+            'CREATE TABLE "words" (' .
+            ' "id" INTEGER PRIMARY KEY,' .
+            ' "word" TEXT NOT NULL' .
+            ');' .
+
+            'CREATE UNIQUE INDEX "uq_words_word" ON "words" ("word");' .
+
+            'CREATE TABLE "schemas" (' .
+            ' "id" INTEGER PRIMARY KEY,' .
+            ' "name" TEXT NOT NULL' .
+            ');' .
+
+            'CREATE UNIQUE INDEX "uq_schemas_name" ON "schemas" ("name");' .
+
+            'CREATE TABLE "columns" (' .
+            ' "id" INTEGER PRIMARY KEY,' .
+            ' "schema_id" INTEGER NOT NULL,' .
+            ' "name" TEXT NOT NULL,' .
+            ' "indexed" INTEGER NOT NULL,' .
+            ' "stored" INTEGER NOT NULL,' .
+            ' "weight" INTEGER NOT NULL' .
+            ');' .
+
+            'CREATE UNIQUE INDEX "uq_columns_schema_id_name" ON "columns" ("schema_id", "name");' .
+
+            'CREATE TABLE "terms" (' .
+            ' "id" INTEGER PRIMARY KEY,' .
+            ' "schema_id" INTEGER NOT NULL,' .
+            ' "word_id" INTEGER NOT NULL' .
+            ');' .
+
+            'CREATE UNIQUE INDEX "uq_terms_schema_id_word_id" ON "terms" ("schema_id", "word_id");' .
+
+            'CREATE TABLE "documents" (' .
+            ' "id" INTEGER PRIMARY KEY,' .
+            ' "schema_id" INTEGER NOT NULL,' .
+            ' "key" TEXT NOT NULL' .
+            ');' .
+
+            'CREATE UNIQUE INDEX "uq_documents_schema_id_key" ON "documents" ("schema_id", "key");' .
+
+            'CREATE TABLE "fields" (' .
+            ' "id" INTEGER PRIMARY KEY,' .
+            ' "document_id" INTEGER NOT NULL,' .
+            ' "column_id" INTEGER NOT NULL,' .
+            ' "value" TEXT' . // Maybe BLOB is better?
+            ');' .
+
+            'CREATE UNIQUE INDEX "uq_fields_document_id_column_id" ON "fields" ("document_id", "column_id");' .
+
+            'CREATE TABLE "presences" (' .
+            ' "id" INTEGER PRIMARY KEY,' .
+            ' "field_id" INTEGER NOT NULL,' .
+            ' "term_id" INTEGER NOT NULL,' .
+            ' "frequency" INTEGER NOT NULL' .
+            ');' .
+
+            'CREATE UNIQUE INDEX "uq_presences_field_id_term_id" ON "presences" ("field_id", "term_id");' .
+
+            'CREATE TABLE "occurrences" (' .
+            ' "id" INTEGER PRIMARY KEY,' .
+            ' "presence_id" INTEGER NOT NULL,' .
+            ' "position" INTEGER NOT NULL' .
+            ');' .
+
+            'CREATE INDEX "idx_occurrences_presence_id" ON "occurrences" ("presence_id");'
+        );
 
         // After creating the index, check again for its existence. This will set our internal $exists property to true
         // and we will from now on be able to get a connection to the index. If creating the index somehow failed, this
@@ -169,15 +238,12 @@ class Engine implements EngineInterface
     /**
      * Get the connection, creating it in the process if it has not yet been created.
      *
-     * @return \PDO
+     * @return \Blixt\Storage\SQLite\Connection
      */
     protected function connection()
     {
         if (!$this->connection) {
-            $this->connection = new PDO('sqlite:' . $this->getPath(), null, null, [
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-            ]);
+            $this->connection = new Connection($this->getPath());
         }
 
         return $this->connection;
@@ -185,6 +251,7 @@ class Engine implements EngineInterface
 
     /**
      * Disconnect the connection by setting it to null.
+     *
      */
     public function disconnect()
     {
@@ -204,32 +271,32 @@ class Engine implements EngineInterface
     }
 
     /**
-     * Run the provided callback in a transaction. The callback is passed this storage engine instance. Whatever the
-     * callback returns, if anything, is returned from the transaction method. Any exceptions that are thrown are caught
-     * and the transaction is rolled back before the exception is re-thrown.
+     * Begin a transaction for the storage engine.
      *
-     * @param callable $callback
-     *
-     * @return mixed
-     * @throws \Exception
-     * @throws \Throwable
+     * @return bool
      */
-    protected function transaction(callable $callback)
+    public function beginTransaction()
     {
-        $this->connection()->beginTransaction();
+        return $this->connection()->beginTransaction();
+    }
 
-        try {
-            $response = $callback($this);
+    /**
+     * Roll back the current transaction for the storage engine.
+     *
+     * @return bool
+     */
+    public function rollBackTransaction()
+    {
+        return $this->connection()->rollBackTransaction();
+    }
 
-            $this->connection()->commit();
-
-            return $response;
-        } catch (Exception $ex) {
-            $this->connection()->rollBack();
-
-            throw new StorageException(
-                $ex->getMessage(), $ex->getCode(), $ex
-            );
-        }
+    /**
+     * Commit the current transaction for the storage engine.
+     *
+     * @return bool
+     */
+    public function commitTransaction()
+    {
+        return $this->connection()->commitTransaction();
     }
 }
