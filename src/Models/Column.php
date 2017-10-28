@@ -15,11 +15,6 @@ class Column extends Model
     protected $name;
 
     /**
-     * @var float
-     */
-    protected $weight;
-
-    /**
      * @var bool
      */
     protected $indexed;
@@ -28,6 +23,11 @@ class Column extends Model
      * @var bool
      */
     protected $stored;
+
+    /**
+     * @var float
+     */
+    protected $weight;
 
     /**
      * Column constructor.
@@ -39,7 +39,7 @@ class Column extends Model
      * @param bool|mixed   $stored
      * @param float|mixed  $weight
      */
-    public function __construct($id, $schemaId, $name, $indexed = true, $stored = false, $weight = 1)
+    public function __construct($id, $schemaId, $name, $indexed = true, $stored = false, $weight = 1.0)
     {
         parent::__construct($id);
 

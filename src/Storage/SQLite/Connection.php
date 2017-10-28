@@ -150,7 +150,9 @@ class Connection
     }
 
     /**
-     * Prepare the bindings for a query. Currently this simply just returns the original bindings.
+     * Prepare the bindings for a query.
+     *
+     * TODO - Ensure any value can be provided as a binding. Account for arrays etc. (Serialize?)
      *
      * @param array $bindings
      *

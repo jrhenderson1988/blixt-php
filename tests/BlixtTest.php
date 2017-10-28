@@ -1,5 +1,7 @@
 <?php
 
+namespace BlixtTests;
+
 class BlixtTest extends TestCase
 {
     /** @test */
