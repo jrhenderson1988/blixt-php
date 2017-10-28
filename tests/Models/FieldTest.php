@@ -31,10 +31,6 @@ class FieldTest extends TestCase
     public function testSettersCastToCorrectTypes()
     {
         $test = new Field(1, 1, 1, 1);
-        $this->assertEquals(1, $test->getId());
-        $this->assertEquals(1, $test->getDocumentId());
-        $this->assertEquals(1, $test->getColumnId());
-        $this->assertEquals(1, $test->getValue());
 
         $test->setId(true);
         $this->assertSame(1, $test->getId());

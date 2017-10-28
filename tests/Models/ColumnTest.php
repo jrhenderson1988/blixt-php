@@ -40,12 +40,6 @@ class ColumnTest extends TestCase
     public function testSettersCastToCorrectTypes()
     {
         $test = new Column(1, 1, 'test', true, true, 1.0);
-        $this->assertEquals(1, $test->getId());
-        $this->assertEquals(1, $test->getSchemaId());
-        $this->assertEquals('test', $test->getName());
-        $this->assertEquals(true, $test->isIndexed());
-        $this->assertEquals(true, $test->isIndexed());
-        $this->assertEquals(1.0, $test->isIndexed());
 
         $test->setId(true);
         $this->assertSame(1, $test->getId());
