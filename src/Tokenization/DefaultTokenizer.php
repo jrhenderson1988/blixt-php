@@ -18,22 +18,41 @@ class DefaultTokenizer extends AbstractTokenizer implements TokenizerInterface
         $tokens = new Collection();
 
         $i = 0;
-        foreach ($this->split($this->normalize($text)) as $term) {
+        $this->split($text)->each(function ($word) use (&$tokens, &$i) {
             $tokens->push(
-                new Token($term, $i++)
+                new Token($word, $i++)
             );
-        }
+        });
 
         return $tokens;
     }
 
+    /**
+     * Normalize the given text by converting it to lowercase, trimming whitespace around it and removing all characters
+     * that are not alphanumeric or whitespace.
+     *
+     * @param string $text
+     *
+     * @return string
+     */
     protected function normalize($text)
     {
-        return mb_strtolower(trim($text));
+        return preg_replace('/[^\\p{L}\\p{N}\\s]/', '', mb_strtolower(trim($text)));
     }
 
+    /**
+     * Split the given text into a collection of words.
+     *
+     * @param string $text
+     *
+     * @return \Illuminate\Support\Collection
+     */
     protected function split($text)
     {
-        return preg_split('/[^\\p{L}\\p{N}]+/u', $text, -1, PREG_SPLIT_NO_EMPTY);
+        $words = new Collection(explode(' ', $this->normalize($text)));
+
+        return $words->filter(function ($word) {
+            return !empty(trim($word));
+        });
     }
 }

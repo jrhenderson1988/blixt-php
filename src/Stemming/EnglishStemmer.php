@@ -14,7 +14,7 @@ namespace Blixt\Stemming;
  *
  * @package RainSearch\Stemmers
  */
-class EnglishStemmer implements StemmerInterface
+class EnglishStemmer extends AbstractStemmer implements StemmerInterface
 {
     /**
      * Regex for matching a consonant.
@@ -387,7 +387,7 @@ class EnglishStemmer implements StemmerInterface
 
         $string = preg_replace("#" . self::VOWEL . "+$#", '', $string);
 
-        preg_match_all("#(" . self::VOWEL . "+" . self::CONSONANT . "#", $string, $matches);
+        preg_match_all("#(" . self::VOWEL . "+" . self::CONSONANT . ")#", $string, $matches);
 
         return count($matches[1]);
     }
@@ -415,7 +415,7 @@ class EnglishStemmer implements StemmerInterface
      */
     protected function cvc($string)
     {
-        return preg_match("#(" . self::CONSONANT . self::VOWEL . self::CONSONANT . "$#", $string, $matches)
+        return preg_match("#(" . self::CONSONANT . self::VOWEL . self::CONSONANT . ")$#", $string, $matches)
             && mb_strlen($matches[1]) == 3
             && $matches[1][2] != 'w'
             && $matches[1][2] != 'x'
