@@ -3,7 +3,9 @@
 namespace Blixt\Storage\SQLite;
 
 use Blixt\Exceptions\IndexAlreadyExistsException;
+use Blixt\Models\Schema;
 use Blixt\Storage\EngineInterface;
+use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
 class Engine implements EngineInterface
@@ -25,7 +27,7 @@ class Engine implements EngineInterface
     /**
      * The database connection.
      *
-     * @var \PDO
+     * @var \Blixt\Storage\SQLite\Connection
      */
     protected $connection;
 
@@ -35,13 +37,6 @@ class Engine implements EngineInterface
      * @var bool
      */
     protected $exists;
-
-    /**
-     * Is the engine currently in a transaction?
-     *
-     * @var bool
-     */
-    protected $inTransaction = false;
 
     /**
      * SQLiteStorage constructor.
@@ -158,20 +153,20 @@ class Engine implements EngineInterface
             throw new IndexAlreadyExistsException();
         }
 
-        $this->connection()->statement(
+        $statements = new Collection([
             'CREATE TABLE "words" (' .
             ' "id" INTEGER PRIMARY KEY,' .
             ' "word" TEXT NOT NULL' .
-            ');' .
+            ');',
 
-            'CREATE UNIQUE INDEX "uq_words_word" ON "words" ("word");' .
+            'CREATE UNIQUE INDEX "uq_words_word" ON "words" ("word");',
 
             'CREATE TABLE "schemas" (' .
             ' "id" INTEGER PRIMARY KEY,' .
             ' "name" TEXT NOT NULL' .
-            ');' .
+            ');',
 
-            'CREATE UNIQUE INDEX "uq_schemas_name" ON "schemas" ("name");' .
+            'CREATE UNIQUE INDEX "uq_schemas_name" ON "schemas" ("name");',
 
             'CREATE TABLE "columns" (' .
             ' "id" INTEGER PRIMARY KEY,' .
@@ -180,17 +175,17 @@ class Engine implements EngineInterface
             ' "indexed" INTEGER NOT NULL,' .
             ' "stored" INTEGER NOT NULL,' .
             ' "weight" INTEGER NOT NULL' .
-            ');' .
+            ');',
 
-            'CREATE UNIQUE INDEX "uq_columns_schema_id_name" ON "columns" ("schema_id", "name");' .
+            'CREATE UNIQUE INDEX "uq_columns_schema_id_name" ON "columns" ("schema_id", "name");',
 
             'CREATE TABLE "terms" (' .
             ' "id" INTEGER PRIMARY KEY,' .
             ' "schema_id" INTEGER NOT NULL,' .
             ' "word_id" INTEGER NOT NULL' .
-            ');' .
+            ');',
 
-            'CREATE UNIQUE INDEX "uq_terms_schema_id_word_id" ON "terms" ("schema_id", "word_id");' .
+            'CREATE UNIQUE INDEX "uq_terms_schema_id_word_id" ON "terms" ("schema_id", "word_id");',
 
             'CREATE TABLE "documents" (' .
             ' "id" INTEGER PRIMARY KEY,' .
@@ -198,34 +193,38 @@ class Engine implements EngineInterface
             ' "key" TEXT NOT NULL' .
             ');' .
 
-            'CREATE UNIQUE INDEX "uq_documents_schema_id_key" ON "documents" ("schema_id", "key");' .
+            'CREATE UNIQUE INDEX "uq_documents_schema_id_key" ON "documents" ("schema_id", "key");',
 
             'CREATE TABLE "fields" (' .
             ' "id" INTEGER PRIMARY KEY,' .
             ' "document_id" INTEGER NOT NULL,' .
             ' "column_id" INTEGER NOT NULL,' .
             ' "value" TEXT' . // Maybe BLOB is better?
-            ');' .
+            ');',
 
-            'CREATE UNIQUE INDEX "uq_fields_document_id_column_id" ON "fields" ("document_id", "column_id");' .
+            'CREATE UNIQUE INDEX "uq_fields_document_id_column_id" ON "fields" ("document_id", "column_id");',
 
             'CREATE TABLE "presences" (' .
             ' "id" INTEGER PRIMARY KEY,' .
             ' "field_id" INTEGER NOT NULL,' .
             ' "term_id" INTEGER NOT NULL,' .
             ' "frequency" INTEGER NOT NULL' .
-            ');' .
+            ');',
 
-            'CREATE UNIQUE INDEX "uq_presences_field_id_term_id" ON "presences" ("field_id", "term_id");' .
+            'CREATE UNIQUE INDEX "uq_presences_field_id_term_id" ON "presences" ("field_id", "term_id");',
 
             'CREATE TABLE "occurrences" (' .
             ' "id" INTEGER PRIMARY KEY,' .
             ' "presence_id" INTEGER NOT NULL,' .
             ' "position" INTEGER NOT NULL' .
-            ');' .
+            ');',
 
             'CREATE INDEX "idx_occurrences_presence_id" ON "occurrences" ("presence_id");'
-        );
+        ]);
+
+        $statements->each(function ($statement) {
+            $this->connection()->statement($statement);
+        });
 
         // After creating the index, check again for its existence. This will set our internal $exists property to true
         // and we will from now on be able to get a connection to the index. If creating the index somehow failed, this
@@ -298,5 +297,23 @@ class Engine implements EngineInterface
     public function commitTransaction()
     {
         return $this->connection()->commitTransaction();
+    }
+
+    public function findSchemaByName($name)
+    {
+        $result = $this->connection()->selectOne(
+            'SELECT * FROM "schemas" WHERE "name" = ?', [$name]
+        );
+
+        return is_array($result) ? new Schema($result['id'], $result['name']) : null;
+    }
+
+    public function createSchema($name)
+    {
+        $id = $this->connection()->insert(
+            'INSERT INTO "schemas" ("name") VALUES (?)', [$name]
+        );
+
+        return $id !== false ? new Schema($id, $name) : null;
     }
 }

@@ -46,6 +46,24 @@ interface EngineInterface
      */
     public function commitTransaction();
 
+    /**
+     * Find a schema by its name.
+     *
+     * @param string $name
+     *
+     * @return \Blixt\Models\Schema
+     */
+    public function findSchemaByName($name);
+
+    /**
+     * Create a schema.
+     *
+     * @param string $name
+     *
+     * @return \Blixt\Models\Schema
+     */
+    public function createSchema($name);
+
 //    public function findTermByName($name);
 //    public function findTermsByName(Collection $names);
 //    public function createTerm($name);

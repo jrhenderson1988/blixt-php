@@ -8,13 +8,6 @@ use PDO;
 class Connection
 {
     /**
-     * Whether the connection is currently in a transaction.
-     *
-     * @var bool
-     */
-    protected $inTransaction = false;
-
-    /**
      * The PDO object we're dealing with.
      *
      * @var \PDO
@@ -178,9 +171,11 @@ class Connection
      */
     public function beginTransaction()
     {
-        if (!$this->inTransaction) {
-            $this->inTransaction = $this->pdo->beginTransaction();
+        if ($this->pdo->inTransaction()) {
+            return true;
         }
+
+        return $this->pdo->beginTransaction();
     }
 
     /**
@@ -190,7 +185,7 @@ class Connection
      */
     public function rollBackTransaction()
     {
-        if (!$this->inTransaction) {
+        if (!$this->pdo->inTransaction()) {
             return false;
         }
 
@@ -204,7 +199,7 @@ class Connection
      */
     public function commitTransaction()
     {
-        if (!$this->inTransaction) {
+        if (!$this->pdo->inTransaction()) {
             return false;
         }
 

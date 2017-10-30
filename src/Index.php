@@ -4,6 +4,8 @@ namespace Blixt;
 
 use Blixt\Documents\Document;
 use Blixt\Storage\FactoryInterface as StorageFactory;
+use Exception;
+use Illuminate\Support\Collection;
 
 class Index
 {
@@ -22,6 +24,8 @@ class Index
      *
      * @param string                          $name
      * @param \Blixt\Storage\FactoryInterface $connector
+     *
+     * @throws \Exception
      */
     public function __construct($name, StorageFactory $connector)
     {
@@ -29,24 +33,28 @@ class Index
         $this->storage = $connector->create($name);
 
         if (!$this->storage->exists()) {
-            $this->storage->beginTransaction();
+//            $this->storage->beginTransaction();
+
             try {
                 $this->storage->create();
-                $this->storage->commitTransaction();
-            } catch (\Exception $ex) {
-                $this->storage->rollBackTransaction();
+//                $this->storage->commitTransaction();
+            } catch (Exception $ex) {
+//                $this->storage->rollBackTransaction();
 
                 throw $ex;
             }
         }
     }
 
-    public function addDocument(Document $document)
+    public function addDocument($schema, Document $document)
     {
-        return $this->storage->addDocument($document);
+        $schema = $this->findOrCreateSchema($schema);
+        var_dump($schema);
+
+        // TODO - Logic for adding a document, using the storage engine methods.
     }
 
-    public function addDocuments()
+    public function addDocuments($schema, Collection $documents)
     {
 
     }
@@ -54,6 +62,13 @@ class Index
     public function search()
     {
 
+    }
+
+    public function findOrCreateSchema($name)
+    {
+        $schema = $this->storage->findSchemaByName($name);
+
+        return $schema ?: $this->storage->createSchema($name);
     }
 
     public function destroy()
