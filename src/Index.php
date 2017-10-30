@@ -3,6 +3,8 @@
 namespace Blixt;
 
 use Blixt\Documents\Document;
+use Blixt\Exceptions\UndefinedSchemaException;
+use Blixt\Models\Schema;
 use Blixt\Storage\FactoryInterface as StorageFactory;
 use Exception;
 use Illuminate\Support\Collection;
@@ -46,10 +48,15 @@ class Index
         }
     }
 
-    public function addDocument($schema, Document $document)
+    public function addDocument($schemaName, Document $document)
     {
-        $schema = $this->findOrCreateSchema($schema);
-        var_dump($schema);
+        $schema = $this->storage->findSchemaByName($schemaName);
+
+        if (!$schema || !$schema instanceof Schema) {
+            throw new UndefinedSchemaException(
+                "The schema '{$schemaName}' is not defined, please create it first."
+            );
+        }
 
         // TODO - Logic for adding a document, using the storage engine methods.
     }
@@ -62,13 +69,6 @@ class Index
     public function search()
     {
 
-    }
-
-    public function findOrCreateSchema($name)
-    {
-        $schema = $this->storage->findSchemaByName($name);
-
-        return $schema ?: $this->storage->createSchema($name);
     }
 
     public function destroy()

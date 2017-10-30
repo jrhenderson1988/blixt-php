@@ -69,6 +69,19 @@ field-term.
 
 ## Notes
 
+TODO: Make adjustments to make an index represent a schema/type such as "users". The schema_id can be removed from all 
+of the other tables and everything inside the index would be considered in relation to the schema/index. For example, 
+the columns table would define the set of columns and their weights, types and whether or not they're indexed/stored for
+the data to be stored in that specific index.
+
+It would also be beneficial to add a method into the primary Blixt class so that we can open a schema if it exists and 
+provide a way for the user to define the schema for the index as a second parameter, should the index not already exist:
+
+    $blixt = new Blixt(...);
+    $blixt->open('users', function () {
+        // Define the schema here
+    });
+
 Different types of queries to implement:
 - One word query (Match one word)
 - Phrase query (Match some of the words)
