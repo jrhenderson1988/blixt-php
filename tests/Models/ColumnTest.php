@@ -10,9 +10,8 @@ class ColumnTest extends TestCase
 
     public function testGettersAndSetters()
     {
-        $test = new Column(1, 1, 'test', true, true, 1.0);
+        $test = new Column(1, 'test', true, true, 1.0);
         $this->assertEquals(1, $test->getId());
-        $this->assertEquals(1, $test->getSchemaId());
         $this->assertEquals('test', $test->getName());
         $this->assertEquals(true, $test->isIndexed());
         $this->assertEquals(true, $test->isIndexed());
@@ -20,9 +19,6 @@ class ColumnTest extends TestCase
 
         $test->setId(2);
         $this->assertEquals(2, $test->getId());
-
-        $test->setSchemaId(3);
-        $this->assertEquals(3, $test->getSchemaId());
 
         $test->setName('another_test');
         $this->assertEquals('another_test', $test->getName());
@@ -39,13 +35,10 @@ class ColumnTest extends TestCase
 
     public function testSettersCastToCorrectTypes()
     {
-        $test = new Column(1, 1, 'test', true, true, 1.0);
+        $test = new Column(1, 'test', true, true, 1.0);
 
         $test->setId(true);
         $this->assertSame(1, $test->getId());
-
-        $test->setSchemaId('100');
-        $this->assertSame(100, $test->getSchemaId());
 
         $test->setName(1);
         $this->assertSame('1', $test->getName());

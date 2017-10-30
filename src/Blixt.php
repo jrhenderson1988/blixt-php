@@ -97,6 +97,11 @@ class Blixt
         return $this->tokenizer;
     }
 
+    public function create($name, $columns)
+    {
+
+    }
+
     /**
      * Open an existing index (or create one if it does not exist).
      *

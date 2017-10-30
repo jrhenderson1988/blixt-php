@@ -112,7 +112,7 @@ class Engine implements EngineInterface
      */
     public function getPath()
     {
-        return $this->getDirectory() . DIRECTORY_SEPARATOR . $this->getName();
+        return $this->getDirectory() . DIRECTORY_SEPARATOR . $this->getName() . '.index';
     }
 
     /**
@@ -161,39 +161,22 @@ class Engine implements EngineInterface
 
             'CREATE UNIQUE INDEX "uq_words_word" ON "words" ("word");',
 
-            'CREATE TABLE "schemas" (' .
-            ' "id" INTEGER PRIMARY KEY,' .
-            ' "name" TEXT NOT NULL' .
-            ');',
-
-            'CREATE UNIQUE INDEX "uq_schemas_name" ON "schemas" ("name");',
-
             'CREATE TABLE "columns" (' .
             ' "id" INTEGER PRIMARY KEY,' .
-            ' "schema_id" INTEGER NOT NULL,' .
             ' "name" TEXT NOT NULL,' .
             ' "indexed" INTEGER NOT NULL,' .
             ' "stored" INTEGER NOT NULL,' .
             ' "weight" INTEGER NOT NULL' .
             ');',
 
-            'CREATE UNIQUE INDEX "uq_columns_schema_id_name" ON "columns" ("schema_id", "name");',
-
-            'CREATE TABLE "terms" (' .
-            ' "id" INTEGER PRIMARY KEY,' .
-            ' "schema_id" INTEGER NOT NULL,' .
-            ' "word_id" INTEGER NOT NULL' .
-            ');',
-
-            'CREATE UNIQUE INDEX "uq_terms_schema_id_word_id" ON "terms" ("schema_id", "word_id");',
+            'CREATE UNIQUE INDEX "uq_columns__name" ON "columns" ("name");',
 
             'CREATE TABLE "documents" (' .
             ' "id" INTEGER PRIMARY KEY,' .
-            ' "schema_id" INTEGER NOT NULL,' .
             ' "key" TEXT NOT NULL' .
             ');' .
 
-            'CREATE UNIQUE INDEX "uq_documents_schema_id_key" ON "documents" ("schema_id", "key");',
+            'CREATE UNIQUE INDEX "uq_documents_key" ON "documents" ("key");',
 
             'CREATE TABLE "fields" (' .
             ' "id" INTEGER PRIMARY KEY,' .
@@ -207,11 +190,11 @@ class Engine implements EngineInterface
             'CREATE TABLE "presences" (' .
             ' "id" INTEGER PRIMARY KEY,' .
             ' "field_id" INTEGER NOT NULL,' .
-            ' "term_id" INTEGER NOT NULL,' .
+            ' "word_id" INTEGER NOT NULL,' .
             ' "frequency" INTEGER NOT NULL' .
             ');',
 
-            'CREATE UNIQUE INDEX "uq_presences_field_id_term_id" ON "presences" ("field_id", "term_id");',
+            'CREATE UNIQUE INDEX "uq_presences_field_id_word_id" ON "presences" ("field_id", "word_id");',
 
             'CREATE TABLE "occurrences" (' .
             ' "id" INTEGER PRIMARY KEY,' .

@@ -12,7 +12,7 @@ class PresenceTest extends TestCase
         $test = new Presence(1, 1, 1, 1);
         $this->assertEquals(1, $test->getId());
         $this->assertEquals(1, $test->getFieldId());
-        $this->assertEquals(1, $test->getTermId());
+        $this->assertEquals(1, $test->getWordId());
         $this->assertEquals(1, $test->getFrequency());
 
         $test->setId(2);
@@ -21,8 +21,8 @@ class PresenceTest extends TestCase
         $test->setFieldId(3);
         $this->assertEquals(3, $test->getFieldId());
 
-        $test->setTermId(4);
-        $this->assertEquals(4, $test->getTermId());
+        $test->setWordId(4);
+        $this->assertEquals(4, $test->getWordId());
 
         $test->setFrequency(10);
         $this->assertEquals(10, $test->getFrequency());
@@ -38,8 +38,8 @@ class PresenceTest extends TestCase
         $test->setFieldId('100');
         $this->assertSame(100, $test->getFieldId());
 
-        $test->setTermId(20.4);
-        $this->assertSame(20, $test->getTermId());
+        $test->setWordId(20.4);
+        $this->assertSame(20, $test->getWordId());
 
         $test->setFrequency('100test');
         $this->assertSame(100, $test->getFrequency());

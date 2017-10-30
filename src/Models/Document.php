@@ -5,11 +5,6 @@ namespace Blixt\Models;
 class Document extends Model
 {
     /**
-     * @var int
-     */
-    protected $schemaId;
-
-    /**
      * @var mixed
      */
     protected $key;
@@ -18,35 +13,13 @@ class Document extends Model
      * Document constructor.
      *
      * @param int|mixed $id
-     * @param int|mixed $schemaId
      * @param mixed     $key
      */
-    public function __construct($id, $schemaId, $key)
+    public function __construct($id, $key)
     {
         parent::__construct($id);
 
-        $this->setSchemaId($schemaId);
         $this->setKey($key);
-    }
-
-    /**
-     * Get the Schema ID.
-     *
-     * @return int
-     */
-    public function getSchemaId()
-    {
-        return $this->schemaId;
-    }
-
-    /**
-     * Set the Schema ID.
-     *
-     * @param int|mixed $schemaId
-     */
-    public function setSchemaId($schemaId)
-    {
-        $this->schemaId = intval($schemaId);
     }
 
     /**

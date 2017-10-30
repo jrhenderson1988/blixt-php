@@ -5,11 +5,6 @@ namespace Blixt\Models;
 class Column extends Model
 {
     /**
-     * @var int
-     */
-    protected $schemaId;
-
-    /**
      * @var string
      */
     protected $name;
@@ -33,41 +28,19 @@ class Column extends Model
      * Column constructor.
      *
      * @param int|mixed    $id
-     * @param int|mixed    $schemaId
      * @param string|mixed $name
      * @param bool|mixed   $indexed
      * @param bool|mixed   $stored
      * @param float|mixed  $weight
      */
-    public function __construct($id, $schemaId, $name, $indexed = true, $stored = false, $weight = 1.0)
+    public function __construct($id, $name, $indexed = true, $stored = false, $weight = 1.0)
     {
         parent::__construct($id);
 
-        $this->setSchemaId($schemaId);
         $this->setName($name);
         $this->setIndexed($indexed);
         $this->setStored($stored);
         $this->setWeight($weight);
-    }
-
-    /**
-     * Get the Schema ID.
-     *
-     * @return int
-     */
-    public function getSchemaId()
-    {
-        return $this->schemaId;
-    }
-
-    /**
-     * Set the Schema ID.
-     *
-     * @param int|mixed $schemaId
-     */
-    public function setSchemaId($schemaId)
-    {
-        $this->schemaId = intval($schemaId);
     }
 
     /**

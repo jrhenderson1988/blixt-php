@@ -2,7 +2,6 @@
 
 namespace BlixtTests\Models;
 
-use Blixt\Models\Document;
 use Blixt\Models\Occurrence;
 use BlixtTests\TestCase;
 

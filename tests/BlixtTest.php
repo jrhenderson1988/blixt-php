@@ -14,8 +14,8 @@ class BlixtTest extends TestCase
     public function testOpenAndDestroyIndex()
     {
         $directory = __DIR__ . DIRECTORY_SEPARATOR . 'data';
-        $filename = md5(str_random(10)) . '.index';
-        $path = $directory . DIRECTORY_SEPARATOR . $filename;
+        $name = md5(str_random(10));
+        $path = $directory . DIRECTORY_SEPARATOR . $name;
 
         $blixt = new Blixt(
             new Factory($directory),
@@ -23,7 +23,7 @@ class BlixtTest extends TestCase
             new DefaultTokenizer()
         );
 
-        $index = $blixt->open($filename);
+        $index = $blixt->open($name);
         $this->assertFileExists($path);
 
         $index->addDocument('users', new Document('test', []));

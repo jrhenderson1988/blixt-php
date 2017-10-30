@@ -21,6 +21,7 @@ class Connection
      */
     public function __construct($path)
     {
+        echo $path;
         $this->pdo = new PDO('sqlite:' . $path, null, null, [
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION

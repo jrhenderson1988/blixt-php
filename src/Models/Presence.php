@@ -12,7 +12,7 @@ class Presence extends Model
     /**
      * @var int
      */
-    protected $termId;
+    protected $wordId;
 
     /**
      * @var int
@@ -24,15 +24,15 @@ class Presence extends Model
      *
      * @param int|mixed $id
      * @param int|mixed $fieldId
-     * @param int|mixed $termId
+     * @param int|mixed $wordId
      * @param int|mixed $frequency
      */
-    public function __construct($id, $fieldId, $termId, $frequency)
+    public function __construct($id, $fieldId, $wordId, $frequency)
     {
         parent::__construct($id);
 
         $this->setFieldId($fieldId);
-        $this->setTermId($termId);
+        $this->setWordId($wordId);
         $this->setFrequency($frequency);
     }
 
@@ -57,23 +57,23 @@ class Presence extends Model
     }
 
     /**
-     * Get the Term ID.
+     * Get the Word ID.
      *
      * @return int
      */
-    public function getTermId()
+    public function getWordId()
     {
-        return $this->termId;
+        return $this->wordId;
     }
 
     /**
-     * Set the Term ID.
+     * Set the Word ID.
      *
-     * @param int|mixed $termId
+     * @param int|mixed $wordId
      */
-    public function setTermId($termId)
+    public function setWordId($wordId)
     {
-        $this->termId = intval($termId);
+        $this->wordId = intval($wordId);
     }
 
     /**
