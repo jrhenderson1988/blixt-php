@@ -2,6 +2,9 @@
 
 namespace Blixt;
 
+use Blixt\Exceptions\IndexDoesNotExistException;
+use Blixt\Index\Index;
+use Blixt\Index\Schema;
 use Blixt\Stemming\StemmerInterface as Stemmer;
 use Blixt\Storage\FactoryInterface as StorageFactory;
 use Blixt\Tokenization\TokenizerInterface as Tokenizer;
@@ -97,32 +100,71 @@ class Blixt
         return $this->tokenizer;
     }
 
-    public function create($name, $columns)
-    {
-
-    }
-
     /**
-     * Open an existing index (or create one if it does not exist).
+     * Open an existing index. If the provided index does not exist, but a column definition is provided, the index is
+     * created using that definition and then returned. If the index does not exist, and no column definition is
+     * provided an exception is thrown.
      *
      * @param string $name
+     * @param array  $schema
      *
-     * @return \Blixt\Index
+     * @return \Blixt\Index\Index
+     * @throws \Blixt\Exceptions\IndexDoesNotExistException
      */
-    public function open($name)
+    public function open($name, $schema = null)
     {
-        return new Index(
-            $name, $this->getStorageFactory()
-        );
+        $index = $this->makeIndex($name);
+
+        if (!$index->exists()) {
+            if ($schema instanceof Schema) {
+                $index->create($schema);
+            } elseif (is_callable($schema)) {
+                $schemaObject = new Schema();
+                $schema($schemaObject);
+
+                $index->create($schema);
+            } else {
+                throw new IndexDoesNotExistException(
+                    "The index '{$name}' does not exist."
+                );
+            }
+        }
+
+        return $index;
     }
 
     /**
      * Destroy an existing index.
      *
      * @param string $name
+     *
+     * @return bool
+     * @throws \Blixt\Exceptions\IndexDoesNotExistException
      */
     public function destroy($name)
     {
+        $index = $this->makeIndex($name);
 
+        if (!$index->exists()) {
+            throw new IndexDoesNotExistException(
+                "The index '{$name}' does not exist."
+            );
+        }
+
+        return $index->destroy();
+    }
+
+    /**
+     * Create an Index object with the given name.
+     *
+     * @param string $name
+     *
+     * @return \Blixt\Index\Index
+     */
+    protected function makeIndex($name)
+    {
+        return new Index(
+            $name, $this->getStorageFactory(), $this->getStemmer(), $this->getTokenizer()
+        );
     }
 }
