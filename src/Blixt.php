@@ -118,9 +118,9 @@ class Blixt
         if (!$index->exists()) {
             if ($schema instanceof Schema) {
                 $index->create($schema);
-            } elseif (is_callable($schema)) {
-                $schemaObject = new Schema();
-                $schema($schemaObject);
+            } elseif (is_callable($callable = $schema)) {
+                $schema = new Schema();
+                $callable($schema);
 
                 $index->create($schema);
             } else {

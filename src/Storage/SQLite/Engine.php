@@ -3,7 +3,8 @@
 namespace Blixt\Storage\SQLite;
 
 use Blixt\Exceptions\IndexAlreadyExistsException;
-use Blixt\Models\Schema;
+use Blixt\Index\Column;
+use Blixt\Index\Schema;
 use Blixt\Storage\EngineInterface;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
@@ -145,9 +146,12 @@ class Engine implements EngineInterface
     /**
      * Create the SQLite file and database connection for the name and path.
      *
+     * @param \Blixt\Index\Schema $schema
+     *
+     * @return bool
      * @throws \Blixt\Exceptions\IndexAlreadyExistsException
      */
-    public function create()
+    public function create(Schema $schema)
     {
         if ($this->exists()) {
             throw new IndexAlreadyExistsException();
@@ -169,7 +173,7 @@ class Engine implements EngineInterface
             ' "weight" INTEGER NOT NULL' .
             ');',
 
-            'CREATE UNIQUE INDEX "uq_columns__name" ON "columns" ("name");',
+            'CREATE UNIQUE INDEX "uq_columns_name" ON "columns" ("name");',
 
             'CREATE TABLE "documents" (' .
             ' "id" INTEGER PRIMARY KEY,' .
@@ -209,6 +213,14 @@ class Engine implements EngineInterface
             $this->connection()->statement($statement);
         });
 
+        //
+        $schema->getColumns()->each(function (Column $column) {
+            $this->connection()->insert(
+                'INSERT INTO "columns" ("name", "indexed", "stored", "weight") VALUES (?, ?, ?, ?)',
+                [$column->getName(), $column->isIndexed(), $column->isStored(), $column->getWeight()]
+            );
+        });
+
         // After creating the index, check again for its existence. This will set our internal $exists property to true
         // and we will from now on be able to get a connection to the index. If creating the index somehow failed, this
         // would set our $exists property to false and methods requiring a connection would continue to fail.
@@ -225,7 +237,9 @@ class Engine implements EngineInterface
     protected function connection()
     {
         if (!$this->connection) {
-            $this->connection = new Connection($this->getPath());
+            $this->connection = new Connection(
+                $this->getPath()
+            );
         }
 
         return $this->connection;
@@ -280,23 +294,5 @@ class Engine implements EngineInterface
     public function commitTransaction()
     {
         return $this->connection()->commitTransaction();
-    }
-
-    public function findSchemaByName($name)
-    {
-        $result = $this->connection()->selectOne(
-            'SELECT * FROM "schemas" WHERE "name" = ?', [$name]
-        );
-
-        return is_array($result) ? new Schema($result['id'], $result['name']) : null;
-    }
-
-    public function createSchema($name)
-    {
-        $id = $this->connection()->insert(
-            'INSERT INTO "schemas" ("name") VALUES (?)', [$name]
-        );
-
-        return $id !== false ? new Schema($id, $name) : null;
     }
 }

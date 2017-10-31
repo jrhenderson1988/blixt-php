@@ -60,7 +60,7 @@ class Index
         $this->storage->beginTransaction();
 
         try {
-            $this->storage->create();
+            $this->storage->create($schema);
             $this->storage->commitTransaction();
 
             return true;

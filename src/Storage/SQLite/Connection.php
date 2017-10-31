@@ -4,6 +4,7 @@ namespace Blixt\Storage\SQLite;
 
 use DateTimeInterface;
 use PDO;
+use RuntimeException;
 
 class Connection
 {
@@ -21,7 +22,17 @@ class Connection
      */
     public function __construct($path)
     {
-        echo $path;
+        // If the directory that hosts the database file does not exist, PDO throws an exception complaining that it is
+        // unable to open the database file (SQLSTATE[HY000] [14]). This ensures that we recursively create the
+        // directory first if it does not already exist, to avoid this error.
+        if (!file_exists($directory = dirname($path))) {
+            if (!mkdir($directory, 0777, true)) {
+                throw new RuntimeException(
+                    "Could not create directory '{$directory}' for index."
+                );
+            }
+        }
+
         $this->pdo = new PDO('sqlite:' . $path, null, null, [
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION

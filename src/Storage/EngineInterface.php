@@ -2,6 +2,8 @@
 
 namespace Blixt\Storage;
 
+use Blixt\Index\Schema;
+
 interface EngineInterface
 {
     /**
@@ -14,9 +16,11 @@ interface EngineInterface
     /**
      * Create the storage represented by the engine.
      *
-     * @return boolean
+     * @param \Blixt\Index\Schema $schema
+     *
+     * @return bool
      */
-    public function create();
+    public function create(Schema $schema);
 
     /**
      * Destroy the storage represented by the engine.
@@ -45,24 +49,6 @@ interface EngineInterface
      * @return bool
      */
     public function commitTransaction();
-
-    /**
-     * Find a schema by its name.
-     *
-     * @param string $name
-     *
-     * @return \Blixt\Models\Schema
-     */
-    public function findSchemaByName($name);
-
-    /**
-     * Create a schema.
-     *
-     * @param string $name
-     *
-     * @return \Blixt\Models\Schema
-     */
-    public function createSchema($name);
 
 //    public function findTermByName($name);
 //    public function findTermsByName(Collection $names);

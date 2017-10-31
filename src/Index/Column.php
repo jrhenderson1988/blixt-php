@@ -32,7 +32,7 @@ class Column
      * @param bool|mixed   $stored
      * @param float|mixed  $weight
      */
-    public function __construct($name, $indexed, $stored, $weight)
+    public function __construct($name, $indexed = true, $stored = false, $weight = 1.0)
     {
         $this->name = strval($name);
         $this->indexed = !! $indexed;

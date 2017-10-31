@@ -51,36 +51,24 @@ class Schema
     /**
      * Add a column to the schema definition.
      *
-     * @param \Blixt\Index\Column $column
-     *
-     * @throws \InvalidArgumentException
+     * @param \Blixt\Index\Column|string $column
+     * @param bool                       $indexed
+     * @param bool                       $stored
+     * @param float                      $weight
      */
-    public function addColumn($column)
+    public function addColumn($column, $indexed = true, $stored = false, $weight = 1.0)
     {
         if (!$column instanceof Column) {
-            $args = func_get_args();
-
-            if (count($args) <= 0) {
+            if (!is_string($column)) {
                 throw new InvalidArgumentException(
-                    "At least one argument must be provided."
-                );
-            } elseif (!is_string($args[0])) {
-                throw new InvalidArgumentException(
-                    "If a Column is not provided, the first argument must a string representing the name of the column."
+                    "The column provided must be an instance of '" . Column::class . "' or a string."
                 );
             }
 
-            $column = new Column(
-                strval($args[0]),
-                isset($args[1]) ? !!$args[1] : true,
-                isset($args[2]) ? !!$args[2] : false,
-                isset($args[3]) ? floatval($args[3]) : 1.0
-            );
+            $column = new Column($column, $indexed, $stored, $weight);
         }
 
-        $this->columns->put(
-            $column->getName(), $column
-        );
+        $this->columns->put($column->getName(), $column);
     }
 
     /**
