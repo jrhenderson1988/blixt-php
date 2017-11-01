@@ -1,6 +1,6 @@
 <?php
 
-namespace Blixt\Index;
+namespace Blixt\Index\Schema;
 
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
@@ -51,10 +51,10 @@ class Schema
     /**
      * Add a column to the schema definition.
      *
-     * @param \Blixt\Index\Column|string $column
-     * @param bool                       $indexed
-     * @param bool                       $stored
-     * @param float                      $weight
+     * @param \Blixt\Index\Schema\Column|string $column
+     * @param bool                              $indexed
+     * @param bool                              $stored
+     * @param float                             $weight
      */
     public function addColumn($column, $indexed = true, $stored = false, $weight = 1.0)
     {

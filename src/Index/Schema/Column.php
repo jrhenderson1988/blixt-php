@@ -1,6 +1,6 @@
 <?php
 
-namespace Blixt\Index;
+namespace Blixt\Index\Schema;
 
 class Column
 {

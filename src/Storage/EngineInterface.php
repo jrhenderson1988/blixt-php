@@ -2,7 +2,7 @@
 
 namespace Blixt\Storage;
 
-use Blixt\Index\Schema;
+use Blixt\Index\Schema\Schema;
 
 interface EngineInterface
 {
@@ -16,7 +16,7 @@ interface EngineInterface
     /**
      * Create the storage represented by the engine.
      *
-     * @param \Blixt\Index\Schema $schema
+     * @param \Blixt\Index\Schema\Schema $schema
      *
      * @return bool
      */

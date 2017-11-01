@@ -3,8 +3,8 @@
 namespace Blixt\Storage\SQLite;
 
 use Blixt\Exceptions\IndexAlreadyExistsException;
-use Blixt\Index\Column;
-use Blixt\Index\Schema;
+use Blixt\Index\Schema\Column;
+use Blixt\Index\Schema\Schema;
 use Blixt\Storage\EngineInterface;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
@@ -146,7 +146,7 @@ class Engine implements EngineInterface
     /**
      * Create the SQLite file and database connection for the name and path.
      *
-     * @param \Blixt\Index\Schema $schema
+     * @param \Blixt\Index\Schema\Schema $schema
      *
      * @return bool
      * @throws \Blixt\Exceptions\IndexAlreadyExistsException

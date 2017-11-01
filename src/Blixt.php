@@ -4,7 +4,7 @@ namespace Blixt;
 
 use Blixt\Exceptions\IndexDoesNotExistException;
 use Blixt\Index\Index;
-use Blixt\Index\Schema;
+use Blixt\Index\Schema\Schema;
 use Blixt\Stemming\StemmerInterface as Stemmer;
 use Blixt\Storage\FactoryInterface as StorageFactory;
 use Blixt\Tokenization\TokenizerInterface as Tokenizer;

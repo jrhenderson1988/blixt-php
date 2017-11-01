@@ -4,8 +4,8 @@ namespace BlixtTests;
 
 use Blixt\Blixt;
 use Blixt\Exceptions\IndexDoesNotExistException;
-use Blixt\Index\Column;
-use Blixt\Index\Schema;
+use Blixt\Index\Schema\Column;
+use Blixt\Index\Schema\Schema;
 use Blixt\Stemming\EnglishStemmer;
 use Blixt\Storage\SQLite\Factory;
 use Blixt\Tokenization\DefaultTokenizer;

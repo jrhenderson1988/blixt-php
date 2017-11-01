@@ -3,6 +3,7 @@
 namespace Blixt\Index;
 
 use Blixt\Documents\Document;
+use Blixt\Index\Schema\Schema;
 use Blixt\Stemming\StemmerInterface as Stemmer;
 use Blixt\Storage\FactoryInterface as StorageFactory;
 use Blixt\Tokenization\TokenizerInterface as Tokenizer;
@@ -50,7 +51,7 @@ class Index
     /**
      * Create this index with the given column definition.
      *
-     * @param \Blixt\Index\Schema $schema
+     * @param \Blixt\Index\Schema\Schema $schema
      *
      * @return bool
      * @throws \Exception
