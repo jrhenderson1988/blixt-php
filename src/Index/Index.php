@@ -137,7 +137,7 @@ class Index
      * @param \Closure $callback
      *
      * @return mixed
-     * @throws \Blixt\Exceptions\StorageException
+     * @throws \Exception
      */
     protected function transaction(Closure $callback)
     {
@@ -152,9 +152,7 @@ class Index
         } catch (Exception $ex) {
             $this->storage->rollBackTransaction();
 
-            throw new StorageException(
-                $ex->getMessage(), $ex->getCode(), $ex
-            );
+            throw $ex;
         }
     }
 }
