@@ -33,6 +33,13 @@ class Engine implements EngineInterface
     protected $connection;
 
     /**
+     * A mapper object to transform rows of data in array/stdClass format into the relevant models.
+     *
+     * @var \Blixt\Storage\SQLite\Mapper
+     */
+    protected $mapper;
+
+    /**
      * Does the database file currently exist?
      *
      * @var bool
@@ -52,6 +59,7 @@ class Engine implements EngineInterface
         $this->setDirectory($directory);
         $this->setName($name);
         $this->checkExistence();
+        $this->mapper = new Mapper();
     }
 
     /**
@@ -294,5 +302,21 @@ class Engine implements EngineInterface
     public function commitTransaction()
     {
         return $this->connection()->commitTransaction();
+    }
+
+    /**
+     * Find a document by the provided key.
+     *
+     * @param mixed $key
+     *
+     * @return \Blixt\Models\Document|null
+     */
+    public function findDocumentByKey($key)
+    {
+        $result = $this->connection()->selectOne(
+            'SELECT * FROM "documents" WHERE "key" = ? LIMIT 1', [$key]
+        );
+
+        return $this->mapper->document($result);
     }
 }

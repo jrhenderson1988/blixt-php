@@ -50,6 +50,9 @@ interface EngineInterface
      */
     public function commitTransaction();
 
+
+    public function findDocumentByKey($key);
+
 //    public function findTermByName($name);
 //    public function findTermsByName(Collection $names);
 //    public function createTerm($name);
