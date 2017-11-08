@@ -2,9 +2,11 @@
 
 namespace BlixtTests\Index;
 
-use Blixt\Exceptions\StorageException;
+use Blixt\Documents\Document as IndexableDocument;
+use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Index\Index;
 use Blixt\Index\Schema\Schema;
+use Blixt\Models\Document;
 use Blixt\Stemming\StemmerInterface;
 use Blixt\Storage\EngineInterface;
 use Blixt\Storage\FactoryInterface;
@@ -122,18 +124,12 @@ class IndexTest extends TestCase
         $this->assertFalse($this->index->destroy());
     }
 
-    public function testAddMethodAcceptsDocumentsArraysAndCollections()
+    public function testAddMethodThrowsDocumentAlreadyExistsExceptionWhenDocumentAlreadyExists()
     {
+        $this->engine->shouldReceive('findDocumentByKey')->withArgs([1])->andReturn(new Document(1, 1));
+        $this->expectException(DocumentAlreadyExistsException::class);
 
-    }
-
-    public function testAddMethodThrowsInvalidArgumentExceptionWhenInvalidParametersAreProvided()
-    {
-
-    }
-
-    public function testAddMethodThrowsXXXXXXExceptionWhenDocumentAlreadyExists()
-    {
-
+        $document = new IndexableDocument(1);
+        $this->index->add($document);
     }
 }

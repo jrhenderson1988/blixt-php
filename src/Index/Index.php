@@ -3,6 +3,7 @@
 namespace Blixt\Index;
 
 use Blixt\Documents\Document as IndexableDocument;
+use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\StorageException;
 use Blixt\Index\Schema\Schema;
 use Blixt\Stemming\StemmerInterface as Stemmer;
@@ -112,7 +113,9 @@ class Index
 
         $documents->each(function (IndexableDocument $document) {
             if ($this->storage->findDocumentByKey($document->getKey())) {
-                throw new \Exception('Document already exists (Throw a different exception)...');
+                throw new DocumentAlreadyExistsException(
+                    "Document with key {$document->getKey()} already exists in {$this->name} index."
+                );
             }
 
             // TODO - Index the document.
