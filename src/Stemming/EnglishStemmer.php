@@ -14,7 +14,7 @@ namespace Blixt\Stemming;
  *
  * @package RainSearch\Stemmers
  */
-class EnglishStemmer extends AbstractStemmer implements StemmerInterface
+class EnglishStemmer extends AbstractStemmer implements StemmerContract
 {
     /**
      * Regex for matching a consonant.

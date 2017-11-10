@@ -4,7 +4,7 @@ namespace Blixt\Storage;
 
 use Blixt\Index\Schema\Schema;
 
-interface EngineInterface
+interface StorageEngineContract
 {
     /**
      * Tell if the storage represented by the engine exists.

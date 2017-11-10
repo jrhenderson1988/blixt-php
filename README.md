@@ -57,6 +57,21 @@ presence.
 
 ## Notes
 
+TODO
+- When constructed, Blixt should be provided a default Config object which holds a stemmer, tokenizer and storage factory
+- Blixt stores the Config in a property and ensures each part of it is provided.
+- The Index constructor accepts a storage engine (created from factory), a stemmer and a tokenizer along with a name and optional schema
+    - The storage engine provides methods to check existence, create and open the index storage
+    - When constructed, the Index class uses the storage engine to create or open the storage ready for use. If the index needs to be created, the provided schema is used or an error is thrown
+- Blixt has an open method which accepts a name of an index and an optional config object.
+    - If the optional config object is provided, it's values are merged with the default config object to create a new config
+    - From the config, the stemmer and tokenizer are extracted and a storage engine is created using the storage factory
+    - These items are passed into the index along with the name and the index is either created or updated.
+    
+    $config = new Config(new SQLiteFactory(), new EnglishStemmer(), new DefaultTokenizer());
+    $blixt = new Blixt($config);
+    $index = $blixt->open('users');
+
 TODO: Make adjustments to make an index represent a schema/type such as "users". The schema_id can be removed from all 
 of the other tables and everything inside the index would be considered in relation to the schema/index. For example, 
 the columns table would define the set of columns and their weights, types and whether or not they're indexed/stored for

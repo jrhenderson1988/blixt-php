@@ -2,7 +2,7 @@
 
 namespace Blixt\Stemming;
 
-interface StemmerInterface
+interface StemmerContract
 {
     /**
      * Stem a word.

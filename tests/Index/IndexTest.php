@@ -7,10 +7,10 @@ use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Index\Index;
 use Blixt\Index\Schema\Schema;
 use Blixt\Models\Document;
-use Blixt\Stemming\StemmerInterface;
-use Blixt\Storage\EngineInterface;
-use Blixt\Storage\FactoryInterface;
-use Blixt\Tokenization\TokenizerInterface;
+use Blixt\Stemming\StemmerContract;
+use Blixt\Storage\StorageEngineContract;
+use Blixt\Storage\StorageFactoryContract;
+use Blixt\Tokenization\TokenizerContract;
 use BlixtTests\TestCase;
 use Mockery;
 use ReflectionClass;
@@ -18,22 +18,22 @@ use ReflectionClass;
 class IndexTest extends TestCase
 {
     /**
-     * @var \Blixt\Storage\FactoryInterface
+     * @var \Blixt\Storage\StorageFactoryContract
      */
     protected $factory;
 
     /**
-     * @var \Blixt\Storage\EngineInterface
+     * @var \Blixt\Storage\StorageEngineContract
      */
     protected $engine;
 
     /**
-     * @var \Blixt\Stemming\StemmerInterface
+     * @var \Blixt\Stemming\StemmerContract
      */
     protected $stemmer;
 
     /**
-     * @var \Blixt\Tokenization\TokenizerInterface
+     * @var \Blixt\Tokenization\TokenizerContract
      */
     protected $tokenizer;
 
@@ -44,10 +44,10 @@ class IndexTest extends TestCase
 
     public function setUp()
     {
-        $this->factory = Mockery::mock(FactoryInterface::class);
-        $this->stemmer = Mockery::mock(StemmerInterface::class);
-        $this->tokenizer = Mockery::mock(TokenizerInterface::class);
-        $this->engine = Mockery::mock(EngineInterface::class);
+        $this->factory = Mockery::mock(StorageFactoryContract::class);
+        $this->stemmer = Mockery::mock(StemmerContract::class);
+        $this->tokenizer = Mockery::mock(TokenizerContract::class);
+        $this->engine = Mockery::mock(StorageEngineContract::class);
 
         $this->factory->expects()->create('test')->once()->andReturns($this->engine);
 

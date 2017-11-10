@@ -4,7 +4,7 @@ namespace Blixt\Tokenization;
 
 use Illuminate\Support\Collection;
 
-class DefaultTokenizer extends AbstractTokenizer implements TokenizerInterface
+class DefaultTokenizer extends AbstractTokenizer implements TokenizerContract
 {
     /**
      * Tokenize the given string of text into a token collection.

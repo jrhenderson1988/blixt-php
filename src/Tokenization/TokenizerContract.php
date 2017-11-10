@@ -2,7 +2,7 @@
 
 namespace Blixt\Tokenization;
 
-interface TokenizerInterface
+interface TokenizerContract
 {
     /**
      * Tokenize the given string of text into a token collection.

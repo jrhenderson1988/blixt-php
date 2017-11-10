@@ -7,7 +7,7 @@ use Blixt\Exceptions\IndexDoesNotExistException;
 use Blixt\Index\Schema\Column;
 use Blixt\Index\Schema\Schema;
 use Blixt\Stemming\EnglishStemmer;
-use Blixt\Storage\SQLite\Factory;
+use Blixt\Storage\SQLite\StorageFactory;
 use Blixt\Tokenization\DefaultTokenizer;
 
 class BlixtTest extends TestCase
@@ -17,7 +17,7 @@ class BlixtTest extends TestCase
     {
         $directory = __DIR__ . DIRECTORY_SEPARATOR . 'data';
         $blixt = new Blixt(
-            new Factory($directory),
+            new StorageFactory($directory),
             new EnglishStemmer(),
             new DefaultTokenizer()
         );

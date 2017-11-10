@@ -2,48 +2,49 @@
 
 namespace Blixt;
 
-use Blixt\Exceptions\IndexDoesNotExistException;
 use Blixt\Index\Index;
 use Blixt\Index\Schema\Schema;
-use Blixt\Stemming\StemmerInterface as Stemmer;
-use Blixt\Storage\FactoryInterface as StorageFactory;
-use Blixt\Tokenization\TokenizerInterface as Tokenizer;
+use Blixt\Stemming\EnglishStemmer;
+use Blixt\Stemming\StemmerContract as Stemmer;
+use Blixt\Storage\StorageFactoryContract as StorageFactory;
+use Blixt\Tokenization\DefaultTokenizer;
+use Blixt\Tokenization\TokenizerContract as Tokenizer;
 
 class Blixt
 {
     /**
-     * @var \Blixt\Storage\FactoryInterface
+     * @var \Blixt\Storage\StorageFactoryContract
      */
     protected $storageFactory;
 
     /**
-     * @var \Blixt\Stemming\StemmerInterface
+     * @var \Blixt\Stemming\StemmerContract
      */
     protected $stemmer;
 
     /**
-     * @var \Blixt\Tokenization\TokenizerInterface
+     * @var \Blixt\Tokenization\TokenizerContract
      */
     protected $tokenizer;
 
     /**
      * Blixt constructor.
      *
-     * @param \Blixt\Storage\FactoryInterface             $storageFactory
-     * @param \Blixt\Stemming\StemmerInterface|null       $stemmer
-     * @param \Blixt\Tokenization\TokenizerInterface|null $tokenizer
+     * @param \Blixt\Storage\StorageFactoryContract      $storageFactory
+     * @param \Blixt\Stemming\StemmerContract|null       $stemmer
+     * @param \Blixt\Tokenization\TokenizerContract|null $tokenizer
      */
     public function __construct(StorageFactory $storageFactory, Stemmer $stemmer = null, Tokenizer $tokenizer = null)
     {
         $this->setStorageFactory($storageFactory);
-        $this->setStemmer($stemmer);
-        $this->setTokenizer($tokenizer);
+        $this->setStemmer($stemmer ?: new EnglishStemmer());
+        $this->setTokenizer($tokenizer ?: new DefaultTokenizer());
     }
 
     /**
      * Set the storage factory responsible for creating the storage driver.
      *
-     * @param \Blixt\Storage\FactoryInterface $storage
+     * @param \Blixt\Storage\StorageFactoryContract $storage
      */
     public function setStorageFactory(StorageFactory $storage)
     {
@@ -53,7 +54,7 @@ class Blixt
     /**
      * Get the storage connector.
      *
-     * @return \Blixt\Storage\FactoryInterface
+     * @return \Blixt\Storage\StorageFactoryContract
      */
     public function getStorageFactory()
     {
@@ -63,7 +64,7 @@ class Blixt
     /**
      * Set the stemmer.
      *
-     * @param \Blixt\Stemming\StemmerInterface $stemmer
+     * @param \Blixt\Stemming\StemmerContract $stemmer
      */
     public function setStemmer(Stemmer $stemmer)
     {
@@ -73,7 +74,7 @@ class Blixt
     /**
      * Get the stemmer.
      *
-     * @return \Blixt\Stemming\StemmerInterface
+     * @return \Blixt\Stemming\StemmerContract
      */
     public function getStemmer()
     {
@@ -83,7 +84,7 @@ class Blixt
     /**
      * Set the tokenizer.
      *
-     * @param \Blixt\Tokenization\TokenizerInterface $tokenizer
+     * @param \Blixt\Tokenization\TokenizerContract $tokenizer
      */
     public function setTokenizer(Tokenizer $tokenizer)
     {
@@ -93,7 +94,7 @@ class Blixt
     /**
      * Get the tokenizer.
      *
-     * @return \Blixt\Tokenization\TokenizerInterface
+     * @return \Blixt\Tokenization\TokenizerContract
      */
     public function getTokenizer()
     {
@@ -101,70 +102,83 @@ class Blixt
     }
 
     /**
-     * Open an existing index. If the provided index does not exist, but a column definition is provided, the index is
-     * created using that definition and then returned. If the index does not exist, and no column definition is
-     * provided an exception is thrown.
+     * Open an existing index with the given name. An optional schema may be provided as a callable or Schema object
+     * that may be used to create a non-existent index.
      *
-     * @param string $name
-     * @param array  $schema
+     * @param string                                    $name
+     * @param \Blixt\Index\Schema\Schema|callable|null  $schema
      *
      * @return \Blixt\Index\Index
-     * @throws \Blixt\Exceptions\IndexDoesNotExistException
      */
     public function open($name, $schema = null)
     {
-        $index = $this->makeIndex($name);
+        $storageFactory = $this->getStorageFactory();
 
-        if (!$index->exists()) {
-            if ($schema instanceof Schema) {
-                $index->create($schema);
-            } elseif (is_callable($callable = $schema)) {
-                $schema = new Schema();
-                $callable($schema);
+        if (is_callable($callable = $schema)) {
+            $schema = new Schema();
 
-                $index->create($schema);
-            } else {
-                throw new IndexDoesNotExistException(
-                    "The index '{$name}' does not exist."
-                );
-            }
+            call_user_func($callable, $schema);
         }
 
-        return $index;
-    }
-
-    /**
-     * Destroy an existing index.
-     *
-     * @param string $name
-     *
-     * @return bool
-     * @throws \Blixt\Exceptions\IndexDoesNotExistException
-     */
-    public function destroy($name)
-    {
-        $index = $this->makeIndex($name);
-
-        if (!$index->exists()) {
-            throw new IndexDoesNotExistException(
-                "The index '{$name}' does not exist."
-            );
-        }
-
-        return $index->destroy();
-    }
-
-    /**
-     * Create an Index object with the given name.
-     *
-     * @param string $name
-     *
-     * @return \Blixt\Index\Index
-     */
-    protected function makeIndex($name)
-    {
         return new Index(
-            $name, $this->getStorageFactory(), $this->getStemmer(), $this->getTokenizer()
+            $this->getStemmer(),
+            $this->getTokenizer(),
+            $storageFactory->create($name),
+            $schema
         );
+
+//        $index = $this->makeIndex($name);
+//
+//        if (!$index->exists()) {
+//            if ($schema instanceof Schema) {
+//                $index->create($schema);
+//            } elseif (is_callable($callable = $schema)) {
+//                $schema = new Schema();
+//                $callable($schema);
+//
+//                $index->create($schema);
+//            } else {
+//                throw new IndexDoesNotExistException(
+//                    "The index '{$name}' does not exist."
+//                );
+//            }
+//        }
+//
+//        return $index;
     }
+
+//    /**
+//     * Destroy an existing index.
+//     *
+//     * @param string $name
+//     *
+//     * @return bool
+//     * @throws \Blixt\Exceptions\IndexDoesNotExistException
+//     */
+//    public function destroy($name)
+//    {
+//        $index = $this->makeIndex($name);
+//
+//        if (!$index->exists()) {
+//            throw new IndexDoesNotExistException(
+//                "The index '{$name}' does not exist."
+//            );
+//        }
+//
+//        return $index->destroy();
+//    }
+
+//    /**
+//     * Create an Index object with the given name.
+//     *
+//     * @param string $name
+//     *
+//     * @return \Blixt\Index\Index
+//     */
+//    protected function makeIndex($name)
+//    {
+//        return new Index(
+//            $name, $this->getStorageFactory(), $this->getStemmer(), $this->getTokenizer()
+//        );
+//    }
 }

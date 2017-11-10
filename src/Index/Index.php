@@ -4,11 +4,10 @@ namespace Blixt\Index;
 
 use Blixt\Documents\Document as IndexableDocument;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
-use Blixt\Exceptions\StorageException;
 use Blixt\Index\Schema\Schema;
-use Blixt\Stemming\StemmerInterface as Stemmer;
-use Blixt\Storage\FactoryInterface as StorageFactory;
-use Blixt\Tokenization\TokenizerInterface as Tokenizer;
+use Blixt\Stemming\StemmerContract as Stemmer;
+use Blixt\Storage\StorageEngineContract as Storage;
+use Blixt\Tokenization\TokenizerContract as Tokenizer;
 use Closure;
 use Exception;
 use Illuminate\Support\Collection;
@@ -17,52 +16,52 @@ use InvalidArgumentException;
 class Index
 {
     /**
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * @var \Blixt\Storage\EngineInterface
+     * @var \Blixt\Storage\StorageEngineContract
      */
     protected $storage;
 
     /**
-     * @var \Blixt\Stemming\StemmerInterface
+     * @var \Blixt\Stemming\StemmerContract
      */
     protected $stemmer;
 
     /**
-     * @var \Blixt\Tokenization\TokenizerInterface
+     * @var \Blixt\Tokenization\TokenizerContract
      */
     protected $tokenizer;
 
     /**
      * Index constructor.
      *
-     * @param string                                 $name
-     * @param \Blixt\Storage\FactoryInterface        $connector
-     * @param \Blixt\Stemming\StemmerInterface       $stemmer
-     * @param \Blixt\Tokenization\TokenizerInterface $tokenizer
-     *
-     * @throws \Exception
+     * @param \Blixt\Stemming\StemmerContract       $stemmer
+     * @param \Blixt\Tokenization\TokenizerContract $tokenizer
+     * @param \Blixt\Storage\StorageEngineContract  $storage
+     * @param \Blixt\Index\Schema\Schema|null       $schema
      */
-    public function __construct($name, StorageFactory $connector, Stemmer $stemmer, Tokenizer $tokenizer)
+    public function __construct(Stemmer $stemmer, Tokenizer $tokenizer, Storage $storage, Schema $schema = null)
     {
-        $this->name = $name;
-        $this->storage = $connector->create($name);
+        $this->storage = $storage;
         $this->stemmer = $stemmer;
         $this->tokenizer = $tokenizer;
+
+        if (!$this->storage->exists()) {
+            if (!is_null($schema)) {
+                $this->storage->create($schema);
+            } else {
+                // Throw exception
+            }
+        }
     }
 
-    /**
-     * Tel if this index exists.
-     *
-     * @return bool
-     */
-    public function exists()
-    {
-        return $this->storage->exists();
-    }
+//    /**
+//     * Tel if this index exists.
+//     *
+//     * @return bool
+//     */
+//    public function exists()
+//    {
+//        return $this->storage->exists();
+//    }
 
     /**
      * Create this index with the given column definition.

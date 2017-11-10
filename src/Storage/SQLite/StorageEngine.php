@@ -5,11 +5,11 @@ namespace Blixt\Storage\SQLite;
 use Blixt\Exceptions\IndexAlreadyExistsException;
 use Blixt\Index\Schema\Column;
 use Blixt\Index\Schema\Schema;
-use Blixt\Storage\EngineInterface;
+use Blixt\Storage\StorageEngineContract;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
-class Engine implements EngineInterface
+class StorageEngine implements StorageEngineContract
 {
     /**
      * The directory where the indexes are found.
