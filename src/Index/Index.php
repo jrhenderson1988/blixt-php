@@ -4,6 +4,7 @@ namespace Blixt\Index;
 
 use Blixt\Documents\Document as IndexableDocument;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
+use Blixt\Exceptions\IndexDoesNotExistException;
 use Blixt\Index\Schema\Schema;
 use Blixt\Stemming\StemmerContract as Stemmer;
 use Blixt\Storage\StorageEngineContract as Storage;
@@ -37,6 +38,8 @@ class Index
      * @param \Blixt\Tokenization\TokenizerContract $tokenizer
      * @param \Blixt\Storage\StorageEngineContract  $storage
      * @param \Blixt\Index\Schema\Schema|null       $schema
+     *
+     * @throws \Blixt\Exceptions\IndexDoesNotExistException
      */
     public function __construct(Stemmer $stemmer, Tokenizer $tokenizer, Storage $storage, Schema $schema = null)
     {
@@ -45,36 +48,18 @@ class Index
         $this->tokenizer = $tokenizer;
 
         if (!$this->storage->exists()) {
-            if (!is_null($schema)) {
-                $this->storage->create($schema);
-            } else {
-                // Throw exception
+            if (is_null($schema)) {
+                throw new IndexDoesNotExistException(
+                    "The '{$this->getName()}' index does not exist and no schema was provided."
+                );
             }
+
+            $this->transaction(function () use ($schema) {
+                $this->storage->create($schema);
+            });
         }
-    }
 
-//    /**
-//     * Tel if this index exists.
-//     *
-//     * @return bool
-//     */
-//    public function exists()
-//    {
-//        return $this->storage->exists();
-//    }
-
-    /**
-     * Create this index with the given column definition.
-     *
-     * @param \Blixt\Index\Schema\Schema $schema
-     *
-     * @return bool
-     */
-    public function create(Schema $schema)
-    {
-        return $this->transaction(function () use ($schema) {
-            return $this->storage->create($schema);
-        });
+        // TODO - Load the schema definition (Columns etc.) into this instance so we can use it for validation etc.
     }
 
     /**
@@ -84,7 +69,7 @@ class Index
      */
     public function destroy()
     {
-        if ($this->exists()) {
+        if ($this->storage->exists()) {
             return $this->storage->destroy();
         }
 
@@ -113,7 +98,7 @@ class Index
         $documents->each(function (IndexableDocument $document) {
             if ($this->storage->findDocumentByKey($document->getKey())) {
                 throw new DocumentAlreadyExistsException(
-                    "Document with key {$document->getKey()} already exists in {$this->name} index."
+                    "Document with key {$document->getKey()} already exists in {$this->getName()} index."
                 );
             }
 
@@ -121,9 +106,16 @@ class Index
         });
     }
 
-    public function update()
+    public function update($key, IndexableDocument $document)
     {
+        if ($this->remove($key)) {
+            $this->add($document);
+        }
+    }
 
+    public function remove($key)
+    {
+        return true;
     }
 
     public function search()
@@ -133,8 +125,7 @@ class Index
 
     /**
      * Execute the provided closure in a transaction. The return value of the closure is returned from this method. If
-     * any exceptions are thrown within the closure, the transaction is rolled back and a StorageException is thrown
-     * with the caught exception as the previous.
+     * any exceptions are thrown within the closure, the transaction is rolled back.
      *
      * @param \Closure $callback
      *
@@ -156,5 +147,15 @@ class Index
 
             throw $ex;
         }
+    }
+
+    /**
+     * Get the name of the index represented by the storage.
+     *
+     * @return string
+     */
+    protected function getName()
+    {
+        return $this->storage->getName();
     }
 }

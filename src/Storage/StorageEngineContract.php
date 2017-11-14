@@ -7,6 +7,13 @@ use Blixt\Index\Schema\Schema;
 interface StorageEngineContract
 {
     /**
+     * Get the name of the index that this storage engine represents.
+     *
+     * @return string
+     */
+    public function getName();
+
+    /**
      * Tell if the storage represented by the engine exists.
      *
      * @return boolean

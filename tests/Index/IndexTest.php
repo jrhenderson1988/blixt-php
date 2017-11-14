@@ -4,6 +4,7 @@ namespace BlixtTests\Index;
 
 use Blixt\Documents\Document as IndexableDocument;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
+use Blixt\Exceptions\IndexDoesNotExistException;
 use Blixt\Index\Index;
 use Blixt\Index\Schema\Schema;
 use Blixt\Models\Document;
@@ -49,9 +50,11 @@ class IndexTest extends TestCase
         $this->tokenizer = Mockery::mock(TokenizerContract::class);
         $this->engine = Mockery::mock(StorageEngineContract::class);
 
-        $this->factory->expects()->create('test')->once()->andReturns($this->engine);
+        $this->engine->expects('exists')->once()->andReturns(true);
 
-        $this->index = new Index('test', $this->factory, $this->stemmer, $this->tokenizer);
+        $this->index = new Index(
+            $this->stemmer, $this->tokenizer, $this->engine
+        );
     }
 
     public function tearDown()
@@ -59,7 +62,30 @@ class IndexTest extends TestCase
         Mockery::close();
     }
 
-    public function testConstructorCreatesStorageEngineStemmerAndTokenizer()
+    public function testConstructorThrowsIndexDoesNotExistExceptionWhenStorageDoesNotExistAndNoSchemaIsProvided()
+    {
+        $this->engine->expects('exists')->once()->andReturns(false);
+        $this->engine->expects('getName')->once()->andReturns('test-index');
+        $this->expectException(IndexDoesNotExistException::class);
+
+        $this->index = new Index(
+            $this->stemmer, $this->tokenizer, $this->engine, null
+        );
+    }
+
+    public function testConstructorCallsStorageCreateInTransactionWhenStorageDoesNotExistAndSchemaIsProvided()
+    {
+        $this->engine->expects('exists')->once()->andReturns(false);
+        $this->engine->expects('beginTransaction')->once()->andReturns(true);
+        $this->engine->expects('create')->once()->andReturns(true);
+        $this->engine->expects('commitTransaction')->once()->andReturns(true);
+
+        $this->index = new Index(
+            $this->stemmer, $this->tokenizer, $this->engine, new Schema()
+        );
+    }
+
+    public function testConstructorAcceptsStorageEngineStemmerAndTokenizer()
     {
         $reflection = new ReflectionClass(Index::class);
 
@@ -76,38 +102,6 @@ class IndexTest extends TestCase
         $this->assertEquals($this->tokenizer, $tokenizer->getValue($this->index));
     }
 
-    public function testExistsCallsStorageExists()
-    {
-        $this->engine->shouldReceive('exists')->andReturn(true, false);
-        $this->assertTrue($this->index->exists());
-        $this->assertFalse($this->index->exists());
-    }
-
-    public function testCreateMethodCallsStorageCreateAndUsesTransactions()
-    {
-        $schema = Mockery::mock(Schema::class);
-
-        $this->engine->shouldReceive('beginTransaction')->andReturn(true);
-        $this->engine->shouldReceive('create')->withArgs([$schema])->andReturn(true);
-        $this->engine->shouldReceive('commitTransaction')->andReturn(true);
-
-        $this->assertEquals(true, $this->index->create($schema));
-    }
-
-    public function testTransactionIsRolledBackWhenAnExceptionIsThrownDuringCreate()
-    {
-        $schema = Mockery::mock(Schema::class);
-
-        $exceptionMessage = str_random(20);
-        $this->engine->shouldReceive('beginTransaction')->andReturn(true);
-        $this->engine->shouldReceive('create')->withArgs([$schema])->andThrow(\PDOException::class, $exceptionMessage);
-        $this->engine->shouldReceive('rollBackTransaction')->andReturn(true);
-
-        $this->expectException(\PDOException::class);
-        $this->expectExceptionMessage($exceptionMessage);
-        $this->index->create($schema);
-    }
-
     public function testDestroyMethodCallsStorageDestroyWhenStorageExists()
     {
         $this->engine->shouldReceive('exists')->andReturn(true);
@@ -122,14 +116,5 @@ class IndexTest extends TestCase
         $this->engine->shouldNotReceive('destroy');
 
         $this->assertFalse($this->index->destroy());
-    }
-
-    public function testAddMethodThrowsDocumentAlreadyExistsExceptionWhenDocumentAlreadyExists()
-    {
-        $this->engine->shouldReceive('findDocumentByKey')->withArgs([1])->andReturn(new Document(1, 1));
-        $this->expectException(DocumentAlreadyExistsException::class);
-
-        $document = new IndexableDocument(1);
-        $this->index->add($document);
     }
 }

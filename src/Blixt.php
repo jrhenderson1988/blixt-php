@@ -114,7 +114,7 @@ class Blixt
     {
         $storageFactory = $this->getStorageFactory();
 
-        if (is_callable($callable = $schema)) {
+        if (!is_null($schema) && is_callable($callable = $schema)) {
             $schema = new Schema();
 
             call_user_func($callable, $schema);
