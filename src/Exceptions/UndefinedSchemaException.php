@@ -1,8 +1,6 @@
 <?php
 
-namespace Blixt\Index;
-
-use Blixt\Exceptions\BlixtException;
+namespace Blixt\Exceptions;
 
 class UndefinedSchemaException extends BlixtException
 {
