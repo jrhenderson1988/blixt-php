@@ -67,7 +67,7 @@ TODO
     - If the optional config object is provided, it's values are merged with the default config object to create a new config
     - From the config, the stemmer and tokenizer are extracted and a storage engine is created using the storage factory
     - These items are passed into the index along with the name and the index is either created or updated.
-    
+
     $config = new Config(new SQLiteFactory(), new EnglishStemmer(), new DefaultTokenizer());
     $blixt = new Blixt($config);
     $index = $blixt->open('users');

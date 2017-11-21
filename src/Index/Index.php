@@ -82,7 +82,7 @@ class Index
         $documents->each(function (IndexableDocument $document) {
             if ($this->storage->findDocumentByKey($document->getKey())) {
                 throw new DocumentAlreadyExistsException(
-                    "Document with key {$document->getKey()} already exists in {$this->name} index."
+                    "Document with key {$document->getKey()} already exists in {$this->getName()} index."
                 );
             }
 
@@ -90,9 +90,16 @@ class Index
         });
     }
 
-    public function update()
+    public function update($key, IndexableDocument $document)
     {
+        if ($this->remove($key)) {
+            $this->add($document);
+        }
+    }
 
+    public function remove($key)
+    {
+        return true;
     }
 
     public function search()
@@ -111,8 +118,7 @@ class Index
 
     /**
      * Execute the provided closure in a transaction. The return value of the closure is returned from this method. If
-     * any exceptions are thrown within the closure, the transaction is rolled back and a StorageException is thrown
-     * with the caught exception as the previous.
+     * any exceptions are thrown within the closure, the transaction is rolled back.
      *
      * @param \Closure $callback
      *
@@ -134,5 +140,15 @@ class Index
 
             throw $ex;
         }
+    }
+
+    /**
+     * Get the name of the index represented by the storage.
+     *
+     * @return string
+     */
+    protected function getName()
+    {
+        return $this->storage->getName();
     }
 }

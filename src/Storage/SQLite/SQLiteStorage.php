@@ -52,8 +52,6 @@ class SQLiteStorage extends Storage implements StorageContract
      *
      * @param string $directory
      * @param string $name
-     *
-     * @throws \Blixt\Exceptions\UnspecifiedIndexException
      */
     public function __construct($directory, $name)
     {
