@@ -6,7 +6,7 @@ use DateTimeInterface;
 use PDO;
 use RuntimeException;
 
-class Connection
+class SQLiteConnection
 {
     /**
      * The PDO object we're dealing with.

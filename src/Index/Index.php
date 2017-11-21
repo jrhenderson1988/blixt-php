@@ -4,9 +4,10 @@ namespace Blixt\Index;
 
 use Blixt\Documents\Document as IndexableDocument;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
+use Blixt\Exceptions\UndefinedSchemaException;
 use Blixt\Index\Schema\Schema;
 use Blixt\Stemming\StemmerContract as Stemmer;
-use Blixt\Storage\StorageEngineContract as Storage;
+use Blixt\Storage\StorageContract as Storage;
 use Blixt\Tokenization\TokenizerContract as Tokenizer;
 use Closure;
 use Exception;
@@ -16,7 +17,7 @@ use InvalidArgumentException;
 class Index
 {
     /**
-     * @var \Blixt\Storage\StorageEngineContract
+     * @var \Blixt\Storage\StorageContract
      */
     protected $storage;
 
@@ -35,8 +36,10 @@ class Index
      *
      * @param \Blixt\Stemming\StemmerContract       $stemmer
      * @param \Blixt\Tokenization\TokenizerContract $tokenizer
-     * @param \Blixt\Storage\StorageEngineContract  $storage
+     * @param \Blixt\Storage\StorageContract        $storage
      * @param \Blixt\Index\Schema\Schema|null       $schema
+     *
+     * @throws \Blixt\Exceptions\UndefinedSchemaException
      */
     public function __construct(Stemmer $stemmer, Tokenizer $tokenizer, Storage $storage, Schema $schema = null)
     {
@@ -46,49 +49,15 @@ class Index
 
         if (!$this->storage->exists()) {
             if (!is_null($schema)) {
-                $this->storage->create($schema);
+                $this->transaction(function () use ($schema) {
+                    $this->storage->create($schema);
+                });
             } else {
-                // Throw exception
+                throw new UndefinedSchemaException(
+                    "No schema provided to create index '{$this->storage->getName()}'."
+                );
             }
         }
-    }
-
-//    /**
-//     * Tel if this index exists.
-//     *
-//     * @return bool
-//     */
-//    public function exists()
-//    {
-//        return $this->storage->exists();
-//    }
-
-    /**
-     * Create this index with the given column definition.
-     *
-     * @param \Blixt\Index\Schema\Schema $schema
-     *
-     * @return bool
-     */
-    public function create(Schema $schema)
-    {
-        return $this->transaction(function () use ($schema) {
-            return $this->storage->create($schema);
-        });
-    }
-
-    /**
-     * Destroy the index.
-     *
-     * @return bool
-     */
-    public function destroy()
-    {
-        if ($this->exists()) {
-            return $this->storage->destroy();
-        }
-
-        return false;
     }
 
     /**

@@ -5,11 +5,12 @@ namespace Blixt\Storage\SQLite;
 use Blixt\Exceptions\IndexAlreadyExistsException;
 use Blixt\Index\Schema\Column;
 use Blixt\Index\Schema\Schema;
-use Blixt\Storage\StorageEngineContract;
+use Blixt\Storage\Storage;
+use Blixt\Storage\StorageContract;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
-class StorageEngine implements StorageEngineContract
+class SQLiteStorage extends Storage implements StorageContract
 {
     /**
      * The directory where the indexes are found.
@@ -19,7 +20,7 @@ class StorageEngine implements StorageEngineContract
     protected $directory;
 
     /**
-     * The name of the index we're working with (a filename).
+     * The name of the index we're working with (a filename without the extension).
      *
      * @var string
      */
@@ -28,7 +29,7 @@ class StorageEngine implements StorageEngineContract
     /**
      * The database connection.
      *
-     * @var \Blixt\Storage\SQLite\Connection
+     * @var \Blixt\Storage\SQLite\SQLiteConnection
      */
     protected $connection;
 
@@ -59,7 +60,6 @@ class StorageEngine implements StorageEngineContract
         $this->setDirectory($directory);
         $this->setName($name);
         $this->checkExistence();
-        $this->mapper = new Mapper();
     }
 
     /**
@@ -240,12 +240,12 @@ class StorageEngine implements StorageEngineContract
     /**
      * Get the connection, creating it in the process if it has not yet been created.
      *
-     * @return \Blixt\Storage\SQLite\Connection
+     * @return \Blixt\Storage\SQLite\SQLiteConnection
      */
     protected function connection()
     {
         if (!$this->connection) {
-            $this->connection = new Connection(
+            $this->connection = new SQLiteConnection(
                 $this->getPath()
             );
         }

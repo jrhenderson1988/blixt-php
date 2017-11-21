@@ -2,7 +2,7 @@
 
 namespace Blixt\Stemming;
 
-abstract class AbstractStemmer
+abstract class Stemmer
 {
 
 }

@@ -4,8 +4,15 @@ namespace Blixt\Storage;
 
 use Blixt\Index\Schema\Schema;
 
-interface StorageEngineContract
+interface StorageContract
 {
+    /**
+     * Get the name of the schema represented by the storage engine.
+     *
+     * @return string
+     */
+    public function getName();
+
     /**
      * Tell if the storage represented by the engine exists.
      *

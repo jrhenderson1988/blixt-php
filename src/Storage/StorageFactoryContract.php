@@ -9,7 +9,7 @@ interface StorageFactoryContract
      *
      * @param string $name
      *
-     * @return \Blixt\Storage\StorageEngineContract
+     * @return \Blixt\Storage\StorageContract
      */
     public function create($name);
 }

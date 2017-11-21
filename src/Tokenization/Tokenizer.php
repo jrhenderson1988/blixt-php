@@ -2,7 +2,7 @@
 
 namespace Blixt\Tokenization;
 
-abstract class AbstractTokenizer
+abstract class Tokenizer
 {
 
 }

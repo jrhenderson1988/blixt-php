@@ -5,7 +5,7 @@ namespace Blixt\Storage\SQLite;
 use Blixt\Storage\StorageFactoryContract;
 use InvalidArgumentException;
 
-class StorageFactory implements StorageFactoryContract
+class SQLiteStorageFactory implements StorageFactoryContract
 {
     /**
      * The directory where the index files are located.
@@ -55,11 +55,11 @@ class StorageFactory implements StorageFactoryContract
      *
      * @param string $name
      *
-     * @return \Blixt\Storage\SQLite\StorageEngine
+     * @return \Blixt\Storage\SQLite\SQLiteStorage
      */
     public function create($name)
     {
-        return new StorageEngine(
+        return new SQLiteStorage(
             $this->getDirectory(), $name
         );
     }
