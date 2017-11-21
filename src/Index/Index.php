@@ -100,6 +100,15 @@ class Index
 
     }
 
+    public function destroy()
+    {
+        if (!$this->storage->exists()) {
+            return false;
+        }
+
+        return $this->storage->destroy();
+    }
+
     /**
      * Execute the provided closure in a transaction. The return value of the closure is returned from this method. If
      * any exceptions are thrown within the closure, the transaction is rolled back and a StorageException is thrown
