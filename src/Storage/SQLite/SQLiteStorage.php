@@ -215,11 +215,12 @@ class SQLiteStorage extends Storage implements StorageContract
             'CREATE INDEX "idx_occurrences_presence_id" ON "occurrences" ("presence_id");'
         ]);
 
+        // Execute the statements to create the tables and indices.
         $statements->each(function ($statement) {
             $this->connection()->statement($statement);
         });
 
-        //
+        // Insert the columns from the provided schema into the columns table.
         $schema->getColumns()->each(function (Column $column) {
             $this->connection()->insert(
                 'INSERT INTO "columns" ("name", "indexed", "stored", "weight") VALUES (?, ?, ?, ?)',

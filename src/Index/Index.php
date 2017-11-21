@@ -58,6 +58,8 @@ class Index
                 );
             }
         }
+
+        // TODO - Load the columns from the storage into this Index instance, this allows us quick access for validation etc.
     }
 
     /**
