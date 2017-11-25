@@ -66,6 +66,8 @@ class Document
      */
     public function setFields($fields)
     {
+        $this->fields = new Collection();
+
         if (!$fields instanceof Collection && !is_array($fields) && !$fields instanceof Field) {
             throw new InvalidArgumentException(
                 'Fields must be a Collection, an array or a single Field.'

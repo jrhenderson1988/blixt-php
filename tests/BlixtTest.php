@@ -3,6 +3,8 @@
 namespace BlixtTests;
 
 use Blixt\Blixt;
+use Blixt\Documents\Document;
+use Blixt\Documents\Field;
 use Blixt\Exceptions\IndexDoesNotExistException;
 use Blixt\Index\Schema\Column;
 use Blixt\Index\Schema\Schema;
@@ -30,6 +32,11 @@ class BlixtTest extends TestCase
 
         $path = $directory . DIRECTORY_SEPARATOR . $name;
         $this->assertFileExists($path . '.index');
+
+        $document = new Document(1);
+        $document->addField(new Field('name', 'Jonathon Henderson'));
+        $document->addField(new Field('about', 'He is pretty awesome'));
+        $index->add($document);
 
         $index->destroy();
         $this->assertFileNotExists($path . '.index');

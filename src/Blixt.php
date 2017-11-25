@@ -126,59 +126,5 @@ class Blixt
             $storageFactory->create($name),
             $schema
         );
-
-//        $index = $this->makeIndex($name);
-//
-//        if (!$index->exists()) {
-//            if ($schema instanceof Schema) {
-//                $index->create($schema);
-//            } elseif (is_callable($callable = $schema)) {
-//                $schema = new Schema();
-//                $callable($schema);
-//
-//                $index->create($schema);
-//            } else {
-//                throw new IndexDoesNotExistException(
-//                    "The index '{$name}' does not exist."
-//                );
-//            }
-//        }
-//
-//        return $index;
     }
-
-//    /**
-//     * Destroy an existing index.
-//     *
-//     * @param string $name
-//     *
-//     * @return bool
-//     * @throws \Blixt\Exceptions\IndexDoesNotExistException
-//     */
-//    public function destroy($name)
-//    {
-//        $index = $this->makeIndex($name);
-//
-//        if (!$index->exists()) {
-//            throw new IndexDoesNotExistException(
-//                "The index '{$name}' does not exist."
-//            );
-//        }
-//
-//        return $index->destroy();
-//    }
-
-//    /**
-//     * Create an Index object with the given name.
-//     *
-//     * @param string $name
-//     *
-//     * @return \Blixt\Index\Index
-//     */
-//    protected function makeIndex($name)
-//    {
-//        return new Index(
-//            $name, $this->getStorageFactory(), $this->getStemmer(), $this->getTokenizer()
-//        );
-//    }
 }

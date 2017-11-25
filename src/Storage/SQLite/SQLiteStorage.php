@@ -7,6 +7,7 @@ use Blixt\Index\Schema\Column;
 use Blixt\Index\Schema\Schema;
 use Blixt\Storage\Storage;
 use Blixt\Storage\StorageContract;
+use Exception;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
@@ -36,7 +37,7 @@ class SQLiteStorage extends Storage implements StorageContract
     /**
      * A mapper object to transform rows of data in array/stdClass format into the relevant models.
      *
-     * @var \Blixt\Storage\SQLite\Mapper
+     * @var \Blixt\Storage\SQLite\SQLiteMapper
      */
     protected $mapper;
 
@@ -58,6 +59,7 @@ class SQLiteStorage extends Storage implements StorageContract
         $this->setDirectory($directory);
         $this->setName($name);
         $this->checkExistence();
+        $this->mapper = new SQLiteMapper();
     }
 
     /**
@@ -147,6 +149,32 @@ class SQLiteStorage extends Storage implements StorageContract
     public function exists()
     {
         return $this->exists;
+    }
+
+    /**
+     * Execute the provided callable in a transaction. The return value of the callable is returned from this method. If
+     * any exceptions are thrown within the callable, the transaction is rolled back.
+     *
+     * @param callable $callable
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function transaction(callable $callable)
+    {
+        $this->connection()->beginTransaction();
+
+        try {
+            $response = call_user_func($callable, $this);
+
+            $this->connection()->commitTransaction();
+
+            return $response;
+        } catch (Exception $ex) {
+            $this->connection()->rollBackTransaction();
+
+            throw $ex;
+        }
     }
 
     /**
@@ -274,33 +302,17 @@ class SQLiteStorage extends Storage implements StorageContract
     }
 
     /**
-     * Begin a transaction for the storage engine.
+     * Load all of the columns from the storage as a collection.
      *
-     * @return bool
+     * @return \Illuminate\Support\Collection
      */
-    public function beginTransaction()
+    public function getColumns()
     {
-        return $this->connection()->beginTransaction();
-    }
+        $results = $this->connection()->select(
+            'SELECT * FROM "columns"'
+        );
 
-    /**
-     * Roll back the current transaction for the storage engine.
-     *
-     * @return bool
-     */
-    public function rollBackTransaction()
-    {
-        return $this->connection()->rollBackTransaction();
-    }
-
-    /**
-     * Commit the current transaction for the storage engine.
-     *
-     * @return bool
-     */
-    public function commitTransaction()
-    {
-        return $this->connection()->commitTransaction();
+        return $results ? $this->mapper->columns($results) : null;
     }
 
     /**
@@ -316,6 +328,6 @@ class SQLiteStorage extends Storage implements StorageContract
             'SELECT * FROM "documents" WHERE "key" = ? LIMIT 1', [$key]
         );
 
-        return $this->mapper->document($result);
+        return $result ? $this->mapper->document($result) : null;
     }
 }

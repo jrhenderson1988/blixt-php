@@ -39,80 +39,80 @@ class IndexTest extends TestCase
 
     public function setUp()
     {
-        $this->stemmer = Mockery::mock(StemmerContract::class);
-        $this->tokenizer = Mockery::mock(TokenizerContract::class);
-        $this->storage = Mockery::mock(StorageContract::class);
-
-        $this->storage->shouldReceive('exists')->once()->andReturn(true);
-        $this->index = new Index($this->stemmer, $this->tokenizer, $this->storage);
+//        $this->stemmer = Mockery::mock(StemmerContract::class);
+//        $this->tokenizer = Mockery::mock(TokenizerContract::class);
+//        $this->storage = Mockery::mock(StorageContract::class);
+//
+//        $this->storage->shouldReceive('exists')->once()->andReturn(true);
+//        $this->index = new Index($this->stemmer, $this->tokenizer, $this->storage);
     }
 
     public function tearDown()
     {
-        Mockery::close();
+//        Mockery::close();
     }
 
     public function testConstructorSkipsCreationForExistingIndexes()
     {
-        $stemmer = Mockery::mock(StemmerContract::class);
-        $tokenizer = Mockery::mock(TokenizerContract::class);
-        $storage = Mockery::mock(StorageContract::class);
-
-        $storage->shouldReceive('exists')->once()->andReturnTrue();
-        new Index($stemmer, $tokenizer, $storage);
+//        $stemmer = Mockery::mock(StemmerContract::class);
+//        $tokenizer = Mockery::mock(TokenizerContract::class);
+//        $storage = Mockery::mock(StorageContract::class);
+//
+//        $storage->shouldReceive('exists')->once()->andReturnTrue();
+//        new Index($stemmer, $tokenizer, $storage);
     }
 
     public function testConstructorCreatesNonExistingIndexes()
     {
-        $stemmer = Mockery::mock(StemmerContract::class);
-        $tokenizer = Mockery::mock(TokenizerContract::class);
-        $storage = Mockery::mock(StorageContract::class);
-
-        $schema = new Schema();
-        $storage->shouldReceive('exists')->once()->andReturnFalse();
-        $storage->shouldReceive('beginTransaction')->andReturnTrue();
-        $storage->shouldReceive('create')->withArgs([$schema])->andReturnTrue();
-        $storage->shouldReceive('commitTransaction')->andReturnTrue();
-
-        new Index($stemmer, $tokenizer, $storage, $schema);
+//        $stemmer = Mockery::mock(StemmerContract::class);
+//        $tokenizer = Mockery::mock(TokenizerContract::class);
+//        $storage = Mockery::mock(StorageContract::class);
+//
+//        $schema = new Schema();
+//        $storage->shouldReceive('exists')->once()->andReturnFalse();
+//        $storage->shouldReceive('beginTransaction')->andReturnTrue();
+//        $storage->shouldReceive('create')->withArgs([$schema])->andReturnTrue();
+//        $storage->shouldReceive('commitTransaction')->andReturnTrue();
+//
+//        new Index($stemmer, $tokenizer, $storage, $schema);
     }
 
     public function testConstructorThrowsUndefinedSchemaExceptionWhenNoSchemaProvidedAndIndexDoesNotExist()
     {
-        $stemmer = Mockery::mock(StemmerContract::class);
-        $tokenizer = Mockery::mock(TokenizerContract::class);
-        $storage = Mockery::mock(StorageContract::class);
-
-        $storage->shouldReceive('exists')->once()->andReturnFalse();
-        $storage->shouldReceive('getName')->once()->andReturn('TEST');
-        $this->expectException(UndefinedSchemaException::class);
-        $this->expectExceptionMessage('TEST');
-
-        new Index($stemmer, $tokenizer, $storage);
+//        $stemmer = Mockery::mock(StemmerContract::class);
+//        $tokenizer = Mockery::mock(TokenizerContract::class);
+//        $storage = Mockery::mock(StorageContract::class);
+//
+//        $storage->shouldReceive('exists')->once()->andReturnFalse();
+//        $storage->shouldReceive('getName')->once()->andReturn('TEST');
+//        $this->expectException(UndefinedSchemaException::class);
+//        $this->expectExceptionMessage('TEST');
+//
+//        new Index($stemmer, $tokenizer, $storage);
     }
 
     public function testConstructorCreatesStorageEngineStemmerAndTokenizer()
     {
-        $reflection = new ReflectionClass(Index::class);
-
-        $storageProperty = $reflection->getProperty('storage');
-        $stemmerProperty = $reflection->getProperty('stemmer');
-        $tokenizerProperty = $reflection->getProperty('tokenizer');
-
-        $storageProperty->setAccessible(true);
-        $stemmerProperty->setAccessible(true);
-        $tokenizerProperty->setAccessible(true);
-
-        $stemmer = Mockery::mock(StemmerContract::class);
-        $tokenizer = Mockery::mock(TokenizerContract::class);
-        $storage = Mockery::mock(StorageContract::class);
-        $storage->shouldReceive('exists')->once()->andReturnTrue();
-
-        $index = new Index($stemmer, $tokenizer, $storage);
-
-        $this->assertEquals($storage, $storageProperty->getValue($index));
-        $this->assertEquals($stemmer, $stemmerProperty->getValue($index));
-        $this->assertEquals($tokenizer, $tokenizerProperty->getValue($index));
+//        $reflection = new ReflectionClass(Index::class);
+//
+//        $storageProperty = $reflection->getProperty('storage');
+//        $stemmerProperty = $reflection->getProperty('stemmer');
+//        $tokenizerProperty = $reflection->getProperty('tokenizer');
+//
+//        $storageProperty->setAccessible(true);
+//        $stemmerProperty->setAccessible(true);
+//        $tokenizerProperty->setAccessible(true);
+//
+//        $stemmer = Mockery::mock(StemmerContract::class);
+//        $tokenizer = Mockery::mock(TokenizerContract::class);
+//        $storage = Mockery::mock(StorageContract::class);
+//        $storage->shouldReceive('exists')->once()->andReturnTrue();
+//
+//        $index = new Index($stemmer, $tokenizer, $storage);
+//
+//        $this->assertEquals($storage, $storageProperty->getValue($index));
+//        $this->assertEquals($stemmer, $stemmerProperty->getValue($index));
+//        $this->assertEquals($tokenizer, $tokenizerProperty->getValue($index));
     }
 
     public function testTransactionIsRolledBackWhenAnExceptionIsThrownDuringCreate()

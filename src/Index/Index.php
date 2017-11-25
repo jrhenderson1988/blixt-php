@@ -9,8 +9,6 @@ use Blixt\Index\Schema\Schema;
 use Blixt\Stemming\StemmerContract as Stemmer;
 use Blixt\Storage\StorageContract as Storage;
 use Blixt\Tokenization\TokenizerContract as Tokenizer;
-use Closure;
-use Exception;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
@@ -32,6 +30,11 @@ class Index
     protected $tokenizer;
 
     /**
+     * @var \Illuminate\Support\Collection
+     */
+    protected $columns;
+
+    /**
      * Index constructor.
      *
      * @param \Blixt\Stemming\StemmerContract       $stemmer
@@ -47,9 +50,23 @@ class Index
         $this->stemmer = $stemmer;
         $this->tokenizer = $tokenizer;
 
+        $this->createIndexIfNotExists($schema);
+
+        $this->initialiseColumns();
+    }
+
+    /**
+     * Create the index if it does not already exist, initialising it with the provided schema.
+     *
+     * @param \Blixt\Index\Schema\Schema|null $schema
+     *
+     * @throws \Blixt\Exceptions\UndefinedSchemaException
+     */
+    protected function createIndexIfNotExists(Schema $schema = null)
+    {
         if (!$this->storage->exists()) {
             if (!is_null($schema)) {
-                $this->transaction(function () use ($schema) {
+                $this->storage->transaction(function () use ($schema) {
                     $this->storage->create($schema);
                 });
             } else {
@@ -58,8 +75,16 @@ class Index
                 );
             }
         }
+    }
 
-        // TODO - Load the columns from the storage into this Index instance, this allows us quick access for validation etc.
+    /**
+     * Load the columns from the storage into the columns property.
+     */
+    protected function initialiseColumns()
+    {
+        $this->columns = $this->storage->transaction(function () {
+            return $this->storage->getColumns();
+        });
     }
 
     /**
@@ -80,6 +105,8 @@ class Index
                 "Expected a document, or a collection/array of documents."
             );
         }
+
+        var_dump($documents);
 
         $documents->each(function (IndexableDocument $document) {
             if ($this->storage->findDocumentByKey($document->getKey())) {
@@ -116,32 +143,6 @@ class Index
         }
 
         return $this->storage->destroy();
-    }
-
-    /**
-     * Execute the provided closure in a transaction. The return value of the closure is returned from this method. If
-     * any exceptions are thrown within the closure, the transaction is rolled back.
-     *
-     * @param \Closure $callback
-     *
-     * @return mixed
-     * @throws \Exception
-     */
-    protected function transaction(Closure $callback)
-    {
-        $this->storage->beginTransaction();
-
-        try {
-            $response = $callback();
-
-            $this->storage->commitTransaction();
-
-            return $response;
-        } catch (Exception $ex) {
-            $this->storage->rollBackTransaction();
-
-            throw $ex;
-        }
     }
 
     /**

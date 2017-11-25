@@ -35,9 +35,9 @@ class Field
     public function __construct($key, $value, $indexed = true, $stored = true)
     {
         $this->setKey($key);
-        $this->setValue($key);
-        $this->setIndexed($key);
-        $this->setStored($key);
+        $this->setValue($value);
+        $this->setIndexed($indexed);
+        $this->setStored($stored);
     }
 
     /**

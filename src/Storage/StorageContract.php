@@ -37,27 +37,29 @@ interface StorageContract
     public function destroy();
 
     /**
-     * Begin a transaction for the storage engine.
+     * Execute the provided closure in a transaction. The return value of the closure is returned from this method. If
+     * any exceptions are thrown within the closure, the transaction is rolled back.
      *
-     * @return bool
+     * @param callable $callable
+     *
+     * @return mixed
      */
-    public function beginTransaction();
+    public function transaction(callable $callable);
 
     /**
-     * Roll back the current transaction for the storage engine.
+     * Load all of the columns from the storage as a collection.
      *
-     * @return bool
+     * @return \Illuminate\Support\Collection
      */
-    public function rollBackTransaction();
+    public function getColumns();
 
     /**
-     * Commit the current transaction for the storage engine.
+     * Find a document in the storage by the given key. If no such document exists, null should be returned.
      *
-     * @return bool
+     * @param mixed $key
+     *
+     * @return \Blixt\Documents\Document|null
      */
-    public function commitTransaction();
-
-
     public function findDocumentByKey($key);
 
 //    public function findTermByName($name);
