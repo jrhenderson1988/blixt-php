@@ -47,4 +47,14 @@ class FieldTest extends TestCase
             $this->assertSame($value, $test->getValue());
         }
     }
+
+    public function testConstructorSetsCorrectValues()
+    {
+        $test = new Field(1, 2, 3, 4);
+
+        $this->assertSame(1, $test->getId());
+        $this->assertSame(2, $test->getDocumentId());
+        $this->assertSame(3, $test->getColumnId());
+        $this->assertSame(4, $test->getValue());
+    }
 }

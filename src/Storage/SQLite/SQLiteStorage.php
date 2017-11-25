@@ -3,6 +3,7 @@
 namespace Blixt\Storage\SQLite;
 
 use Blixt\Exceptions\IndexAlreadyExistsException;
+use Blixt\Exceptions\StorageException;
 use Blixt\Index\Schema\Column;
 use Blixt\Index\Schema\Schema;
 use Blixt\Storage\Storage;
@@ -329,5 +330,28 @@ class SQLiteStorage extends Storage implements StorageContract
         );
 
         return $result ? $this->mapper->document($result) : null;
+    }
+
+    /**
+     * Create a document with the given key.
+     *
+     * @param mixed $key
+     *
+     * @return \Blixt\Models\Document
+     * @throws \Blixt\Exceptions\StorageException
+     */
+    public function createDocument($key)
+    {
+        $id = $this->connection()->insert(
+            'INSERT INTO "documents" ("key") VALUES (?)', [$key]
+        );
+
+        if ($id === false) {
+            throw new StorageException(
+                'A problem occurred inserting a new document.'
+            );
+        }
+
+        return $this->mapper->document(['id' => $id, 'key' => $key]);
     }
 }

@@ -2,10 +2,11 @@
 
 namespace Blixt\Index;
 
-use Blixt\Documents\Document as IndexableDocument;
+use Blixt\Documents\Document as Indexable;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\UndefinedSchemaException;
 use Blixt\Index\Schema\Schema;
+use Blixt\Models\Column;
 use Blixt\Stemming\StemmerContract as Stemmer;
 use Blixt\Storage\StorageContract as Storage;
 use Blixt\Tokenization\TokenizerContract as Tokenizer;
@@ -53,6 +54,8 @@ class Index
         $this->createIndexIfNotExists($schema);
 
         $this->initialiseColumns();
+
+        var_dump($this);
     }
 
     /**
@@ -78,48 +81,81 @@ class Index
     }
 
     /**
-     * Load the columns from the storage into the columns property.
+     * Load the columns from the storage into the columns property. Also, key the columns by their names to make looking
+     * them up easier.
      */
     protected function initialiseColumns()
     {
         $this->columns = $this->storage->transaction(function () {
-            return $this->storage->getColumns();
+            return $this->storage->getColumns()->keyBy(function (Column $column) {
+                return $column->getName();
+            });
         });
     }
 
     /**
-     * @param \Illuminate\Support\Collection|\Blixt\Documents\Document|array $documents
+     * Add a document, or a collection of documents to the index.
+     *
+     * @param \Illuminate\Support\Collection|\Blixt\Documents\Document|array $indexables
      *
      * @return bool
      */
-    public function add($documents)
+    public function add($indexables)
     {
-        if (is_array($documents)) {
-            return $this->add(new Collection($documents));
-        } elseif ($documents instanceof IndexableDocument) {
-            return $this->add(new Collection([$documents]));
+        $indexables = $this->makeDocumentCollection($indexables);
+
+        $this->ensureDocumentsDoNotExist($indexables);
+
+        $this->storage->transaction(function () use ($indexables) {
+            $indexables->each(function (Indexable $indexable) {
+                $document = $this->storage->createDocument($indexable->getKey());
+            });
+        });
+
+
+    }
+
+    /**
+     * Convert the provided documents to a collection.
+     *
+     * @param \Illuminate\Support\Collection|\Blixt\Documents\Document|array $documents
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    protected function makeDocumentCollection($documents)
+    {
+        if ($documents instanceof Collection) {
+            return $documents;
+        } elseif (is_array($documents)) {
+            return new Collection($documents);
+        } elseif ($documents instanceof Indexable) {
+            return new Collection([$documents]);
         }
 
-        if (!$documents instanceof Collection) {
-            throw new InvalidArgumentException(
-                "Expected a document, or a collection/array of documents."
-            );
-        }
+        throw new InvalidArgumentException("Expected a document, or a collection/array of documents.");
+    }
 
-        var_dump($documents);
+    /**
+     * Ensure that each of the provided documents are not already present in the index.
+     *
+     * @param \Illuminate\Support\Collection $documents
+     */
+    protected function ensureDocumentsDoNotExist(Collection $documents)
+    {
+        $documents->each(function (Indexable $indexable) {
+            $document = $this->storage->transaction(function () use ($indexable) {
+                $this->storage->findDocumentByKey($indexable->getKey());
+            });
 
-        $documents->each(function (IndexableDocument $document) {
-            if ($this->storage->findDocumentByKey($document->getKey())) {
+            if ($document) {
                 throw new DocumentAlreadyExistsException(
                     "Document with key {$document->getKey()} already exists in {$this->getName()} index."
                 );
             }
-
-            // TODO - Index the document.
         });
     }
 
-    public function update($key, IndexableDocument $document)
+    public function update($key, Indexable $document)
     {
         if ($this->remove($key)) {
             $this->add($document);

@@ -62,6 +62,9 @@ interface StorageContract
      */
     public function findDocumentByKey($key);
 
+
+    public function createDocument($key);
+
 //    public function findTermByName($name);
 //    public function findTermsByName(Collection $names);
 //    public function createTerm($name);
