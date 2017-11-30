@@ -4,8 +4,10 @@ namespace Blixt\Storage\SQLite;
 
 use Blixt\Exceptions\IndexAlreadyExistsException;
 use Blixt\Exceptions\StorageException;
-use Blixt\Index\Schema\Column;
+use Blixt\Index\Schema\Column as SchemaColumn;
 use Blixt\Index\Schema\Schema;
+use Blixt\Models\Column;
+use Blixt\Models\Document;
 use Blixt\Storage\Storage;
 use Blixt\Storage\StorageContract;
 use Exception;
@@ -250,7 +252,7 @@ class SQLiteStorage extends Storage implements StorageContract
         });
 
         // Insert the columns from the provided schema into the columns table.
-        $schema->getColumns()->each(function (Column $column) {
+        $schema->getColumns()->each(function (SchemaColumn $column) {
             $this->connection()->insert(
                 'INSERT INTO "columns" ("name", "indexed", "stored", "weight") VALUES (?, ?, ?, ?)',
                 [$column->getName(), $column->isIndexed(), $column->isStored(), $column->getWeight()]
@@ -348,10 +350,34 @@ class SQLiteStorage extends Storage implements StorageContract
 
         if ($id === false) {
             throw new StorageException(
-                'A problem occurred inserting a new document.'
+                'A problem occurred creating a Document.'
             );
         }
 
-        return $this->mapper->document(['id' => $id, 'key' => $key]);
+        return $this->mapper->document([
+            'id' => $id,
+            'key' => $key
+        ]);
+    }
+
+    public function createField(Document $document, Column $column, $value = null)
+    {
+        $id = $this->connection()->insert(
+            'INSERT INTO "fields" ("document_id", "column_id", "value") VALUES (?, ?, ?)',
+            [$document->getId(), $column->getId(), $value]
+        );
+
+        if ($id === false) {
+            throw new StorageException(
+                'A problem occurred creating a Field.'
+            );
+        }
+
+        return $this->mapper->field([
+            'id' => $id,
+            'document_id' => $document->getId(),
+            'column_id' => $column->getId(),
+            'value' => $value
+        ]);
     }
 }

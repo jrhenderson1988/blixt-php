@@ -2,11 +2,14 @@
 
 namespace Blixt\Index;
 
-use Blixt\Documents\Document as Indexable;
+use Blixt\Documents\Document as IndexableDocument;
+use Blixt\Documents\Field as IndexableField;
+use Blixt\Models\Document;
+use Blixt\Models\Column;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\UndefinedSchemaException;
 use Blixt\Index\Schema\Schema;
-use Blixt\Models\Column;
+use Blixt\Models\Field;
 use Blixt\Stemming\StemmerContract as Stemmer;
 use Blixt\Storage\StorageContract as Storage;
 use Blixt\Tokenization\TokenizerContract as Tokenizer;
@@ -54,8 +57,6 @@ class Index
         $this->createIndexIfNotExists($schema);
 
         $this->initialiseColumns();
-
-        var_dump($this);
     }
 
     /**
@@ -107,12 +108,13 @@ class Index
         $this->ensureDocumentsDoNotExist($indexables);
 
         $this->storage->transaction(function () use ($indexables) {
-            $indexables->each(function (Indexable $indexable) {
-                $document = $this->storage->createDocument($indexable->getKey());
+            $indexables->each(function (IndexableDocument $indexable) {
+                $this->createDocument($indexable);
             });
         });
 
 
+        return true;
     }
 
     /**
@@ -128,7 +130,7 @@ class Index
             return $documents;
         } elseif (is_array($documents)) {
             return new Collection($documents);
-        } elseif ($documents instanceof Indexable) {
+        } elseif ($documents instanceof IndexableDocument) {
             return new Collection([$documents]);
         }
 
@@ -138,11 +140,13 @@ class Index
     /**
      * Ensure that each of the provided documents are not already present in the index.
      *
+     * TODO - Some optimization, to avoid n+1 queries.
+     *
      * @param \Illuminate\Support\Collection $documents
      */
     protected function ensureDocumentsDoNotExist(Collection $documents)
     {
-        $documents->each(function (Indexable $indexable) {
+        $documents->each(function (IndexableDocument $indexable) {
             $document = $this->storage->transaction(function () use ($indexable) {
                 $this->storage->findDocumentByKey($indexable->getKey());
             });
@@ -155,7 +159,50 @@ class Index
         });
     }
 
-    public function update($key, Indexable $document)
+    /**
+     * Create a document in the index, given an indexable document.
+     *
+     * @param \Blixt\Documents\Document $indexable
+     *
+     * @return \Blixt\Models\Document
+     */
+    protected function createDocument(IndexableDocument $indexable)
+    {
+        $document = $this->storage->createDocument($indexable->getKey());
+
+        $indexable->getFields()->each(function (IndexableField $field) use ($document) {
+            $this->createField($document, $field);
+        });
+
+        return $document;
+    }
+
+    /**
+     * Store and or Index (where the corresponding column defines) the provided indexable document field in the index
+     * against the provided document. Fields that do not match a given column in the index are silently ignored.
+     *
+     * @param \Blixt\Models\Document $document
+     * @param \Blixt\Documents\Field $indexableField
+     */
+    protected function createField(Document $document, IndexableField $indexableField)
+    {
+        if ($column = $this->columns->get($indexableField->getKey())) {
+            $field = $this->storage->createField(
+                $document, $column, $column->isStored() ? $indexableField->getValue() : null
+            );
+
+            if ($column->isIndexed()) {
+                $this->indexField($field);
+            }
+        }
+    }
+
+    protected function indexField(Field $field)
+    {
+        // TODO
+    }
+
+    public function update($key, IndexableDocument $document)
     {
         if ($this->remove($key)) {
             $this->add($document);

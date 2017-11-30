@@ -3,6 +3,9 @@
 namespace Blixt\Storage;
 
 use Blixt\Index\Schema\Schema;
+use Blixt\Models\Column;
+use Blixt\Models\Document;
+use Blixt\Models\Field;
 
 interface StorageContract
 {
@@ -58,12 +61,20 @@ interface StorageContract
      *
      * @param mixed $key
      *
-     * @return \Blixt\Documents\Document|null
+     * @return \Blixt\Models\Document|null
      */
     public function findDocumentByKey($key);
 
-
+    /**
+     * Create a document in the storage with the given key.
+     *
+     * @param mixed $key
+     *
+     * @return \Blixt\Models\Document
+     */
     public function createDocument($key);
+
+    public function createField(Document $document, Column $column, $value = null);
 
 //    public function findTermByName($name);
 //    public function findTermsByName(Collection $names);

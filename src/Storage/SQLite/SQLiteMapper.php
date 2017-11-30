@@ -4,6 +4,7 @@ namespace Blixt\Storage\SQLite;
 
 use Blixt\Models\Column;
 use Blixt\Models\Document;
+use Blixt\Models\Field;
 use Illuminate\Support\Collection;
 
 class SQLiteMapper
@@ -29,5 +30,10 @@ class SQLiteMapper
     public function document(array $row)
     {
         return new Document($row['id'], $row['key']);
+    }
+
+    public function field(array $row)
+    {
+        return new Field($row['id'], $row['document_id'], $row['column_id'], $row['value']);
     }
 }
