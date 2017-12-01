@@ -325,7 +325,7 @@ class SQLiteStorage extends Storage implements StorageContract
      *
      * @return \Blixt\Models\Document|null
      */
-    public function findDocumentByKey($key)
+    public function getDocumentByKey($key)
     {
         $result = $this->connection()->selectOne(
             'SELECT * FROM "documents" WHERE "key" = ? LIMIT 1', [$key]
@@ -360,6 +360,16 @@ class SQLiteStorage extends Storage implements StorageContract
         ]);
     }
 
+    /**
+     * Create a field for the given document and column, with the given value.
+     *
+     * @param \Blixt\Models\Document $document
+     * @param \Blixt\Models\Column   $column
+     * @param mixed|null             $value
+     *
+     * @return \Blixt\Models\Field
+     * @throws \Blixt\Exceptions\StorageException
+     */
     public function createField(Document $document, Column $column, $value = null)
     {
         $id = $this->connection()->insert(
@@ -379,5 +389,44 @@ class SQLiteStorage extends Storage implements StorageContract
             'column_id' => $column->getId(),
             'value' => $value
         ]);
+    }
+
+    /**
+     * Find a word by the given word string.
+     *
+     * @param string $word
+     *
+     * @return \Blixt\Models\Word|null
+     */
+    public function getWordByWord($word)
+    {
+        $result = $this->connection()->selectOne(
+            'SELECT * FROM "words" WHERE "word" = ? LIMIT 1', [$word]
+        );
+
+        return $result ? $this->mapper->word($result) : null;
+    }
+
+    /**
+     * Create a word, given a word string.
+     *
+     * @param string $word
+     *
+     * @return \Blixt\Models\Word
+     * @throws \Blixt\Exceptions\StorageException
+     */
+    public function createWord($word)
+    {
+        $id = $this->connection()->insert(
+            'INSERT INTO "words" ("word") VALUES (?)', [$word]
+        );
+
+        if ($id === false) {
+            throw new StorageException(
+                'A problem occurred creating a Word.'
+            );
+        }
+
+        return $this->mapper->word(['id' => $id, 'word' => $word]);
     }
 }

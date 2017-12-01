@@ -12,6 +12,7 @@ use Blixt\Index\Schema\Schema;
 use Blixt\Models\Field;
 use Blixt\Stemming\StemmerContract as Stemmer;
 use Blixt\Storage\StorageContract as Storage;
+use Blixt\Tokenization\Token;
 use Blixt\Tokenization\TokenizerContract as Tokenizer;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
@@ -148,7 +149,7 @@ class Index
     {
         $documents->each(function (IndexableDocument $indexable) {
             $document = $this->storage->transaction(function () use ($indexable) {
-                $this->storage->findDocumentByKey($indexable->getKey());
+                $this->storage->getDocumentByKey($indexable->getKey());
             });
 
             if ($document) {
@@ -192,14 +193,24 @@ class Index
             );
 
             if ($column->isIndexed()) {
-                $this->indexField($field);
+                $this->indexField($field, $indexableField->getValue());
             }
         }
     }
 
-    protected function indexField(Field $field)
+    protected function indexField(Field $field, $value)
     {
-        // TODO
+        $this->tokenizer->tokenize($value)->each(function (Token $token) use ($field) {
+            $stem = $this->stemmer->stem($token->getText());
+
+            $word = $this->storage->getWordByWord($stem);
+            if (!$word) {
+                $word = $this->storage->createWord($stem);
+            }
+
+
+
+        });
     }
 
     public function update($key, IndexableDocument $document)

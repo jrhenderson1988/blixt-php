@@ -63,7 +63,7 @@ interface StorageContract
      *
      * @return \Blixt\Models\Document|null
      */
-    public function findDocumentByKey($key);
+    public function getDocumentByKey($key);
 
     /**
      * Create a document in the storage with the given key.
@@ -74,7 +74,34 @@ interface StorageContract
      */
     public function createDocument($key);
 
+    /**
+     * Create a field for the given document and column, with the given value.
+     *
+     * @param \Blixt\Models\Document $document
+     * @param \Blixt\Models\Column   $column
+     * @param mixed|null             $value
+     *
+     * @return \Blixt\Models\Field
+     */
     public function createField(Document $document, Column $column, $value = null);
+
+    /**
+     * Find a word by the given word string.
+     *
+     * @param string $word
+     *
+     * @return \Blixt\Models\Word|null
+     */
+    public function getWordByWord($word);
+
+    /**
+     * Create a word, given a word string.
+     *
+     * @param string $word
+     *
+     * @return \Blixt\Models\Word
+     */
+    public function createWord($word);
 
 //    public function findTermByName($name);
 //    public function findTermsByName(Collection $names);
