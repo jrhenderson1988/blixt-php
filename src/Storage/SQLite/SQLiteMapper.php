@@ -5,6 +5,8 @@ namespace Blixt\Storage\SQLite;
 use Blixt\Models\Column;
 use Blixt\Models\Document;
 use Blixt\Models\Field;
+use Blixt\Models\Occurrence;
+use Blixt\Models\Presence;
 use Blixt\Models\Word;
 use Illuminate\Support\Collection;
 
@@ -41,5 +43,15 @@ class SQLiteMapper
     public function word(array $row)
     {
         return new Word($row['id'], $row['word']);
+    }
+
+    public function presence(array $row)
+    {
+        return new Presence($row['id'], $row['field_id'], $row['word_id'], $row['frequency']);
+    }
+
+    public function occurrence(array $row)
+    {
+        return new Occurrence($row['id'], $row['presence_id'], $row['position']);
     }
 }

@@ -35,7 +35,7 @@ class BlixtTest extends TestCase
 
         $document = new Document(1);
         $document->addField(new Field('name', 'Jonathon Henderson'));
-        $document->addField(new Field('about', 'He is pretty awesome'));
+        $document->addField(new Field('about', 'He is pretty awesome. He is absolutely amazing.'));
         $index->add($document);
 
         $index->destroy();

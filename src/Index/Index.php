@@ -198,18 +198,44 @@ class Index
         }
     }
 
+    /**
+     * Index the given Field. Since the field itself may not have a value stored (depending upon the value of stored for
+     * its column), we need to pass the value through as well.
+     *
+     * @param \Blixt\Models\Field $field
+     * @param mixed|string        $value
+     */
     protected function indexField(Field $field, $value)
     {
-        $this->tokenizer->tokenize($value)->each(function (Token $token) use ($field) {
+        $entries = new Collection();
+
+        $this->tokenizer->tokenize($value)->each(function (Token $token) use ($field, &$entries) {
             $stem = $this->stemmer->stem($token->getText());
 
-            $word = $this->storage->getWordByWord($stem);
+            $entry = $entries->get($stem, null);
+
+            $word = $entry ? $entry['word'] : $this->storage->getWordByWord($stem);
             if (!$word) {
                 $word = $this->storage->createWord($stem);
             }
 
+            $entries->put($stem, [
+                'word' => $entry ? $entry['word'] : $word,
+                'frequency' => ($entry ? $entry['frequency'] : 0) + 1,
+                'positions' => array_merge($entry ? $entry['positions'] : [], [$token->getPosition()])
+            ]);
+        });
 
+        // Create the presences and occurrences for each word in the field
+        $entries->each(function ($entry) use ($field) {
+            $word = $entry['word'];
+            $frequency = $entry['frequency'];
+            $positions = $entry['positions'];
 
+            $presence = $this->storage->createPresence($field, $word, $frequency);
+            foreach ($positions as $position) {
+                $this->storage->createOccurrence($presence, $position);
+            }
         });
     }
 

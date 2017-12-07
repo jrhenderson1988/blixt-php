@@ -6,6 +6,8 @@ use Blixt\Index\Schema\Schema;
 use Blixt\Models\Column;
 use Blixt\Models\Document;
 use Blixt\Models\Field;
+use Blixt\Models\Presence;
+use Blixt\Models\Word;
 
 interface StorageContract
 {
@@ -102,6 +104,27 @@ interface StorageContract
      * @return \Blixt\Models\Word
      */
     public function createWord($word);
+
+    /**
+     * Create a presence, which represents the presence of a word in a field and the corresponding frequency.
+     *
+     * @param \Blixt\Models\Field $field
+     * @param \Blixt\Models\Word  $word
+     * @param int                 $frequency
+     *
+     * @return \Blixt\Models\Presence
+     */
+    public function createPresence(Field $field, Word $word, $frequency);
+
+    /**
+     * Create an occurrence record, which represents a presence and the position that it appeared in its field.
+     *
+     * @param \Blixt\Models\Presence $presence
+     * @param int                    $position
+     *
+     * @return \Blixt\Models\Occurrence
+     */
+    public function createOccurrence(Presence $presence, $position);
 
 //    public function findTermByName($name);
 //    public function findTermsByName(Collection $names);

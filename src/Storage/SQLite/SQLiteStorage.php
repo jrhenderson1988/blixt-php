@@ -8,6 +8,9 @@ use Blixt\Index\Schema\Column as SchemaColumn;
 use Blixt\Index\Schema\Schema;
 use Blixt\Models\Column;
 use Blixt\Models\Document;
+use Blixt\Models\Field;
+use Blixt\Models\Presence;
+use Blixt\Models\Word;
 use Blixt\Storage\Storage;
 use Blixt\Storage\StorageContract;
 use Exception;
@@ -428,5 +431,64 @@ class SQLiteStorage extends Storage implements StorageContract
         }
 
         return $this->mapper->word(['id' => $id, 'word' => $word]);
+    }
+
+    /**
+     * Create a presence, which represents the presence of a word in a field and the corresponding frequency.
+     *
+     * @param \Blixt\Models\Field $field
+     * @param \Blixt\Models\Word  $word
+     * @param int|string          $frequency
+     *
+     * @return \Blixt\Models\Presence
+     * @throws \Blixt\Exceptions\StorageException
+     */
+    public function createPresence(Field $field, Word $word, $frequency)
+    {
+        $id = $this->connection()->insert(
+            'INSERT INTO "presences" ("field_id", "word_id", "frequency") VALUES (?, ?, ?)',
+            [$field->getId(), $word->getId(), $frequency]
+        );
+
+        if ($id === false) {
+            throw new StorageException(
+                'A problem occurred creating a Presence.'
+            );
+        }
+
+        return $this->mapper->presence([
+            'id' => $id,
+            'field_id' => $field->getId(),
+            'word_id' => $word->getId(),
+            'frequency' => $frequency
+        ]);
+    }
+
+    /**
+     * Create an occurrence record, which represents a presence and the position that it appeared in its field.
+     *
+     * @param \Blixt\Models\Presence $presence
+     * @param int                    $position
+     *
+     * @return \Blixt\Models\Occurrence
+     * @throws \Blixt\Exceptions\StorageException
+     */
+    public function createOccurrence(Presence $presence, $position)
+    {
+        $id = $this->connection()->insert(
+            'INSERT INTO "occurrences" ("presence_id", "position") VALUES (?, ?)', [$presence->getId(), $position]
+        );
+
+        if ($id === false) {
+            throw new StorageException(
+                'A problem occurred creating an Occurrence.'
+            );
+        }
+
+        return $this->mapper->occurrence([
+            'id' => $id,
+            'presence_id' => $presence->getId(),
+            'position' => $position
+        ]);
     }
 }
