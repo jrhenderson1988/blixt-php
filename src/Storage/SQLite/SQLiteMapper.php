@@ -40,6 +40,17 @@ class SQLiteMapper
         return new Field($row['id'], $row['document_id'], $row['column_id'], $row['value']);
     }
 
+    public function fields(array $rows)
+    {
+        $fields = new Collection();
+
+        foreach ($rows as $row) {
+            $fields->push($this->field($row));
+        }
+
+        return $fields;
+    }
+
     public function word(array $row)
     {
         return new Word($row['id'], $row['word']);
@@ -48,6 +59,17 @@ class SQLiteMapper
     public function presence(array $row)
     {
         return new Presence($row['id'], $row['field_id'], $row['word_id'], $row['frequency']);
+    }
+
+    public function presences(array $rows)
+    {
+        $presences = new Collection();
+
+        foreach ($rows as $row) {
+            $presences->push($this->presence($row));
+        }
+
+        return $presences;
     }
 
     public function occurrence(array $row)

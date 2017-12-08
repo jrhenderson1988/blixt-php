@@ -4,7 +4,6 @@ namespace Blixt\Storage\SQLite;
 
 use Blixt\Exceptions\IndexAlreadyExistsException;
 use Blixt\Exceptions\StorageException;
-use Blixt\Index\Schema\Column as SchemaColumn;
 use Blixt\Index\Schema\Schema;
 use Blixt\Models\Column;
 use Blixt\Models\Document;
@@ -254,14 +253,6 @@ class SQLiteStorage extends Storage implements StorageContract
             $this->connection()->statement($statement);
         });
 
-        // Insert the columns from the provided schema into the columns table.
-        $schema->getColumns()->each(function (SchemaColumn $column) {
-            $this->connection()->insert(
-                'INSERT INTO "columns" ("name", "indexed", "stored", "weight") VALUES (?, ?, ?, ?)',
-                [$column->getName(), $column->isIndexed(), $column->isStored(), $column->getWeight()]
-            );
-        });
-
         // After creating the index, check again for its existence. This will set our internal $exists property to true
         // and we will from now on be able to get a connection to the index. If creating the index somehow failed, this
         // would set our $exists property to false and methods requiring a connection would continue to fail.
@@ -308,17 +299,153 @@ class SQLiteStorage extends Storage implements StorageContract
     }
 
     /**
+     * Find a word by the given ID.
+     *
+     * @param string $id
+     *
+     * @return \Blixt\Models\Word|null
+     */
+    public function getWordById($id)
+    {
+        $result = $this->connection()->selectOne(
+            'SELECT * FROM "words" WHERE "id" = ? LIMIT 1', [$id]
+        );
+
+        return $result ? $this->mapper->word($result) : null;
+    }
+
+    /**
+     * Find a word by the given word string.
+     *
+     * @param string $word
+     *
+     * @return \Blixt\Models\Word|null
+     */
+    public function getWordByWord($word)
+    {
+        $result = $this->connection()->selectOne(
+            'SELECT * FROM "words" WHERE "word" = ? LIMIT 1', [$word]
+        );
+
+        return $result ? $this->mapper->word($result) : null;
+    }
+
+    /**
+     * Create a word, given a word string.
+     *
+     * @param string $word
+     *
+     * @return \Blixt\Models\Word
+     * @throws \Blixt\Exceptions\StorageException
+     */
+    public function createWord($word)
+    {
+        $id = $this->connection()->insert(
+            'INSERT INTO "words" ("word") VALUES (?)', [$word]
+        );
+
+        if ($id === false) {
+            throw new StorageException(
+                'A problem occurred creating a Word.'
+            );
+        }
+
+        return $this->mapper->word(['id' => $id, 'word' => $word]);
+    }
+
+    /**
+     * Get a column by its ID.
+     *
+     * @param int|string $id
+     *
+     * @return \Blixt\Models\Column
+     */
+    public function getColumnById($id)
+    {
+        $result = $this->connection()->selectOne(
+            'SELECT * FROM "columns" WHERE "id" = ? LIMIT 1', [$id]
+        );
+
+        return $result ? $this->mapper->column($result) : null;
+    }
+
+    /**
+     * Get a column by its name.
+     *
+     * @param int|string $name
+     *
+     * @return \Blixt\Models\Column
+     */
+    public function getColumnByName($name)
+    {
+        $result = $this->connection()->selectOne(
+            'SELECT * FROM "columns" WHERE "name" = ? LIMIT 1', [$name]
+        );
+
+        return $result ? $this->mapper->column($result) : null;
+    }
+
+    /**
      * Load all of the columns from the storage as a collection.
      *
      * @return \Illuminate\Support\Collection
      */
-    public function getColumns()
+    public function getAllColumns()
     {
         $results = $this->connection()->select(
             'SELECT * FROM "columns"'
         );
 
-        return $results ? $this->mapper->columns($results) : null;
+        return $this->mapper->columns($results);
+    }
+
+    /**
+     * Create a column with the given parameters.
+     *
+     * @param string|mixed  $name
+     * @param boolean|mixed $indexed
+     * @param boolean|mixed $stored
+     * @param float|mixed   $weight
+     *
+     * @return \Blixt\Models\Column
+     * @throws \Blixt\Exceptions\StorageException
+     */
+    public function createColumn($name, $indexed, $stored, $weight)
+    {
+        $id = $this->connection()->insert(
+            'INSERT INTO "columns" ("name", "indexed", "stored", "weight") VALUES (?, ?, ?, ?)',
+            [$name, !! $indexed ? 1 : 0, !! $stored ? 1 : 0, $weight]
+        );
+
+        if ($id === false) {
+            throw new StorageException(
+                'A problem occurred creating a Column.'
+            );
+        }
+
+        return $this->mapper->column([
+            'id' => $id,
+            'name' => $name,
+            'indexed' => $indexed,
+            'stored' => $stored,
+            'weight' => $weight
+        ]);
+    }
+
+    /**
+     * Find a document in the storage by the given ID.
+     *
+     * @param int|string $id
+     *
+     * @return \Blixt\Models\Document|null
+     */
+    public function getDocumentById($id)
+    {
+        $result = $this->connection()->selectOne(
+            'SELECT * FROM "documents" WHERE "id" = ? LIMIT 1', [$id]
+        );
+
+        return $result ? $this->mapper->document($result) : null;
     }
 
     /**
@@ -364,6 +491,56 @@ class SQLiteStorage extends Storage implements StorageContract
     }
 
     /**
+     * Find a field in the storage by the given ID.
+     *
+     * @param int|string $id
+     *
+     * @return \Blixt\Models\Field
+     */
+    public function getFieldById($id)
+    {
+        $result = $this->connection()->selectOne(
+            'SELECT * FROM "fields" WHERE "id" = ? LIMIT 1', [$id]
+        );
+
+        return $result ? $this->mapper->field($result) : null;
+    }
+
+    /**
+     * Find a field in the storage by the given document and column.
+     *
+     * @param \Blixt\Models\Document $document
+     * @param \Blixt\Models\Column   $column
+     *
+     * @return \Blixt\Models\Field
+     */
+    public function getFieldByDocumentAndColumn(Document $document, Column $column)
+    {
+        $result = $this->connection()->selectOne(
+            'SELECT * FROM "fields" WHERE "document_id" = ? AND "column_id" = ? LIMIT 1',
+            [$document->getId(), $column->getId()]
+        );
+
+        return $result ? $this->mapper->field($result) : null;
+    }
+
+    /**
+     * Get all the fields in the storage for the given document.
+     *
+     * @param \Blixt\Models\Document $document
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getAllFieldsByDocument(Document $document)
+    {
+        $results = $this->connection()->select(
+            'SELECT * FROM "fields" WHERE "document_id" = ?', [$document->getId()]
+        );
+
+        return $this->mapper->fields($results);
+    }
+
+    /**
      * Create a field for the given document and column, with the given value.
      *
      * @param \Blixt\Models\Document $document
@@ -394,43 +571,55 @@ class SQLiteStorage extends Storage implements StorageContract
         ]);
     }
 
+
     /**
-     * Find a word by the given word string.
+     * Find a presence by its ID.
      *
-     * @param string $word
+     * @param int|string $id
      *
-     * @return \Blixt\Models\Word|null
+     * @return \Blixt\Models\Presence
      */
-    public function getWordByWord($word)
+    public function getPresenceById($id)
     {
         $result = $this->connection()->selectOne(
-            'SELECT * FROM "words" WHERE "word" = ? LIMIT 1', [$word]
+            'SELECT * FROM "presences" WHERE "id" = ? LIMIT 1', [$id]
         );
 
-        return $result ? $this->mapper->word($result) : null;
+        return $result ? $this->mapper->presence($result) : null;
     }
 
     /**
-     * Create a word, given a word string.
+     * Find a presence by the field and word provided.
      *
-     * @param string $word
+     * @param \Blixt\Models\Field $field
+     * @param \Blixt\Models\Word  $word
      *
-     * @return \Blixt\Models\Word
-     * @throws \Blixt\Exceptions\StorageException
+     * @return \Blixt\Models\Presence
      */
-    public function createWord($word)
+    public function getPresenceByFieldAndWord(Field $field, Word $word)
     {
-        $id = $this->connection()->insert(
-            'INSERT INTO "words" ("word") VALUES (?)', [$word]
+        $result = $this->connection()->selectOne(
+            'SELECT * FROM "presences" WHERE "field_id" = ? AND "word_id" = ? LIMIT 1',
+            [$field->getId(), $word->getId()]
         );
 
-        if ($id === false) {
-            throw new StorageException(
-                'A problem occurred creating a Word.'
-            );
-        }
+        return $result ? $this->mapper->presence($result) : null;
+    }
 
-        return $this->mapper->word(['id' => $id, 'word' => $word]);
+    /**
+     * Find the presences associated with the given field.
+     *
+     * @param \Blixt\Models\Field $field
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getAllPresencesByField(Field $field)
+    {
+        $results = $this->connection()->select(
+            'SELECT * FROM "presences" WHERE "field_id" = ?', [$field->getId()]
+        );
+
+        return $this->mapper->presences($results);
     }
 
     /**
@@ -462,6 +651,38 @@ class SQLiteStorage extends Storage implements StorageContract
             'word_id' => $word->getId(),
             'frequency' => $frequency
         ]);
+    }
+
+    /**
+     * Find an occurrence by the given ID.
+     *
+     * @param int|string $id
+     *
+     * @return \Blixt\Models\Occurrence
+     */
+    public function getOccurrenceById($id)
+    {
+        $result = $this->connection()->selectOne(
+            'SELECT * FROM "occurrences" WHERE "id" = ? LIMIT 1', [$id]
+        );
+
+        return $result ? $this->mapper->occurrence($result) : null;
+    }
+
+    /**
+     * Find an occurrence by the given ID.
+     *
+     * @param \Blixt\Models\Presence $presence
+     *
+     * @return \Blixt\Models\Occurrence
+     */
+    public function getAllOccurrencesByField(Presence $presence)
+    {
+        $result = $this->connection()->selectOne(
+            'SELECT * FROM "occurrences" WHERE "presence_id" = ? LIMIT 1', [$presence->getId()]
+        );
+
+        return $result ? $this->mapper->occurrence($result) : null;
     }
 
     /**

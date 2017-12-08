@@ -4,6 +4,7 @@ namespace Blixt\Index;
 
 use Blixt\Documents\Document as IndexableDocument;
 use Blixt\Documents\Field as IndexableField;
+use Blixt\Index\Schema\Column as SchemaColumn;
 use Blixt\Models\Document;
 use Blixt\Models\Column;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
@@ -74,6 +75,12 @@ class Index
                 $this->storage->transaction(function () use ($schema) {
                     $this->storage->create($schema);
                 });
+
+                $schema->getColumns()->each(function (SchemaColumn $column) {
+                    $this->storage->createColumn(
+                        $column->getName(), $column->isIndexed(), $column->isStored(), $column->getWeight()
+                    );
+                });
             } else {
                 throw new UndefinedSchemaException(
                     "No schema provided to create index '{$this->storage->getName()}'."
@@ -89,7 +96,7 @@ class Index
     protected function initialiseColumns()
     {
         $this->columns = $this->storage->transaction(function () {
-            return $this->storage->getColumns()->keyBy(function (Column $column) {
+            return $this->storage->getAllColumns()->keyBy(function (Column $column) {
                 return $column->getName();
             });
         });
