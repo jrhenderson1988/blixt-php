@@ -16,6 +16,8 @@ use Exception;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
+// TODO - Figure out why the unique index is not working.
+
 class SQLiteStorage extends Storage implements StorageContract
 {
     /**

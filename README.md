@@ -1,5 +1,9 @@
 # Blixt
 
+## TODO
+
+- Work out why the SQLite unique index is not working
+
 ## Structure
 
 - **words:** id, word

@@ -24,7 +24,8 @@ class BlixtTest extends TestCase
             new DefaultTokenizer()
         );
 
-        $name = md5(str_random(10));
+//        $name = md5(str_random(10));
+        $name = 'test';
         $index = $blixt->open($name, function (Schema $schema) {
             $schema->addColumn('name', true, true, 2.6);
             $schema->addColumn(new Column('about'));
@@ -38,8 +39,8 @@ class BlixtTest extends TestCase
         $document->addField(new Field('about', 'He is pretty awesome. He is absolutely amazing.'));
         $index->add($document);
 
-        $index->destroy();
-        $this->assertFileNotExists($path . '.index');
+//        $index->destroy();
+//        $this->assertFileNotExists($path . '.index');
 
 //        $this->expectException(IndexDoesNotExistException::class);
 //        $blixt->open('non_existent_index');
