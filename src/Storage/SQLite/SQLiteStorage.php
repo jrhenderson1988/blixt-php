@@ -16,8 +16,6 @@ use Exception;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
-// TODO - Figure out why the unique index is not working.
-
 class SQLiteStorage extends Storage implements StorageContract
 {
     /**
@@ -219,7 +217,7 @@ class SQLiteStorage extends Storage implements StorageContract
             'CREATE TABLE "documents" (' .
             ' "id" INTEGER PRIMARY KEY,' .
             ' "key" TEXT NOT NULL' .
-            ');' .
+            ');',
 
             'CREATE UNIQUE INDEX "uq_documents_key" ON "documents" ("key");',
 
