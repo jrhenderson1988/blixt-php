@@ -41,15 +41,15 @@ interface StorageContract
      */
     public function destroy();
 
-    /**
-     * Execute the provided closure in a transaction. The return value of the closure is returned from this method. If
-     * any exceptions are thrown within the closure, the transaction is rolled back.
-     *
-     * @param callable $callable
-     *
-     * @return mixed
-     */
-    public function transaction(callable $callable);
+//    /**
+//     * Execute the provided closure in a transaction. The return value of the closure is returned from this method. If
+//     * any exceptions are thrown within the closure, the transaction is rolled back.
+//     *
+//     * @param callable $callable
+//     *
+//     * @return mixed
+//     */
+//    public function transaction(callable $callable);
 
     /**
      * Find a word by the given ID.

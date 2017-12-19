@@ -72,9 +72,7 @@ class Index
     {
         if (!$this->storage->exists()) {
             if (!is_null($schema)) {
-                $this->storage->transaction(function () use ($schema) {
-                    $this->storage->create($schema);
-                });
+                $this->storage->create($schema);
 
                 $schema->getColumns()->each(function (SchemaColumn $column) {
                     $this->storage->createColumn(
@@ -95,10 +93,8 @@ class Index
      */
     protected function initialiseColumns()
     {
-        $this->columns = $this->storage->transaction(function () {
-            return $this->storage->getAllColumns()->keyBy(function (Column $column) {
-                return $column->getName();
-            });
+        $this->columns = $this->storage->getAllColumns()->keyBy(function (Column $column) {
+            return $column->getName();
         });
     }
 
@@ -115,12 +111,9 @@ class Index
 
         $this->ensureDocumentsDoNotExist($indexables);
 
-        $this->storage->transaction(function () use ($indexables) {
-            $indexables->each(function (IndexableDocument $indexable) {
-                $this->createDocument($indexable);
-            });
+        $indexables->each(function (IndexableDocument $indexable) {
+            $this->createDocument($indexable);
         });
-
 
         return true;
     }
@@ -155,9 +148,7 @@ class Index
     protected function ensureDocumentsDoNotExist(Collection $documents)
     {
         $documents->each(function (IndexableDocument $indexable) {
-            $document = $this->storage->transaction(function () use ($indexable) {
-                $this->storage->getDocumentByKey($indexable->getKey());
-            });
+            $document = $this->storage->getDocumentByKey($indexable->getKey());
 
             if ($document) {
                 throw new DocumentAlreadyExistsException(

@@ -5,7 +5,8 @@ namespace BlixtTests;
 use Blixt\Blixt;
 use Blixt\Documents\Document;
 use Blixt\Documents\Field;
-use Blixt\Exceptions\IndexDoesNotExistException;
+use Blixt\Exceptions\DocumentAlreadyExistsException;
+use Blixt\Exceptions\UndefinedSchemaException;
 use Blixt\Index\Schema\Column;
 use Blixt\Index\Schema\Schema;
 use Blixt\Stemming\EnglishStemmer;
@@ -39,10 +40,10 @@ class BlixtTest extends TestCase
         $document->addField(new Field('about', 'He is pretty awesome. He is absolutely amazing.'));
         $index->add($document);
 
-//        $index->destroy();
-//        $this->assertFileNotExists($path . '.index');
+        $index->destroy();
+        $this->assertFileNotExists($path . '.index');
 
-//        $this->expectException(IndexDoesNotExistException::class);
-//        $blixt->open('non_existent_index');
+        $this->expectException(UndefinedSchemaException::class);
+        $blixt->open('non_existent_index');
     }
 }

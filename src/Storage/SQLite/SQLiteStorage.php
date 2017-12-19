@@ -156,31 +156,31 @@ class SQLiteStorage extends Storage implements StorageContract
         return $this->exists;
     }
 
-    /**
-     * Execute the provided callable in a transaction. The return value of the callable is returned from this method. If
-     * any exceptions are thrown within the callable, the transaction is rolled back.
-     *
-     * @param callable $callable
-     *
-     * @return mixed
-     * @throws \Exception
-     */
-    public function transaction(callable $callable)
-    {
-        $this->connection()->beginTransaction();
-
-        try {
-            $response = call_user_func($callable, $this);
-
-            $this->connection()->commitTransaction();
-
-            return $response;
-        } catch (Exception $ex) {
-            $this->connection()->rollBackTransaction();
-
-            throw $ex;
-        }
-    }
+//    /**
+//     * Execute the provided callable in a transaction. The return value of the callable is returned from this method. If
+//     * any exceptions are thrown within the callable, the transaction is rolled back.
+//     *
+//     * @param callable $callable
+//     *
+//     * @return mixed
+//     * @throws \Exception
+//     */
+//    public function transaction(callable $callable)
+//    {
+//        $this->connection()->beginTransaction();
+//
+//        try {
+//            $response = call_user_func($callable, $this);
+//
+//            $this->connection()->commitTransaction();
+//
+//            return $response;
+//        } catch (Exception $ex) {
+//            $this->connection()->rollBackTransaction();
+//
+//            throw $ex;
+//        }
+//    }
 
     /**
      * Create the SQLite file and database connection for the name and path.
