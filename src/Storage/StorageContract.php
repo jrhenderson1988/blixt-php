@@ -1,7 +1,5 @@
 <?php
 
-// TODO - getAllXXX methods should return collections regardless of if there were any results.
-
 namespace Blixt\Storage;
 
 use Blixt\Index\Schema\Schema;
@@ -231,13 +229,13 @@ interface StorageContract
     public function getOccurrenceById($id);
 
     /**
-     * Find an occurrence by the given ID.
+     * Find all occurrences by the given presence.
      *
      * @param \Blixt\Models\Presence $presence
      *
-     * @return \Blixt\Models\Occurrence
+     * @return \Illuminate\Support\Collection
      */
-    public function getAllOccurrencesByField(Presence $presence);
+    public function getAllOccurrencesByPresence(Presence $presence);
 
     /**
      * Create an occurrence record, which represents a presence and the position that it appeared in its field.

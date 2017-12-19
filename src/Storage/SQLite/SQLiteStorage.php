@@ -670,19 +670,17 @@ class SQLiteStorage extends Storage implements StorageContract
     }
 
     /**
-     * Find an occurrence by the given ID.
-     *
      * @param \Blixt\Models\Presence $presence
      *
-     * @return \Blixt\Models\Occurrence
+     * @return \Illuminate\Support\Collection
      */
-    public function getAllOccurrencesByField(Presence $presence)
+    public function getAllOccurrencesByPresence(Presence $presence)
     {
-        $result = $this->connection()->selectOne(
-            'SELECT * FROM "occurrences" WHERE "presence_id" = ? LIMIT 1', [$presence->getId()]
+        $results = $this->connection()->select(
+            'SELECT * FROM "occurrences" WHERE "presence_id" = ?', [$presence->getId()]
         );
 
-        return $result ? $this->mapper->occurrence($result) : null;
+        return $this->mapper->occurrences($results);
     }
 
     /**
