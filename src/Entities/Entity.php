@@ -1,8 +1,8 @@
 <?php
 
-namespace Blixt\Models;
+namespace Blixt\Entities;
 
-abstract class Model
+abstract class Entity
 {
     /**
      * @var int

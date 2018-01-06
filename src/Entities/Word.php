@@ -1,8 +1,8 @@
 <?php
 
-namespace Blixt\Models;
+namespace Blixt\Entities;
 
-class Word extends Model
+class Word extends Entity
 {
     /**
      * @var string

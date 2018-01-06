@@ -1,8 +1,8 @@
 <?php
 
-namespace Blixt\Models;
+namespace Blixt\Entities;
 
-class Field extends Model
+class Field extends Entity
 {
     /**
      * @var int

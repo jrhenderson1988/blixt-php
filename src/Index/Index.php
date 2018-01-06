@@ -71,21 +71,21 @@ class Index
     protected function createIndexIfNotExists(Schema $schema = null)
     {
         if (!$this->storage->exists()) {
-            if (!is_null($schema)) {
-                $this->storage->transaction(function () use ($schema) {
-                    $this->storage->create($schema);
-                });
-
-                $schema->getColumns()->each(function (SchemaColumn $column) {
-                    $this->storage->createColumn(
-                        $column->getName(), $column->isIndexed(), $column->isStored(), $column->getWeight()
-                    );
-                });
-            } else {
+            if (is_null($schema)) {
                 throw new UndefinedSchemaException(
                     "No schema provided to create index '{$this->storage->getName()}'."
                 );
             }
+
+            $this->storage->transaction(function () use ($schema) {
+                $this->storage->create($schema);
+            });
+
+            $schema->getColumns()->each(function (SchemaColumn $column) {
+                $this->storage->createColumn(
+                    $column->getName(), $column->isIndexed(), $column->isStored(), $column->getWeight()
+                );
+            });
         }
     }
 

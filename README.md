@@ -1,95 +1,186 @@
 # Blixt
 
-## TODO
-
-- Work out why the SQLite unique index is not working
-
 ## Structure
 
-- **words:** id, word
-- **columns:** id, name, stored, indexed, weight
-- **documents:** id, key
+- **schemas:** id, name
+- **words:** id, word, document_count
+- **terms:** id, schema_id, word_id, document_count
+- **columns:** id, schema_id, name, stored, indexed
+- **documents:** id, schema_id, key
 - **fields:** id, document_id, column_id, value
-- **presences:** id, field_id, word_id, frequency
-- **occurrences** id, presence_id, position
+- **occurrences:** id, field_id, term_id, frequency
+- **positions:** id, occurrence_id, position
 
-### Word
+### Schemas
 
-A word is a stemmed word, appearing somewhere in the index.
+Represent the different types within an index, such as a user, a product etc.
 
-### Column
+### Words
 
-Columns are used to define the available fields within the index. For example, we could have first name, last name and
-address columns in a user index. A column can be given a weight to affect the outcome of a search against the index, to
-strengthen or weaken the influence of values in a column. A column can also be given a type, which we can further use to
-cast corresponding values, especially when making comparisons.
+Represent stems of words, unique to the whole index. (e.g. run is a stem of the words running, runner, runs etc.). An 
+inverse document frequency is calculated and stored against the word to provide an index-wide IDF which can be used to 
+perform schema-less searches against the index.
 
-### Document
+### Terms
 
-A document represents an item in an index. For example, given a user index, we could have documents for Joe Bloggs and
-Jane Doe each with their own fields. A document must always have a unique key that we can use to look up a document in
-order to avoid duplicates and to refer to records outside of the search index.
+A term represents the existence of a word within a specific schema. That is, if the stemmed word "run" appears within 
+the user schema and it also appears in the product schema, then there will be two term records for that word, within 
+that schema. An inverse document frequency is also stored along side the term to provide a schema specific IDF that 
+allows searches against a specific schema (these searches won't be affected by the index-wide IDF values for the words).
 
-### Field
+### Columns
 
-A document can contain many fields, which represent values of the columns in the index. For example, given a user index,
-that defines a set of columns for first name and last name, and a document within that index representing a person, Joe 
-Bloggs. We would have 2 fields, one for each column giving the values of each for the document, in this case the first 
-name column for the document as "Joe" and the last name column as "Bloggs".
+A column is an available field within a schema. The column stores rules about whether the data it represents is stored,
+whether it is indexed and it's weight which can be used to prioritise columns in queries (e.g. a product title may have
+more weight than a description)
 
-Depending on the definition of the corresponding column, a field may be stored or not. If a field is stored, its value 
-is present whereas if a field is not stored, its value is missing. Indexing can occur regardless of whether the field is
-stored or not as the value of the field is analysed at index time and references to words and positions etc. are stored
-in other tables.
+### Documents
 
-The total number of words that appear in a field, including duplicates, is stored.
+A document represents an actual entity in an index, this is the item that is actually indexed and will form the basis of
+the results to queries.
 
-### Presence
+### Fields
 
-A presence, represents the existence of a word in a field. A reference to both the field and the word is stored. There
-can be no duplicate presence records. Multiple instances of a word appearing in a field is handled by the occurrence
-table.
+A field is an attribute of a document that matches a column. Columns, documents and fields act like a typical database.
+A column is like a table column, a document is like a row or record and a field is a cell or entry.
 
-A presence record also stores the number of times (frequency) the referenced word appears in the referenced field.
+### Occurrences
 
-### Occurrence
+An occurrence represents the existence of a term (A schema specific word) within a field in a document. An occurrence is
+unique representation of a term and field. Along side an occurrence, we also store a frequency, which represents the 
+number of times the term appears within the field (which is used to calculate scores later when searching).
 
-An occurrence record represents each instance of a word appearing in a field. It includes the position that the word 
-appears in the field (where each full word is counted as 1, rather than physical character position). The number of 
-times (frequency) a word appears in a field can be derived from counting the number of occurrence records we have for a 
-presence.
+### Positions
 
-## Notes
+Positions represent that actual positions of terms within fields. If the word "run" (or its stems) appears 3 times in a
+field, there would be 3 position records, each marking the position of that occurrence within the corresponding field.
+
+
+## An example
+
+Imagine we have a "user" schema in our index. That schema defines 2 columns for each user instance, "name" and "about".
+Each column is both stored and indexed and they both have a weight of 1. We have 2 users to add to the index, 
+[key: 1, name: "Joe Bloggs", "about": "Joe likes Jane"] and [key: 2, name: "Jane Doe", about: "Jane loves to party"]. We
+would end up with the following structure:
+
+#### schemas
+
+| id | name |
+|----|------|
+| 1  | user |
+
+#### columns
+
+| id | name  | stored | indexed | weight |
+|----|-------|--------|---------|--------|
+| 1  | name  | 1      | 1       | 1      |
+| 2  | about | 1      | 1       | 1      |
+
+#### words (Stemmed by de-pluralizing/removing trailing 's')
+
+| id | word  |
+|----|-------|
+| 1  | joe   |
+| 2  | blogg |
+| 3  | like  |
+| 4  | jane  |
+| 5  | doe   |
+| 6  | love  |
+| 7  | to    |
+| 8  | party |
+
+#### terms
+
+| id | schema_id | word_id | document_count |
+|----|-----------|---------|----------------|
+| 1  | 1         |  1      | 2              |
+| 2  | 1         |  2      | 1              |
+| 3  | 1         |  3      | 2              |
+| 4  | 1         |  4      | 3              |
+| 5  | 1         |  5      | 1              |
+| 6  | 1         |  6      | 1              |
+| 7  | 1         |  7      | 1              |
+| 8  | 1         |  8      | 1              |
+
+#### documents
+
+| id | schema_id | key |
+|----|-----------|-----|
+| 1  | 1         | 1   |
+| 2  | 1         | 2   |
+
+#### fields
+
+| id | document_id | column_id | value               |
+|----|-------------|-----------|---------------------|
+| 1  | 1           | 1         | Joe Bloggs          |
+| 2  | 1           | 2         | Joe likes Jane      |
+| 3  | 2           | 1         | Jane Doe            |
+| 4  | 2           | 2         | Jane likes to party |
+
+#### occurrences
+
+| id | field_id | term_id | frequency |
+|----|----------|---------|-----------|
+| 1  | 1        | 1       | 1         |
+| 2  | 1        | 2       | 1         |
+| 3  | 2        | 1       | 1         |
+| 4  | 2        | 3       | 1         |
+| 5  | 2        | 4       | 1         |
+| 6  | 3        | 4       | 1         |
+| 7  | 3        | 5       | 1         |
+| 8  | 4        | 4       | 1         |
+| 9  | 4        | 3       | 1         |
+| 10 | 4        | 7       | 1         |
+| 11 | 4        | 8       | 1         |
+
+#### positions
+
+| id | occurrence_id | position |
+|----|---------------|----------|
+| 1  | 1             | 1        |
+| 2  | 2             | 2        |
+| 3  | 3             | 1        |
+| 4  | 4             | 2        |
+| 5  | 5             | 3        |
+| 6  | 6             | 1        |
+| 7  | 7             | 2        |
+| 8  | 8             | 1        |
+| 9  | 9             | 2        |
+| 10 | 10            | 3        |
+| 11 | 11            | 4        |
+
+## Indexing
+
+Before indexing of a document can take place, a schema must be defined with a set of columns, each with their own 
+properties that specify whether the fields they represent should be stored and or indexed.
+
+A document is provided in the form of an indexable `Document`, specifying a key which can be used by the client system 
+to identify it later. An indexable document contains a set of `Fields`. A schema (or type) is provided along with the 
+document so that Blixt is able to place the document in the correct schema within the index.
+
+Blixt begins processing the document by first checking to ensure it does not already exist in the index under that 
+schema. If it does exist, an exception is thrown.
+
+Blixt will then add a document record and begin processing the document's fields. Each field is split into tokens (in 
+most cases a token is a word), and then each token is stemmed (i.e. finding the root of a word, for example with an 
+English/Porter stemmer the word "run" is the stem of the words "running", "runner", "runs" etc.)
+
+Word records are then added for each of the tokens if no corresponding records already exist, and then term records are
+created under the schema accordingly. The document count totals for the word and term records are updated to reflect the
+addition of the new document.
+
+Occurrence records are created for each unique term and field combination, indicating that the specified term occurrs 
+within the specific field. The frequency (number of times) that term occurred within the field is stored along side the 
+occurrence record. Positional data is also stored against each occurrence record representing each position in a field 
+that a term occurred.
+
+## Searching
 
 TODO
-- When constructed, Blixt should be provided a default Config object which holds a stemmer, tokenizer and storage factory
-- Blixt stores the Config in a property and ensures each part of it is provided.
-- The Index constructor accepts a storage engine (created from factory), a stemmer and a tokenizer along with a name and optional schema
-    - The storage engine provides methods to check existence, create and open the index storage
-    - When constructed, the Index class uses the storage engine to create or open the storage ready for use. If the index needs to be created, the provided schema is used or an error is thrown
-- Blixt has an open method which accepts a name of an index and an optional config object.
-    - If the optional config object is provided, it's values are merged with the default config object to create a new config
-    - From the config, the stemmer and tokenizer are extracted and a storage engine is created using the storage factory
-    - These items are passed into the index along with the name and the index is either created or updated.
 
-    $config = new Config(new SQLiteFactory(), new EnglishStemmer(), new DefaultTokenizer());
-    $blixt = new Blixt($config);
-    $index = $blixt->open('users');
 
-TODO: Make adjustments to make an index represent a schema/type such as "users". The schema_id can be removed from all 
-of the other tables and everything inside the index would be considered in relation to the schema/index. For example, 
-the columns table would define the set of columns and their weights, types and whether or not they're indexed/stored for
-the data to be stored in that specific index.
-
-It would also be beneficial to add a method into the primary Blixt class so that we can open a schema if it exists and 
-provide a way for the user to define the schema for the index as a second parameter, should the index not already exist:
-
-    $blixt = new Blixt(...);
-    $blixt->open('users', function () {
-        // Define the schema here
-    });
-
-Different types of queries to implement:
+## Queries (to be implemented)
 - One word query (Match one word)
 - Phrase query (Match some of the words)
 - Full Phrase query (Matches all of the words)

@@ -1,8 +1,8 @@
 <?php
 
-namespace Blixt\Models;
+namespace Blixt\Entities;
 
-class Presence extends Model
+class Presence extends Entity
 {
     /**
      * @var int

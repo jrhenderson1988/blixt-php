@@ -1,8 +1,8 @@
 <?php
 
-namespace Blixt\Models;
+namespace Blixt\Entities;
 
-class Occurrence extends Model
+class Occurrence extends Entity
 {
     /**
      * @var int

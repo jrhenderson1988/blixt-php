@@ -1,8 +1,8 @@
 <?php
 
-namespace Blixt\Models;
+namespace Blixt\Entities;
 
-class Column extends Model
+class Column extends Entity
 {
     /**
      * @var string

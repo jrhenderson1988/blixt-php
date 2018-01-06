@@ -1,8 +1,8 @@
 <?php
 
-namespace Blixt\Models;
+namespace Blixt\Entities;
 
-class Document extends Model
+class Document extends Entity
 {
     /**
      * @var mixed
