@@ -176,45 +176,45 @@ class SQLiteConnection
         return $bindings;
     }
 
-    /**
-     * Begin a transaction.
-     *
-     * @return bool
-     */
-    public function beginTransaction()
-    {
-        if ($this->pdo->inTransaction()) {
-            return true;
-        }
+//    /**
+//     * Begin a transaction.
+//     *
+//     * @return bool
+//     */
+//    public function beginTransaction()
+//    {
+//        if ($this->pdo->inTransaction()) {
+//            return true;
+//        }
+//
+//        return $this->pdo->beginTransaction();
+//    }
 
-        return $this->pdo->beginTransaction();
-    }
+//    /**
+//     * Roll back the current transaction.
+//     *
+//     * @return bool
+//     */
+//    public function rollBackTransaction()
+//    {
+//        if (!$this->pdo->inTransaction()) {
+//            return false;
+//        }
+//
+//        return $this->pdo->rollBack();
+//    }
 
-    /**
-     * Roll back the current transaction.
-     *
-     * @return bool
-     */
-    public function rollBackTransaction()
-    {
-        if (!$this->pdo->inTransaction()) {
-            return false;
-        }
-
-        return $this->pdo->rollBack();
-    }
-
-    /**
-     * Commit the current transaction.
-     *
-     * @return bool
-     */
-    public function commitTransaction()
-    {
-        if (!$this->pdo->inTransaction()) {
-            return false;
-        }
-
-        return $this->pdo->commit();
-    }
+//    /**
+//     * Commit the current transaction.
+//     *
+//     * @return bool
+//     */
+//    public function commitTransaction()
+//    {
+//        if (!$this->pdo->inTransaction()) {
+//            return false;
+//        }
+//
+//        return $this->pdo->commit();
+//    }
 }

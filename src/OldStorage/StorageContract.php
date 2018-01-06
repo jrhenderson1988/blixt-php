@@ -1,7 +1,5 @@
 <?php
 
-// TODO - getAllXXX methods should return collections regardless of if there were any results.
-
 namespace Blixt\Storage;
 
 use Blixt\Index\Schema\Schema;
@@ -43,15 +41,15 @@ interface StorageContract
      */
     public function destroy();
 
-    /**
-     * Execute the provided closure in a transaction. The return value of the closure is returned from this method. If
-     * any exceptions are thrown within the closure, the transaction is rolled back.
-     *
-     * @param callable $callable
-     *
-     * @return mixed
-     */
-    public function transaction(callable $callable);
+//    /**
+//     * Execute the provided closure in a transaction. The return value of the closure is returned from this method. If
+//     * any exceptions are thrown within the closure, the transaction is rolled back.
+//     *
+//     * @param callable $callable
+//     *
+//     * @return mixed
+//     */
+//    public function transaction(callable $callable);
 
     /**
      * Find a word by the given ID.
@@ -231,13 +229,13 @@ interface StorageContract
     public function getOccurrenceById($id);
 
     /**
-     * Find an occurrence by the given ID.
+     * Find all occurrences by the given presence.
      *
      * @param \Blixt\Models\Presence $presence
      *
-     * @return \Blixt\Models\Occurrence
+     * @return \Illuminate\Support\Collection
      */
-    public function getAllOccurrencesByField(Presence $presence);
+    public function getAllOccurrencesByPresence(Presence $presence);
 
     /**
      * Create an occurrence record, which represents a presence and the position that it appeared in its field.

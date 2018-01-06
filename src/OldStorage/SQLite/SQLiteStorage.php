@@ -156,31 +156,31 @@ class SQLiteStorage extends Storage implements StorageContract
         return $this->exists;
     }
 
-    /**
-     * Execute the provided callable in a transaction. The return value of the callable is returned from this method. If
-     * any exceptions are thrown within the callable, the transaction is rolled back.
-     *
-     * @param callable $callable
-     *
-     * @return mixed
-     * @throws \Exception
-     */
-    public function transaction(callable $callable)
-    {
-        $this->connection()->beginTransaction();
-
-        try {
-            $response = call_user_func($callable, $this);
-
-            $this->connection()->commitTransaction();
-
-            return $response;
-        } catch (Exception $ex) {
-            $this->connection()->rollBackTransaction();
-
-            throw $ex;
-        }
-    }
+//    /**
+//     * Execute the provided callable in a transaction. The return value of the callable is returned from this method. If
+//     * any exceptions are thrown within the callable, the transaction is rolled back.
+//     *
+//     * @param callable $callable
+//     *
+//     * @return mixed
+//     * @throws \Exception
+//     */
+//    public function transaction(callable $callable)
+//    {
+//        $this->connection()->beginTransaction();
+//
+//        try {
+//            $response = call_user_func($callable, $this);
+//
+//            $this->connection()->commitTransaction();
+//
+//            return $response;
+//        } catch (Exception $ex) {
+//            $this->connection()->rollBackTransaction();
+//
+//            throw $ex;
+//        }
+//    }
 
     /**
      * Create the SQLite file and database connection for the name and path.
@@ -670,19 +670,17 @@ class SQLiteStorage extends Storage implements StorageContract
     }
 
     /**
-     * Find an occurrence by the given ID.
-     *
      * @param \Blixt\Models\Presence $presence
      *
-     * @return \Blixt\Models\Occurrence
+     * @return \Illuminate\Support\Collection
      */
-    public function getAllOccurrencesByField(Presence $presence)
+    public function getAllOccurrencesByPresence(Presence $presence)
     {
-        $result = $this->connection()->selectOne(
-            'SELECT * FROM "occurrences" WHERE "presence_id" = ? LIMIT 1', [$presence->getId()]
+        $results = $this->connection()->select(
+            'SELECT * FROM "occurrences" WHERE "presence_id" = ?', [$presence->getId()]
         );
 
-        return $result ? $this->mapper->occurrence($result) : null;
+        return $this->mapper->occurrences($results);
     }
 
     /**
