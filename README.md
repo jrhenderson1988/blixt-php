@@ -3,9 +3,9 @@
 ## Structure
 
 - **schemas:** id, name
-- **words:** id, word, document_count
+- **words:** id, word
 - **terms:** id, schema_id, word_id, document_count
-- **columns:** id, schema_id, name, stored, indexed
+- **columns:** id, schema_id, name, is_stored, is_indexed
 - **documents:** id, schema_id, key
 - **fields:** id, document_id, column_id, value
 - **occurrences:** id, field_id, term_id, frequency
@@ -17,7 +17,7 @@ Represent the different types within an index, such as a user, a product etc.
 
 ### Words
 
-Represent stems of words, unique to the whole index. (e.g. run is a stem of the words running, runner, runs etc.). An 
+Represents stems of words, unique to the whole index. (e.g. run is a stem of the words running, runner, runs etc.). An 
 inverse document frequency is calculated and stored against the word to provide an index-wide IDF which can be used to 
 perform schema-less searches against the index.
 
@@ -150,16 +150,23 @@ would end up with the following structure:
 | 10 | 10            | 3        |
 | 11 | 11            | 4        |
 
+## Initialisation
+
+When the Blixt object is created, it initially loads all of the stored schema and column objects into memory, if there 
+are any. This allows Blixt to quickly look up a schema and its associated columns to validate an index request and to
+quickly gather the `is_indexed` and `is_stored` constraints on each column.
+
 ## Indexing
 
 Before indexing of a document can take place, a schema must be defined with a set of columns, each with their own 
-properties that specify whether the fields they represent should be stored and or indexed.
+properties that specify whether the fields they represent should be stored and or indexed. If a schema already exists, 
+this part can be skipped. If a schema definition is not provided and no such schema exists, an exception is thrown.
 
-A document is provided in the form of an indexable `Document`, specifying a key which can be used by the client system 
-to identify it later. An indexable document contains a set of `Fields`. A schema (or type) is provided along with the 
+A document is provided in the form of an indexable document, specifying a key which can be used by the client system to 
+identify it later. An indexable document contains a set of fields. A schema (or type) is provided along with the
 document so that Blixt is able to place the document in the correct schema within the index.
 
-Blixt begins processing the document by first checking to ensure it does not already exist in the index under that 
+Blixt begins processing the document by first checking to ensure it does not already exist in the index under that
 schema. If it does exist, an exception is thrown.
 
 Blixt will then add a document record and begin processing the document's fields. Each field is split into tokens (in 
@@ -167,26 +174,51 @@ most cases a token is a word), and then each token is stemmed (i.e. finding the 
 English/Porter stemmer the word "run" is the stem of the words "running", "runner", "runs" etc.)
 
 Word records are then added for each of the tokens if no corresponding records already exist, and then term records are
-created under the schema accordingly. The document count totals for the word and term records are updated to reflect the
-addition of the new document.
+created under the schema accordingly. The document count totals for the term records are updated to reflect the addition
+of the new document.
 
-Occurrence records are created for each unique term and field combination, indicating that the specified term occurrs 
-within the specific field. The frequency (number of times) that term occurred within the field is stored along side the 
+Occurrence records are created for each unique term and field combination, indicating that the specified term occurs 
+within the specific field. The frequency (number of times that term occurred within the field) is stored along side the 
 occurrence record. Positional data is also stored against each occurrence record representing each position in a field 
 that a term occurred.
 
 ## Searching
 
-TODO
+Searching begins by providing a query object to Blixt along with an optional schema (or set of schemas). A string may be
+passed instead of a query object, but that will be internally converted to a relevant query object. Different query 
+objects refer to different types of searches and therefore have different approaches to the search.
+
+All of the below queries allow for some extra filtering by the specification of additional where clauses that can be 
+used to further filter down the result set. There where clauses can be against any of the other fields that are stored.
+
+When searching, it is also possible to pass in a single schema to only interrogate that schema, a collection of schemas 
+to interrogate more than one schema, or no schema at all to interrogate all schemas.  
+
+### Boolean Query (Coming later)
+
+TODO: The simplest of all of the queries. Given a set of terms separated by boolean operators (| = or, & = and, ~ = not)
+
+### Single Term Query
+
+A simple query that is based on a single term/word/token. An object representing a single term query is passed to the 
+index' `search` method, along with a single schema (to search only a single schema), a set of schemas (to search many 
+specific schemas) or no schema (to search all schemas).
+
+The target schemas are determined and the search process is carried out once for each. Firstly, a global word record is
+queried from the index and a corresponding term record is then looked up in the target schema. Next, the fields that 
+contain the term are looked up and their associated documents are retrieved (with all of their fields loaded).
+
+TODO - Continue
+
+### Multi Term Query (With partial matching)
 
 
-## Queries (to be implemented)
-- One word query (Match one word)
-- Phrase query (Match some of the words)
-- Full Phrase query (Matches all of the words)
-- Boolean query
+### Full Phrase Query (Where all terms must be matched in the correct order)
+
 
 ## Reading
 
-- https://www.elastic.co/guide/en/elasticsearch/guide/current/scoring-theory.html
+- https://www.elastic.co/guide/en/elasticsearch/guide/current/controlling-relevance.html
+- https://lucene.apache.org/core/3_0_3/fileformats.html
 - http://aakashjapi.com/fuckin-search-engines-how-do-they-work/
+- https://github.com/zendframework/ZendSearch
