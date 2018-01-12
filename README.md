@@ -184,36 +184,26 @@ that a term occurred.
 
 ## Searching
 
-Searching begins by providing a query object to Blixt along with an optional schema (or set of schemas). A string may be
-passed instead of a query object, but that will be internally converted to a relevant query object. Different query 
-objects refer to different types of searches and therefore have different approaches to the search.
+For now, the only search type that is supported is a *Multi-term query*. In the future however, support will be provided
+for the following query types:
 
-All of the below queries allow for some extra filtering by the specification of additional where clauses that can be 
-used to further filter down the result set. There where clauses can be against any of the other fields that are stored.
+- **Boolean Query:** By using boolean symbols such as `+`, `|` and `~` (or their associated words `and`, `or` and 
+`not`, respectively), matching documents can be quickly extracted. A boolean query can then later be used as the basis 
+of the other queries, by converting queries to boolean initially, a list of potential documents can be quickly extracted
+to be scored.
+- **Single Term Query:** Similar to a multi-term query, documents are scored against a single term.
+- **Full Phrase Query:** Similar to a multi-term query, but only documents that contain every term in the correct 
+order are allowed. 
 
-When searching, it is also possible to pass in a single schema to only interrogate that schema, a collection of schemas 
-to interrogate more than one schema, or no schema at all to interrogate all schemas.  
+It is also intended to implement query parsing so that an input search string can be converted to the correct query type
+before searching is performed.
 
-### Boolean Query (Coming later)
-
-TODO: The simplest of all of the queries. Given a set of terms separated by boolean operators (| = or, & = and, ~ = not)
-
-### Single Term Query
-
-A simple query that is based on a single term/word/token. An object representing a single term query is passed to the 
-index' `search` method, along with a single schema (to search only a single schema), a set of schemas (to search many 
-specific schemas) or no schema (to search all schemas).
-
-The target schemas are determined and the search process is carried out once for each. Firstly, a global word record is
-queried from the index and a corresponding term record is then looked up in the target schema. Next, the fields that 
-contain the term are looked up and their associated documents are retrieved (with all of their fields loaded).
-
-TODO - Continue
-
-### Multi Term Query (With partial matching)
-
-
-### Full Phrase Query (Where all terms must be matched in the correct order)
+- To begin with, the search string is tokenized and each word is stemmed.
+- The index is queried to find `word` records matching the stemmed tokens.
+- A quick lookup is then carried out to find the identifiers of the schema(s) we're targeting. The remainder of the 
+following process is carried out for each schema.
+  - Term records are looked up matching the words for the schema.
+  - Occurrence records
 
 
 ## Reading
