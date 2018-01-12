@@ -184,27 +184,36 @@ that a term occurred.
 
 ## Searching
 
-For now, the only search type that is supported is a *Multi-term query*. In the future however, support will be provided
-for the following query types:
+The following types of queries are supported:
 
-- **Boolean Query:** By using boolean symbols such as `+`, `|` and `~` (or their associated words `and`, `or` and 
-`not`, respectively), matching documents can be quickly extracted. A boolean query can then later be used as the basis 
-of the other queries, by converting queries to boolean initially, a list of potential documents can be quickly extracted
-to be scored.
+- **Boolean:** A simplified boolean query where all terms in a phrase are considered optional (or) unless preceded 
+directly with a `+` which makes a term required (and) or a `~` which makes a term remove a document from consideration
+(not). This type of query forms the basis of all of the other queries.
+
+Searching begins by splitting the search phrase into separate words (tokenization) and then turning each word into its 
+root form (stemming). The index is then queried to find word records matching the terms. Using the word records and the 
+schema we're interrogating, term records are then extracted. If any of the search terms that had the `+` operator 
+attached to it are not present in the term records, then an empty result set is returned. 
+
+A query is then performed to find fields that contain the terms of the query (regardless of operator) and the documents
+that are associated with those fields are returned (with their fields, occurrences and positions all loaded 
+accordingly). Each document is then analysed and either accepted or rejected, if a document does not contain a required 
+term (`+`) or does contain a removed term (`~`) it is rejected, all other documents are accepted. The set of accepted 
+documents are then returned as results.
+
+- **Multi-term:** A simple query that is carried out by first performing a boolean query and then scoring all of the 
+documents found using our scoring function (Which is similar to Lucene's scoring function). The documents are ranked in
+order of their scores and the results are returned.
+
+The following types of queries are due to be supported later:
+
 - **Single Term Query:** Similar to a multi-term query, documents are scored against a single term.
+
 - **Full Phrase Query:** Similar to a multi-term query, but only documents that contain every term in the correct 
 order are allowed. 
 
 It is also intended to implement query parsing so that an input search string can be converted to the correct query type
 before searching is performed.
-
-- To begin with, the search string is tokenized and each word is stemmed.
-- The index is queried to find `word` records matching the stemmed tokens.
-- A quick lookup is then carried out to find the identifiers of the schema(s) we're targeting. The remainder of the 
-following process is carried out for each schema.
-  - Term records are looked up matching the words for the schema.
-  - Occurrence records
-
 
 ## Reading
 
