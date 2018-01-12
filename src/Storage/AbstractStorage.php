@@ -2,7 +2,7 @@
 
 namespace Blixt\Storage;
 
-abstract class Storage
+abstract class AbstractStorage
 {
 //    /**
 //     * To provide a base implementation of the transaction method, for those storage drivers that do not support

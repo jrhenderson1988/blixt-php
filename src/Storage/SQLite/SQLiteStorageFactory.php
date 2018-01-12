@@ -2,10 +2,10 @@
 
 namespace Blixt\Storage\SQLite;
 
-use Blixt\Storage\StorageFactoryContract;
+use Blixt\Storage\StorageFactory;
 use InvalidArgumentException;
 
-class SQLiteStorageFactory implements StorageFactoryContract
+class SQLiteStorageFactory implements StorageFactory
 {
     /**
      * The directory where the index files are located.

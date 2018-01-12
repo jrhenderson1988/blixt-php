@@ -2,7 +2,14 @@
 
 namespace Blixt\Stemming;
 
-abstract class Stemmer
+interface Stemmer
 {
-
+    /**
+     * Stem a word.
+     *
+     * @param string $word
+     *
+     * @return string
+     */
+    public function stem($word);
 }

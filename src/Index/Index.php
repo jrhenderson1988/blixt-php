@@ -11,27 +11,27 @@ use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\UndefinedSchemaException;
 use Blixt\Index\Schema\Schema;
 use Blixt\Models\Field;
-use Blixt\Stemming\StemmerContract as Stemmer;
-use Blixt\Storage\StorageContract as Storage;
+use Blixt\Stemming\Stemmer as Stemmer;
+use Blixt\Storage\Storage as Storage;
 use Blixt\Tokenization\Token;
-use Blixt\Tokenization\TokenizerContract as Tokenizer;
+use Blixt\Tokenization\Tokenizer as Tokenizer;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
 class Index
 {
     /**
-     * @var \Blixt\Storage\StorageContract
+     * @var \Blixt\Storage\Storage
      */
     protected $storage;
 
     /**
-     * @var \Blixt\Stemming\StemmerContract
+     * @var \Blixt\Stemming\Stemmer
      */
     protected $stemmer;
 
     /**
-     * @var \Blixt\Tokenization\TokenizerContract
+     * @var \Blixt\Tokenization\Tokenizer
      */
     protected $tokenizer;
 
@@ -43,10 +43,10 @@ class Index
     /**
      * Index constructor.
      *
-     * @param \Blixt\Stemming\StemmerContract       $stemmer
-     * @param \Blixt\Tokenization\TokenizerContract $tokenizer
-     * @param \Blixt\Storage\StorageContract        $storage
-     * @param \Blixt\Index\Schema\Schema|null       $schema
+     * @param \Blixt\Stemming\Stemmer         $stemmer
+     * @param \Blixt\Tokenization\Tokenizer   $tokenizer
+     * @param \Blixt\Storage\Storage          $storage
+     * @param \Blixt\Index\Schema\Schema|null $schema
      *
      * @throws \Blixt\Exceptions\UndefinedSchemaException
      */

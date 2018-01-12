@@ -3,13 +3,13 @@
 namespace Blixt\Storage;
 
 use Blixt\Index\Schema\Schema;
-use Blixt\Models\Column;
-use Blixt\Models\Document;
-use Blixt\Models\Field;
-use Blixt\Models\Presence;
-use Blixt\Models\Word;
+use Blixt\Storage\Entities\Column;
+use Blixt\Storage\Entities\Document;
+use Blixt\Storage\Entities\Field;
+use Blixt\Storage\Entities\Presence;
+use Blixt\Storage\Entities\Word;
 
-interface StorageContract
+interface Storage
 {
     /**
      * Get the name of the schema represented by the storage engine.
@@ -56,7 +56,7 @@ interface StorageContract
      *
      * @param int|string $id
      *
-     * @return \Blixt\Models\Word|null
+     * @return \Blixt\Storage\Entities\Word|null
      */
     public function getWordById($id);
 
@@ -65,7 +65,7 @@ interface StorageContract
      *
      * @param string $word
      *
-     * @return \Blixt\Models\Word|null
+     * @return \Blixt\Storage\Entities\Word|null
      */
     public function getWordByWord($word);
 
@@ -74,7 +74,7 @@ interface StorageContract
      *
      * @param string $word
      *
-     * @return \Blixt\Models\Word
+     * @return \Blixt\Storage\Entities\Word
      */
     public function createWord($word);
 
@@ -83,7 +83,7 @@ interface StorageContract
      *
      * @param int|string $id
      *
-     * @return \Blixt\Models\Column
+     * @return \Blixt\Storage\Entities\Column
      */
     public function getColumnById($id);
 
@@ -92,7 +92,7 @@ interface StorageContract
      *
      * @param int|string $name
      *
-     * @return \Blixt\Models\Column
+     * @return \Blixt\Storage\Entities\Column
      */
     public function getColumnByName($name);
 
@@ -111,7 +111,7 @@ interface StorageContract
      * @param boolean|mixed $stored
      * @param float|mixed   $weight
      *
-     * @return \Blixt\Models\Column
+     * @return \Blixt\Storage\Entities\Column
      */
     public function createColumn($name, $indexed, $stored, $weight);
 
@@ -120,7 +120,7 @@ interface StorageContract
      *
      * @param int|string $id
      *
-     * @return \Blixt\Models\Document|null
+     * @return \Blixt\Storage\Entities\Document|null
      */
     public function getDocumentById($id);
 
@@ -129,7 +129,7 @@ interface StorageContract
      *
      * @param mixed $key
      *
-     * @return \Blixt\Models\Document|null
+     * @return \Blixt\Storage\Entities\Document|null
      */
     public function getDocumentByKey($key);
 
@@ -138,7 +138,7 @@ interface StorageContract
      *
      * @param mixed $key
      *
-     * @return \Blixt\Models\Document
+     * @return \Blixt\Storage\Entities\Document
      */
     public function createDocument($key);
 
@@ -147,24 +147,24 @@ interface StorageContract
      *
      * @param int|string $id
      *
-     * @return \Blixt\Models\Field
+     * @return \Blixt\Storage\Entities\Field
      */
     public function getFieldById($id);
 
     /**
      * Find a field in the storage by the given document and column.
      *
-     * @param \Blixt\Models\Document $document
-     * @param \Blixt\Models\Column   $column
+     * @param \Blixt\Storage\Entities\Document $document
+     * @param \Blixt\Storage\Entities\Column   $column
      *
-     * @return \Blixt\Models\Field
+     * @return \Blixt\Storage\Entities\Field
      */
     public function getFieldByDocumentAndColumn(Document $document, Column $column);
 
     /**
      * Get all the fields in the storage for the given document.
      *
-     * @param \Blixt\Models\Document $document
+     * @param \Blixt\Storage\Entities\Document $document
      *
      * @return \Illuminate\Support\Collection
      */
@@ -173,11 +173,11 @@ interface StorageContract
     /**
      * Create a field for the given document and column, with the given value.
      *
-     * @param \Blixt\Models\Document $document
-     * @param \Blixt\Models\Column   $column
-     * @param mixed|null             $value
+     * @param \Blixt\Storage\Entities\Document $document
+     * @param \Blixt\Storage\Entities\Column   $column
+     * @param mixed|null                       $value
      *
-     * @return \Blixt\Models\Field
+     * @return \Blixt\Storage\Entities\Field
      */
     public function createField(Document $document, Column $column, $value = null);
 
@@ -186,36 +186,37 @@ interface StorageContract
      *
      * @param int|string $id
      *
-     * @return \Blixt\Models\Presence
+     * @return \Blixt\Storage\Entities\Presence
      */
     public function getPresenceById($id);
 
     /**
      * Find a presence by the field and word provided.
      *
-     * @param \Blixt\Models\Field $field
-     * @param \Blixt\Models\Word  $word
+     * @param \Blixt\Storage\Entities\Field $field
+     * @param \Blixt\Storage\Entities\Word  $word
      *
-     * @return \Blixt\Models\Presence
+     * @return \Blixt\Storage\Entities\Presence
      */
     public function getPresenceByFieldAndWord(Field $field, Word $word);
 
     /**
      * Find the presences associated with the given field.
      *
-     * @param \Blixt\Models\Field $field
+     * @param \Blixt\Storage\Entities\Field $field
      *
      * @return \Illuminate\Support\Collection
      */
     public function getAllPresencesByField(Field $field);
+
     /**
      * Create a presence, which represents the presence of a word in a field and the corresponding frequency.
      *
-     * @param \Blixt\Models\Field $field
-     * @param \Blixt\Models\Word  $word
-     * @param int                 $frequency
+     * @param \Blixt\Storage\Entities\Field $field
+     * @param \Blixt\Storage\Entities\Word  $word
+     * @param int                           $frequency
      *
-     * @return \Blixt\Models\Presence
+     * @return \Blixt\Storage\Entities\Presence
      */
     public function createPresence(Field $field, Word $word, $frequency);
 
@@ -224,14 +225,14 @@ interface StorageContract
      *
      * @param int|string $id
      *
-     * @return \Blixt\Models\Occurrence
+     * @return \Blixt\Storage\Entities\Occurrence
      */
     public function getOccurrenceById($id);
 
     /**
      * Find all occurrences by the given presence.
      *
-     * @param \Blixt\Models\Presence $presence
+     * @param \Blixt\Storage\Entities\Presence $presence
      *
      * @return \Illuminate\Support\Collection
      */
@@ -240,10 +241,10 @@ interface StorageContract
     /**
      * Create an occurrence record, which represents a presence and the position that it appeared in its field.
      *
-     * @param \Blixt\Models\Presence $presence
-     * @param int                    $position
+     * @param \Blixt\Storage\Entities\Presence $presence
+     * @param int                              $position
      *
-     * @return \Blixt\Models\Occurrence
+     * @return \Blixt\Storage\Entities\Occurrence
      */
     public function createOccurrence(Presence $presence, $position);
 }

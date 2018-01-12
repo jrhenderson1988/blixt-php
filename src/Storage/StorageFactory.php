@@ -2,14 +2,14 @@
 
 namespace Blixt\Storage;
 
-interface StorageFactoryContract
+interface StorageFactory
 {
     /**
      * Create a storage engine for the given index name.
      *
      * @param string $name
      *
-     * @return \Blixt\Storage\StorageContract
+     * @return \Blixt\Storage\Storage
      */
     public function create($name);
 }

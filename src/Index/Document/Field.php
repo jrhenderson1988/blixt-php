@@ -1,6 +1,6 @@
 <?php
 
-namespace Blixt\Documents;
+namespace Blixt\Index\Document;
 
 class Field
 {

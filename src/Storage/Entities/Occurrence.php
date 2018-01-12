@@ -1,6 +1,6 @@
 <?php
 
-namespace Blixt\Entities;
+namespace Blixt\Storage\Entities;
 
 class Occurrence extends Entity
 {

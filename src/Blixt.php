@@ -5,34 +5,34 @@ namespace Blixt;
 use Blixt\Index\Index;
 use Blixt\Index\Schema\Schema;
 use Blixt\Stemming\EnglishStemmer;
-use Blixt\Stemming\StemmerContract as Stemmer;
-use Blixt\Storage\StorageFactoryContract as StorageFactory;
+use Blixt\Stemming\Stemmer as Stemmer;
+use Blixt\Storage\StorageFactory as StorageFactory;
 use Blixt\Tokenization\DefaultTokenizer;
-use Blixt\Tokenization\TokenizerContract as Tokenizer;
+use Blixt\Tokenization\Tokenizer as Tokenizer;
 
 class Blixt
 {
     /**
-     * @var \Blixt\Storage\StorageFactoryContract
+     * @var \Blixt\Storage\StorageFactory
      */
     protected $storageFactory;
 
     /**
-     * @var \Blixt\Stemming\StemmerContract
+     * @var \Blixt\Stemming\Stemmer
      */
     protected $stemmer;
 
     /**
-     * @var \Blixt\Tokenization\TokenizerContract
+     * @var \Blixt\Tokenization\Tokenizer
      */
     protected $tokenizer;
 
     /**
      * Blixt constructor.
      *
-     * @param \Blixt\Storage\StorageFactoryContract      $storageFactory
-     * @param \Blixt\Stemming\StemmerContract|null       $stemmer
-     * @param \Blixt\Tokenization\TokenizerContract|null $tokenizer
+     * @param \Blixt\Storage\StorageFactory      $storageFactory
+     * @param \Blixt\Stemming\Stemmer|null       $stemmer
+     * @param \Blixt\Tokenization\Tokenizer|null $tokenizer
      */
     public function __construct(StorageFactory $storageFactory, Stemmer $stemmer = null, Tokenizer $tokenizer = null)
     {
@@ -44,7 +44,7 @@ class Blixt
     /**
      * Set the storage factory responsible for creating the storage driver.
      *
-     * @param \Blixt\Storage\StorageFactoryContract $storage
+     * @param \Blixt\Storage\StorageFactory $storage
      */
     public function setStorageFactory(StorageFactory $storage)
     {
@@ -54,7 +54,7 @@ class Blixt
     /**
      * Get the storage connector.
      *
-     * @return \Blixt\Storage\StorageFactoryContract
+     * @return \Blixt\Storage\StorageFactory
      */
     public function getStorageFactory()
     {
@@ -64,7 +64,7 @@ class Blixt
     /**
      * Set the stemmer.
      *
-     * @param \Blixt\Stemming\StemmerContract $stemmer
+     * @param \Blixt\Stemming\Stemmer $stemmer
      */
     public function setStemmer(Stemmer $stemmer)
     {
@@ -74,7 +74,7 @@ class Blixt
     /**
      * Get the stemmer.
      *
-     * @return \Blixt\Stemming\StemmerContract
+     * @return \Blixt\Stemming\Stemmer
      */
     public function getStemmer()
     {
@@ -84,7 +84,7 @@ class Blixt
     /**
      * Set the tokenizer.
      *
-     * @param \Blixt\Tokenization\TokenizerContract $tokenizer
+     * @param \Blixt\Tokenization\Tokenizer $tokenizer
      */
     public function setTokenizer(Tokenizer $tokenizer)
     {
@@ -94,7 +94,7 @@ class Blixt
     /**
      * Get the tokenizer.
      *
-     * @return \Blixt\Tokenization\TokenizerContract
+     * @return \Blixt\Tokenization\Tokenizer
      */
     public function getTokenizer()
     {

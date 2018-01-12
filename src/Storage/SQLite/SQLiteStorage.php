@@ -10,13 +10,13 @@ use Blixt\Models\Document;
 use Blixt\Models\Field;
 use Blixt\Models\Presence;
 use Blixt\Models\Word;
+use Blixt\Storage\AbstractStorage;
 use Blixt\Storage\Storage;
-use Blixt\Storage\StorageContract;
 use Exception;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
-class SQLiteStorage extends Storage implements StorageContract
+class SQLiteStorage extends AbstractStorage implements Storage
 {
     /**
      * The directory where the indexes are found.

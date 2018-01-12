@@ -8,9 +8,9 @@ use Blixt\Exceptions\UndefinedSchemaException;
 use Blixt\Index\Index;
 use Blixt\Index\Schema\Schema;
 use Blixt\Models\Document;
-use Blixt\Stemming\StemmerContract;
-use Blixt\Storage\StorageContract;
-use Blixt\Tokenization\TokenizerContract;
+use Blixt\Stemming\Stemmer;
+use Blixt\Storage\Storage;
+use Blixt\Tokenization\Tokenizer;
 use BlixtTests\TestCase;
 use Mockery;
 use ReflectionClass;
@@ -18,17 +18,17 @@ use ReflectionClass;
 class IndexTest extends TestCase
 {
     /**
-     * @var \Blixt\Storage\StorageContract
+     * @var \Blixt\Storage\Storage
      */
     protected $storage;
 
     /**
-     * @var \Blixt\Stemming\StemmerContract
+     * @var \Blixt\Stemming\Stemmer
      */
     protected $stemmer;
 
     /**
-     * @var \Blixt\Tokenization\TokenizerContract
+     * @var \Blixt\Tokenization\Tokenizer
      */
     protected $tokenizer;
 
