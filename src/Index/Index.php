@@ -83,7 +83,20 @@ class Index
         // Tell if the given schema exists
     }
 
+    public function add(IndexableDocument $document, $schema)
+    {
+        // Add the given document to the index against the given schema
+    }
 
+    public function search($query)
+    {
+        // SELECT d.* FROM documents AS d
+        // INNER JOIN fields AS f ON f.document_id = f.id
+        // INNER JOIN occurrences AS o ON o.field_id = f.id
+        // WHERE o.term_id IN () AND d.schema_id IN ()
+        // GROUP BY d.id
+
+    }
 
 
 

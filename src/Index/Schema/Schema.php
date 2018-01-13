@@ -19,11 +19,7 @@ class Schema
      */
     public function __construct($columns = null)
     {
-        $this->columns = new Collection();
-
-        if (!is_null($columns)) {
-            $this->setColumns($columns);
-        }
+        $this->setColumns(!is_null($columns) ? $columns : new Collection());
     }
 
     /**
@@ -54,9 +50,8 @@ class Schema
      * @param \Blixt\Index\Schema\Column|string $column
      * @param bool                              $indexed
      * @param bool                              $stored
-     * @param float                             $weight
      */
-    public function addColumn($column, $indexed = true, $stored = false, $weight = 1.0)
+    public function addColumn($column, $indexed = true, $stored = false)
     {
         if (!$column instanceof Column) {
             if (!is_string($column)) {
@@ -65,7 +60,7 @@ class Schema
                 );
             }
 
-            $column = new Column($column, $indexed, $stored, $weight);
+            $column = new Column($column, $indexed, $stored);
         }
 
         $this->columns->put($column->getName(), $column);

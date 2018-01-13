@@ -11,7 +11,7 @@ class Schema extends Entity
 
     /**
      * @param int|mixed $id
-     * @param string $name
+     * @param string    $name
      */
     public function __construct($id, $name)
     {

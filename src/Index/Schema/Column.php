@@ -20,24 +20,17 @@ class Column
     protected $stored;
 
     /**
-     * @var float
-     */
-    protected $weight;
-
-    /**
      * Column constructor.
      *
      * @param string|mixed $name
      * @param bool|mixed   $indexed
      * @param bool|mixed   $stored
-     * @param float|mixed  $weight
      */
-    public function __construct($name, $indexed = true, $stored = false, $weight = 1.0)
+    public function __construct($name, $indexed = true, $stored = false)
     {
         $this->name = strval($name);
         $this->indexed = !! $indexed;
         $this->stored = !! $stored;
-        $this->weight = floatval($weight);
     }
 
     /**
@@ -62,13 +55,5 @@ class Column
     public function isStored()
     {
         return $this->stored;
-    }
-
-    /**
-     * @return float
-     */
-    public function getWeight()
-    {
-        return $this->weight;
     }
 }
