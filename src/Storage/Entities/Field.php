@@ -37,8 +37,6 @@ class Field extends Entity
     }
 
     /**
-     * Get the Document ID.
-     *
      * @return int
      */
     public function getDocumentId()
@@ -47,8 +45,6 @@ class Field extends Entity
     }
 
     /**
-     * Set the Document ID.
-     *
      * @param int|mixed $documentId
      */
     public function setDocumentId($documentId)
@@ -57,8 +53,6 @@ class Field extends Entity
     }
 
     /**
-     * Get the Column ID.
-     *
      * @return int
      */
     public function getColumnId()
@@ -67,8 +61,6 @@ class Field extends Entity
     }
 
     /**
-     * Set the Column ID.
-     *
      * @param int|mixed $columnId
      */
     public function setColumnId($columnId)
@@ -77,8 +69,6 @@ class Field extends Entity
     }
 
     /**
-     * Set the value.
-     *
      * @return mixed|null
      */
     public function getValue()
@@ -87,8 +77,6 @@ class Field extends Entity
     }
 
     /**
-     * Set the value.
-     *
      * @param mixed $value
      */
     public function setValue($value)

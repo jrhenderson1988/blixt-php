@@ -7,65 +7,80 @@ class Occurrence extends Entity
     /**
      * @var int
      */
-    protected $presenceId;
+    protected $fieldId;
 
     /**
      * @var int
      */
-    protected $position;
+    protected $termId;
 
     /**
-     * Occurrence constructor.
+     * @var int
+     */
+    protected $frequency;
+
+    /**
+     * Presence constructor.
      *
      * @param int|mixed $id
-     * @param int|mixed $presenceId
-     * @param int|mixed $position
+     * @param int|mixed $fieldId
+     * @param int|mixed $termId
+     * @param int|mixed $frequency
      */
-    public function __construct($id, $presenceId, $position)
+    public function __construct($id, $fieldId, $termId, $frequency)
     {
         parent::__construct($id);
 
-        $this->setPresenceId($presenceId);
-        $this->setPosition($position);
+        $this->setFieldId($fieldId);
+        $this->setTermId($termId);
+        $this->setFrequency($frequency);
     }
 
     /**
-     * Get the Presence ID.
-     *
      * @return int
      */
-    public function getPresenceId()
+    public function getFieldId()
     {
-        return $this->presenceId;
+        return $this->fieldId;
     }
 
     /**
-     * Set the Presence ID.
-     *
-     * @param int|mixed $presenceId
+     * @param int|mixed $fieldId
      */
-    public function setPresenceId($presenceId)
+    public function setFieldId($fieldId)
     {
-        $this->presenceId = intval($presenceId);
+        $this->fieldId = intval($fieldId);
     }
 
     /**
-     * Get the position.
-     *
      * @return int
      */
-    public function getPosition()
+    public function getTermId()
     {
-        return $this->position;
+        return $this->termId;
     }
 
     /**
-     * Set the position.
-     *
-     * @param int|mixed $position
+     * @param int|mixed $termId
      */
-    public function setPosition($position)
+    public function setTermId($termId)
     {
-        $this->position = intval($position);
+        $this->termId = intval($termId);
+    }
+
+    /**
+     * @return int
+     */
+    public function getFrequency()
+    {
+        return $this->frequency;
+    }
+
+    /**
+     * @param int|mixed $frequency
+     */
+    public function setFrequency($frequency)
+    {
+        $this->frequency = intval($frequency);
     }
 }

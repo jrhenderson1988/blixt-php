@@ -5,6 +5,11 @@ namespace Blixt\Storage\Entities;
 class Document extends Entity
 {
     /**
+     * @var int|mixed
+     */
+    protected $schemaId;
+
+    /**
      * @var mixed
      */
     protected $key;
@@ -13,18 +18,34 @@ class Document extends Entity
      * Document constructor.
      *
      * @param int|mixed $id
+     * @param int|mixed $schemaId
      * @param mixed     $key
      */
-    public function __construct($id, $key)
+    public function __construct($id, $schemaId, $key)
     {
         parent::__construct($id);
 
         $this->setKey($key);
+        $this->setSchemaId($schemaId);
     }
 
     /**
-     * Get the key.
-     *
+     * @return int|mixed
+     */
+    public function getSchemaId()
+    {
+        return $this->schemaId;
+    }
+
+    /**
+     * @param int|mixed $schemaId
+     */
+    public function setSchemaId($schemaId)
+    {
+        $this->schemaId = intval($schemaId);
+    }
+
+    /**
      * @return mixed
      */
     public function getKey()
@@ -33,8 +54,6 @@ class Document extends Entity
     }
 
     /**
-     * Set the key.
-     *
      * @param mixed $key
      */
     public function setKey($key)

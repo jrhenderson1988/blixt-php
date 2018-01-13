@@ -23,8 +23,6 @@ class Word extends Entity
     }
 
     /**
-     * Get the word.
-     *
      * @return string
      */
     public function getWord()
@@ -33,8 +31,6 @@ class Word extends Entity
     }
 
     /**
-     * Set the word.
-     *
      * @param string|mixed $word
      */
     public function setWord($word)

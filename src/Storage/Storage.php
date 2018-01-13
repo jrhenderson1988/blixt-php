@@ -6,18 +6,11 @@ use Blixt\Index\Schema\Schema;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Document;
 use Blixt\Storage\Entities\Field;
-use Blixt\Storage\Entities\Presence;
+use Blixt\Storage\Entities\Occurrence;
 use Blixt\Storage\Entities\Word;
 
 interface Storage
 {
-    /**
-     * Get the name of the schema represented by the storage engine.
-     *
-     * @return string
-     */
-    public function getName();
-
     /**
      * Tell if the storage represented by the engine exists.
      *
@@ -28,11 +21,9 @@ interface Storage
     /**
      * Create the storage represented by the engine.
      *
-     * @param \Blixt\Index\Schema\Schema $schema
-     *
      * @return bool
      */
-    public function create(Schema $schema);
+    public function create();
 
     /**
      * Destroy the storage represented by the engine.
@@ -41,15 +32,20 @@ interface Storage
      */
     public function destroy();
 
-//    /**
-//     * Execute the provided closure in a transaction. The return value of the closure is returned from this method. If
-//     * any exceptions are thrown within the closure, the transaction is rolled back.
-//     *
-//     * @param callable $callable
-//     *
-//     * @return mixed
-//     */
-//    public function transaction(callable $callable);
+    /**
+     * Execute the provided closure in a transaction. The return value of the closure is returned from this method. If
+     * any exceptions are thrown within the closure, the transaction is rolled back.
+     *
+     * @param callable $callable
+     *
+     * @return mixed
+     */
+    public function transaction(callable $callable);
+
+    public function getSchemaById($id);
+    public function getSchemaByName($name);
+    public function getAllSchemas();
+    public function createSchema($name);
 
     /**
      * Find a word by the given ID.
@@ -186,7 +182,7 @@ interface Storage
      *
      * @param int|string $id
      *
-     * @return \Blixt\Storage\Entities\Presence
+     * @return \Blixt\Storage\Entities\Occurrence
      */
     public function getPresenceById($id);
 
@@ -196,7 +192,7 @@ interface Storage
      * @param \Blixt\Storage\Entities\Field $field
      * @param \Blixt\Storage\Entities\Word  $word
      *
-     * @return \Blixt\Storage\Entities\Presence
+     * @return \Blixt\Storage\Entities\Occurrence
      */
     public function getPresenceByFieldAndWord(Field $field, Word $word);
 
@@ -216,7 +212,7 @@ interface Storage
      * @param \Blixt\Storage\Entities\Word  $word
      * @param int                           $frequency
      *
-     * @return \Blixt\Storage\Entities\Presence
+     * @return \Blixt\Storage\Entities\Occurrence
      */
     public function createPresence(Field $field, Word $word, $frequency);
 
@@ -232,19 +228,19 @@ interface Storage
     /**
      * Find all occurrences by the given presence.
      *
-     * @param \Blixt\Storage\Entities\Presence $presence
+     * @param \Blixt\Storage\Entities\Occurrence $presence
      *
      * @return \Illuminate\Support\Collection
      */
-    public function getAllOccurrencesByPresence(Presence $presence);
+    public function getAllOccurrencesByPresence(Occurrence $presence);
 
     /**
      * Create an occurrence record, which represents a presence and the position that it appeared in its field.
      *
-     * @param \Blixt\Storage\Entities\Presence $presence
-     * @param int                              $position
+     * @param \Blixt\Storage\Entities\Occurrence $presence
+     * @param int                                $position
      *
      * @return \Blixt\Storage\Entities\Occurrence
      */
-    public function createOccurrence(Presence $presence, $position);
+    public function createOccurrence(Occurrence $presence, $position);
 }

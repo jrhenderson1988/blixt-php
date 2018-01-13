@@ -20,8 +20,6 @@ abstract class Entity
     }
 
     /**
-     * Set the ID.
-     *
      * @param int|mixed $id
      */
     public function setId($id)
@@ -30,8 +28,6 @@ abstract class Entity
     }
 
     /**
-     * Get the ID.
-     *
      * @return int
      */
     public function getId()

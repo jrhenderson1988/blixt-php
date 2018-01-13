@@ -5,10 +5,10 @@ namespace Blixt;
 use Blixt\Index\Index;
 use Blixt\Index\Schema\Schema;
 use Blixt\Stemming\EnglishStemmer;
-use Blixt\Stemming\Stemmer as Stemmer;
-use Blixt\Storage\StorageFactory as StorageFactory;
+use Blixt\Stemming\Stemmer;
+use Blixt\Storage\StorageFactory;
 use Blixt\Tokenization\DefaultTokenizer;
-use Blixt\Tokenization\Tokenizer as Tokenizer;
+use Blixt\Tokenization\Tokenizer;
 
 class Blixt
 {
