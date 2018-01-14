@@ -2,9 +2,26 @@
 
 namespace Blixt\Storage\Entities;
 
+/**
+ * @ORM\Table(
+ *     name="fields",
+ *     uniqueConstraints={
+ *         @ORM\UniqueConstraint(name="uq_fields_document_id_column_id", columns={"document_id", "column_id"})
+ *     }
+ * )
+ */
 class Field extends Entity
 {
     /**
+     * @ORM\Id
+     * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue
+     * @var int
+     */
+    private $id;
+
+    /**
+     * @ORM\Column(type="integer", name="document_id")
      * @var int
      */
     protected $documentId;

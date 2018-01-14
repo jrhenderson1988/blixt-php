@@ -2,31 +2,45 @@
 
 namespace Blixt\Storage\Entities;
 
-class Document extends Entity
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @ORM\Entity
+ * @ORM\Table(
+ *     name="documents",
+ *     uniqueConstraints={
+ *         @ORM\UniqueConstraint(name="uq_schema_id_key", columns={"schema_id", "key"})
+ *     }
+ * )
+ */
+class Document
 {
     /**
+     * @ORM\Id
+     * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue
+     * @var int
+     */
+    private $id;
+
+    /**
+     * @ORM\Column(type="integer", name="schema_id")
      * @var int|mixed
      */
-    protected $schemaId;
+    private $schemaId;
 
     /**
+     * @ORM\Column(type="string", nullable=true)
      * @var mixed
      */
-    protected $key;
+    private $key;
 
     /**
-     * Document constructor.
-     *
-     * @param int|mixed $id
-     * @param int|mixed $schemaId
-     * @param mixed     $key
+     * @return int
      */
-    public function __construct($id, $schemaId, $key)
+    public function getId()
     {
-        parent::__construct($id);
-
-        $this->setKey($key);
-        $this->setSchemaId($schemaId);
+        return $this->id;
     }
 
     /**

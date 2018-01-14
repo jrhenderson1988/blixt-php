@@ -15,6 +15,7 @@ use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Storage;
 use Blixt\Tokenization\Token;
 use Blixt\Tokenization\Tokenizer;
+use Doctrine\ORM\EntityManager;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
@@ -23,7 +24,7 @@ class Index
     /**
      * @var \Blixt\Storage\Storage
      */
-    protected $storage;
+    protected $entityManager;
 
     /**
      * @var \Blixt\Stemming\Stemmer
@@ -43,13 +44,13 @@ class Index
     /**
      * Index constructor.
      *
-     * @param \Blixt\Storage\Storage        $storage
+     * @param \Doctrine\ORM\EntityManager   $entityManager
      * @param \Blixt\Stemming\Stemmer       $stemmer
      * @param \Blixt\Tokenization\Tokenizer $tokenizer
      */
-    public function __construct(Storage $storage, Stemmer $stemmer, Tokenizer $tokenizer)
+    public function __construct(EntityManager $entityManager, Stemmer $stemmer, Tokenizer $tokenizer)
     {
-        $this->storage = $storage;
+        $this->entityManager = $entityManager;
         $this->stemmer = $stemmer;
         $this->tokenizer = $tokenizer;
         $this->schemas = new Collection();
@@ -61,11 +62,7 @@ class Index
 
     protected function createStorageIfRequired()
     {
-        if (!$this->storage->exists()) {
-            $this->storage->transaction(function () {
-                $this->storage->create();
-            });
-        }
+        // Create the schema
     }
 
     protected function loadSchemas()

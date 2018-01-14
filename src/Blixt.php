@@ -9,13 +9,15 @@ use Blixt\Stemming\Stemmer;
 use Blixt\Storage\StorageFactory;
 use Blixt\Tokenization\DefaultTokenizer;
 use Blixt\Tokenization\Tokenizer;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Tools\Setup;
 
 class Blixt
 {
     /**
      * @var \Blixt\Storage\StorageFactory
      */
-    protected $storageFactory;
+    protected $entityManager;
 
     /**
      * @var \Blixt\Stemming\Stemmer
@@ -30,45 +32,29 @@ class Blixt
     /**
      * Blixt constructor.
      *
-     * @param \Blixt\Storage\StorageFactory      $storageFactory
+     * @param array                              $connection
      * @param \Blixt\Stemming\Stemmer|null       $stemmer
      * @param \Blixt\Tokenization\Tokenizer|null $tokenizer
+     *
+     * @throws \Doctrine\ORM\ORMException
      */
-    public function __construct(StorageFactory $storageFactory, Stemmer $stemmer = null, Tokenizer $tokenizer = null)
+    public function __construct(array $connection, Stemmer $stemmer = null, Tokenizer $tokenizer = null)
     {
-        $this->setStorageFactory($storageFactory);
-        $this->setStemmer($stemmer ?: new EnglishStemmer());
-        $this->setTokenizer($tokenizer ?: new DefaultTokenizer());
+        $this->stemmer = $stemmer instanceof Stemmer ? $stemmer : new EnglishStemmer();
+        $this->tokenizer = $tokenizer instanceof Tokenizer ? $tokenizer : new DefaultTokenizer();
+
+        $this->entityManager = EntityManager::create(
+            $connection,
+            Setup::createAnnotationMetadataConfiguration([__DIR__ . '/Storage/Entities'])
+        );
     }
 
     /**
-     * Set the storage factory responsible for creating the storage driver.
-     *
-     * @param \Blixt\Storage\StorageFactory $storage
+     * @return \Doctrine\ORM\EntityManager
      */
-    public function setStorageFactory(StorageFactory $storage)
+    public function getEntityManager()
     {
-        $this->storageFactory = $storage;
-    }
-
-    /**
-     * Get the storage connector.
-     *
-     * @return \Blixt\Storage\StorageFactory
-     */
-    public function getStorageFactory()
-    {
-        return $this->storageFactory;
-    }
-
-    /**
-     * Set the stemmer.
-     *
-     * @param \Blixt\Stemming\Stemmer $stemmer
-     */
-    public function setStemmer(Stemmer $stemmer)
-    {
-        $this->stemmer = $stemmer;
+        return $this->entityManager;
     }
 
     /**
@@ -79,16 +65,6 @@ class Blixt
     public function getStemmer()
     {
         return $this->stemmer;
-    }
-
-    /**
-     * Set the tokenizer.
-     *
-     * @param \Blixt\Tokenization\Tokenizer $tokenizer
-     */
-    public function setTokenizer(Tokenizer $tokenizer)
-    {
-        $this->tokenizer = $tokenizer;
     }
 
     /**
@@ -112,19 +88,19 @@ class Blixt
      */
     public function open($name, $schema = null)
     {
-        $storageFactory = $this->getStorageFactory();
-
-        if (!is_null($schema) && is_callable($callable = $schema)) {
-            $schema = new Schema();
-
-            call_user_func($callable, $schema);
-        }
-
-        return new Index(
-            $this->getStemmer(),
-            $this->getTokenizer(),
-            $storageFactory->create($name),
-            $schema
-        );
+//        $storageFactory = $this->getStorageFactory();
+//
+//        if (!is_null($schema) && is_callable($callable = $schema)) {
+//            $schema = new Schema();
+//
+//            call_user_func($callable, $schema);
+//        }
+//
+//        return new Index(
+//            $this->getStemmer(),
+//            $this->getTokenizer(),
+//            $storageFactory->create($name),
+//            $schema
+//        );
     }
 }

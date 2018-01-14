@@ -2,46 +2,57 @@
 
 namespace Blixt\Storage\Entities;
 
-// TODO - Consider adding column boost/weight
-class Column extends Entity
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @ORM\Entity
+ * @ORM\Table(
+ *     name="columns",
+ *     uniqueConstraints={
+ *         @ORM\UniqueConstraint(name="uq_columns_schema_id_name", columns={"schema_id", "name"})
+ *     }
+ * )
+ */
+class Column
 {
     /**
+     * @ORM\Id
+     * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue
      * @var int
      */
-    protected $schemaId;
+    private $id;
 
     /**
+     * @ORM\Column(type="integer", name="schema_id")
+     * @var int
+     */
+    private $schemaId;
+
+    /**
+     * @ORM\Column(type="string")
      * @var string
      */
     protected $name;
 
     /**
+     * @ORM\Column(type="boolean", name="is_indexed")
      * @var bool
      */
     protected $indexed;
 
     /**
+     * @ORM\Column(type="boolean", name="is_stored")
      * @var bool
      */
     protected $stored;
 
     /**
-     * Column constructor.
-     *
-     * @param int|mixed    $id
-     * @param int|mixed    $schemaId
-     * @param string|mixed $name
-     * @param bool|mixed   $indexed
-     * @param bool|mixed   $stored
+     * @return int
      */
-    public function __construct($id, $schemaId, $name, $indexed = true, $stored = false)
+    public function getId()
     {
-        parent::__construct($id);
-
-        $this->setSchemaId($schemaId);
-        $this->setName($name);
-        $this->setIndexed($indexed);
-        $this->setStored($stored);
+        return $this->id;
     }
 
     /**
