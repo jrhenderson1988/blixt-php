@@ -2,38 +2,49 @@
 
 namespace Blixt\Storage\Entities;
 
-class Term extends Entity
+/**
+ * @Entity
+ * @Table(
+ *     name="terms",
+ *     uniqueConstraints={
+ *         @UniqueConstraint(name="uq_terms_schema_id_word_id", columns={"schema_id", "word_id"})
+ *     }
+ * )
+ */
+class Term
 {
     /**
-     * @var int|mixed
+     * @Id
+     * @Column(type="integer")
+     * @GeneratedValue
+     * @var int
      */
-    protected $schemaId;
+    private $id;
 
     /**
+     * @Column(type="integer", name="schema_id")
      * @var int|mixed
      */
-    protected $wordId;
+    private $schemaId;
 
     /**
+     * @Column(type="integer", name="word_id")
      * @var int|mixed
      */
-    protected $documentCount;
+    private $wordId;
 
     /**
-     * Term constructor.
-     *
-     * @param int|mixed $id
-     * @param int|mixed $schemaId
-     * @param int|mixed $termId
-     * @param int|mixed $documentCount
+     * @Column(type="integer", name="document_count")
+     * @var int|mixed
      */
-    public function __construct($id, $schemaId, $termId, $documentCount)
+    private $documentCount;
+
+    /**
+     * @return int
+     */
+    public function getId()
     {
-        parent::__construct($id);
-
-        $this->schemaId = $schemaId;
-        $this->wordId = $termId;
-        $this->documentCount = $documentCount;
+        return $this->id;
     }
 
     /**

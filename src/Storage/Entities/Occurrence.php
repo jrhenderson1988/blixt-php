@@ -2,38 +2,49 @@
 
 namespace Blixt\Storage\Entities;
 
-class Occurrence extends Entity
+/**
+ * @Entity
+ * @Table(
+ *     name="occurrences",
+ *     uniqueConstraints={
+ *         @UniqueConstraint(name="uq_occurrences_field_id_term_id", columns={"field_id", "term_id"})
+ *     }
+ * )
+ */
+class Occurrence
 {
     /**
+     * @Id
+     * @Column(type="integer")
+     * @GeneratedValue
      * @var int
      */
-    protected $fieldId;
+    private $id;
 
     /**
+     * @Column(type="integer", name="field_id")
      * @var int
      */
-    protected $termId;
+    private $fieldId;
 
     /**
+     * @Column(type="integer", name="term_id")
      * @var int
      */
-    protected $frequency;
+    private $termId;
 
     /**
-     * Presence constructor.
-     *
-     * @param int|mixed $id
-     * @param int|mixed $fieldId
-     * @param int|mixed $termId
-     * @param int|mixed $frequency
+     * @Column(type="integer")
+     * @var int
      */
-    public function __construct($id, $fieldId, $termId, $frequency)
+    private $frequency;
+
+    /**
+     * @return int
+     */
+    public function getId()
     {
-        parent::__construct($id);
-
-        $this->setFieldId($fieldId);
-        $this->setTermId($termId);
-        $this->setFrequency($frequency);
+        return $this->id;
     }
 
     /**

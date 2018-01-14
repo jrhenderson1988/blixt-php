@@ -2,50 +2,48 @@
 
 namespace Blixt\Storage\Entities;
 
-use Doctrine\ORM\Mapping as ORM;
-
 /**
- * @ORM\Entity
- * @ORM\Table(
+ * @Entity
+ * @Table(
  *     name="columns",
  *     uniqueConstraints={
- *         @ORM\UniqueConstraint(name="uq_columns_schema_id_name", columns={"schema_id", "name"})
+ *         @UniqueConstraint(name="uq_columns_schema_id_name", columns={"schema_id", "name"})
  *     }
  * )
  */
 class Column
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue
+     * @Id
+     * @Column(type="integer")
+     * @GeneratedValue
      * @var int
      */
     private $id;
 
     /**
-     * @ORM\Column(type="integer", name="schema_id")
+     * @Column(type="integer", name="schema_id")
      * @var int
      */
     private $schemaId;
 
     /**
-     * @ORM\Column(type="string")
+     * @Column(type="string")
      * @var string
      */
-    protected $name;
+    private $name;
 
     /**
-     * @ORM\Column(type="boolean", name="is_indexed")
+     * @Column(type="boolean", name="is_indexed")
      * @var bool
      */
-    protected $indexed;
+    private $indexed;
 
     /**
-     * @ORM\Column(type="boolean", name="is_stored")
+     * @Column(type="boolean", name="is_stored")
      * @var bool
      */
-    protected $stored;
+    private $stored;
 
     /**
      * @return int

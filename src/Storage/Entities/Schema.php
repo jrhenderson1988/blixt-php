@@ -2,22 +2,37 @@
 
 namespace Blixt\Storage\Entities;
 
-class Schema extends Entity
+/**
+ * @Entity
+ * @Table(
+ *     name="schemas",
+ *     uniqueConstraints={
+ *         @UniqueConstraint(name="uq_schemas_name", columns={"name"})
+ *     }
+ * )
+ */
+class Schema
 {
     /**
-     * @var string
+     * @Id
+     * @Column(type="integer")
+     * @GeneratedValue
+     * @var int
      */
-    protected $name;
+    private $id;
 
     /**
-     * @param int|mixed $id
-     * @param string    $name
+     * @Column(type="string")
+     * @var string
      */
-    public function __construct($id, $name)
-    {
-        parent::__construct($id);
+    private $name;
 
-        $this->setName($name);
+    /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
     }
 
     /**

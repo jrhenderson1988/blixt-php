@@ -3,54 +3,48 @@
 namespace Blixt\Storage\Entities;
 
 /**
- * @ORM\Table(
+ * @Entity
+ * @Table(
  *     name="fields",
  *     uniqueConstraints={
- *         @ORM\UniqueConstraint(name="uq_fields_document_id_column_id", columns={"document_id", "column_id"})
+ *         @UniqueConstraint(name="uq_fields_document_id_column_id", columns={"document_id", "column_id"})
  *     }
  * )
  */
-class Field extends Entity
+class Field
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue
+     * @Id
+     * @Column(type="integer")
+     * @GeneratedValue
      * @var int
      */
     private $id;
 
     /**
-     * @ORM\Column(type="integer", name="document_id")
+     * @Column(type="integer", name="document_id")
      * @var int
      */
-    protected $documentId;
+    private $documentId;
 
     /**
+     * @Column(type="integer", name="column_id")
      * @var int
      */
-    protected $columnId;
+    private $columnId;
 
     /**
+     * @Column(type="text", nullable=true)
      * @var mixed|null
      */
-    protected $value;
+    private $value;
 
     /**
-     * Attribute constructor.
-     *
-     * @param int|mixed $id
-     * @param int|mixed $documentId
-     * @param int|mixed $columnId
-     * @param mixed     $value
+     * @return int
      */
-    public function __construct($id, $documentId, $columnId, $value = null)
+    public function getId()
     {
-        parent::__construct($id);
-
-        $this->setDocumentId($documentId);
-        $this->setColumnId($columnId);
-        $this->setValue($value);
+        return $this->id;
     }
 
     /**

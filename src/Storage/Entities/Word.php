@@ -2,24 +2,37 @@
 
 namespace Blixt\Storage\Entities;
 
-class Word extends Entity
+/**
+ * @Entity
+ * @Table(
+ *     name="words",
+ *     uniqueConstraints={
+ *         @UniqueConstraint(name="uq_words_word", columns={"word"})
+ *     }
+ * )
+ */
+class Word
 {
     /**
-     * @var string
+     * @Id
+     * @Column(type="integer")
+     * @GeneratedValue
+     * @var int
      */
-    protected $word;
+    private $id;
 
     /**
-     * Word constructor.
-     *
-     * @param int|mixed    $id
-     * @param string|mixed $word
+     * @Column(type="string")
+     * @var string
      */
-    public function __construct($id, $word)
-    {
-        parent::__construct($id);
+    private $word;
 
-        $this->setWord($word);
+    /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
     }
 
     /**

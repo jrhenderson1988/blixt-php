@@ -2,31 +2,43 @@
 
 namespace Blixt\Storage\Entities;
 
-class Position extends Entity
+/**
+ * @Entity
+ * @Table(
+ *     name="positions",
+ *     uniqueConstraints={
+ *         @UniqueConstraint(name="uq_positions_occurrence_id_position", columns={"occurrence_id", "position"})
+ *     }
+ * )
+ */
+class Position
 {
     /**
+     * @Id
+     * @Column(type="integer")
+     * @GeneratedValue
      * @var int
      */
-    protected $occurrenceId;
+    private $id;
 
     /**
+     * @Column(type="integer", name="occurrence_id")
      * @var int
      */
-    protected $position;
+    private $occurrenceId;
 
     /**
-     * Occurrence constructor.
-     *
-     * @param int|mixed $id
-     * @param int|mixed $occurrenceId
-     * @param int|mixed $position
+     * @Column(type="integer")
+     * @var int
      */
-    public function __construct($id, $occurrenceId, $position)
+    private $position;
+
+    /**
+     * @return int
+     */
+    public function getId()
     {
-        parent::__construct($id);
-
-        $this->setOccurrenceId($occurrenceId);
-        $this->setPosition($position);
+        return $this->id;
     }
 
     /**
