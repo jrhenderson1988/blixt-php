@@ -9,13 +9,19 @@ use Blixt\Stemming\Stemmer;
 use Blixt\Storage\StorageFactory;
 use Blixt\Tokenization\DefaultTokenizer;
 use Blixt\Tokenization\Tokenizer;
+use Doctrine\DBAL\Schema\Table;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\Setup;
+use Illuminate\Support\Collection;
+
+// TODO - Blixt class now represents the parent index, the index class now represents a sub-index based around a schema
 
 class Blixt
 {
     /**
-     * @var \Blixt\Storage\StorageFactory
+     * @var \Doctrine\ORM\EntityManager
      */
     protected $entityManager;
 
@@ -47,6 +53,11 @@ class Blixt
             $connection,
             Setup::createAnnotationMetadataConfiguration([__DIR__ . '/Storage/Entities'])
         );
+
+        // TODO - This has a performance impact. Extract it somewhere to be manually run once, perhaps a static method.
+        if (!$this->exists()) {
+            $this->create();
+        }
     }
 
     /**
@@ -81,12 +92,11 @@ class Blixt
      * Open an existing index with the given name. An optional schema may be provided as a callable or Schema object
      * that may be used to create a non-existent index.
      *
-     * @param string                                    $name
      * @param \Blixt\Index\Schema\Schema|callable|null  $schema
      *
      * @return \Blixt\Index\Index
      */
-    public function open($name, $schema = null)
+    public function open($schema = null)
     {
 //        $storageFactory = $this->getStorageFactory();
 //
@@ -102,5 +112,43 @@ class Blixt
 //            $storageFactory->create($name),
 //            $schema
 //        );
+    }
+
+    /**
+     * Tell if the index already exists, that is, all of the tables specified by the entities exist in the database. If
+     * any table is missing from the database, false is returned.
+     *
+     * @return bool
+     */
+    public function exists()
+    {
+        $existingTables = new Collection($this->getEntityManager()->getConnection()->getSchemaManager()->listTables());
+        $existingTableNames = $existingTables->map(function (Table $table) {
+            return $table->getName();
+        });
+
+        $entityMetaData = new Collection($this->getEntityManager()->getMetadataFactory()->getAllMetadata());
+        $entityTableNames = $entityMetaData->map(function (ClassMetadata $entityMetaDatum) {
+            return $entityMetaDatum->getTableName();
+        });
+
+        return $entityTableNames->diff($existingTableNames)->isEmpty();
+    }
+
+    /**
+     * Create the schema defined by the entities.
+     *
+     * @return bool
+     * @throws \Doctrine\ORM\Tools\ToolsException
+     */
+    public function create()
+    {
+        $schemaTool = new SchemaTool($this->getEntityManager());
+
+        $schemaTool->createSchema(
+            $this->getEntityManager()->getMetadataFactory()->getAllMetadata()
+        );
+
+        return true;
     }
 }
