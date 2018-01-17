@@ -58,6 +58,8 @@ class Blixt
         if (!$this->exists()) {
             $this->create();
         }
+
+        var_dump($this->getEntityManager()->getRepository(\Blixt\Storage\Entities\Schema::class)->findAll());
     }
 
     /**

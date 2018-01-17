@@ -2,74 +2,35 @@
 
 namespace Blixt\Storage\Entities;
 
-/**
- * @Entity
- * @Table(
- *     name="positions",
- *     uniqueConstraints={
- *         @UniqueConstraint(name="uq_positions_occurrence_id_position", columns={"occurrence_id", "position"})
- *     }
- * )
- */
-class Position
+interface Position
 {
     /**
-     * @Id
-     * @Column(type="integer")
-     * @GeneratedValue
-     * @var int
+     * @return int
      */
-    private $id;
+    public function getId();
 
     /**
-     * @Column(type="integer", name="occurrence_id")
-     * @var int
+     * @param int|mixed $id
      */
-    private $occurrenceId;
-
-    /**
-     * @Column(type="integer")
-     * @var int
-     */
-    private $position;
+    public function setId($id);
 
     /**
      * @return int
      */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * @return int
-     */
-    public function getOccurrenceId()
-    {
-        return $this->occurrenceId;
-    }
+    public function getOccurrenceId();
 
     /**
      * @param int|mixed $occurrenceId
      */
-    public function setOccurrenceId($occurrenceId)
-    {
-        $this->occurrenceId = intval($occurrenceId);
-    }
+    public function setOccurrenceId($occurrenceId);
 
     /**
      * @return int
      */
-    public function getPosition()
-    {
-        return $this->position;
-    }
+    public function getPosition();
 
     /**
      * @param int|mixed $position
      */
-    public function setPosition($position)
-    {
-        $this->position = intval($position);
-    }
+    public function setPosition($position);
 }

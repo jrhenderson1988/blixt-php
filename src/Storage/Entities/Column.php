@@ -2,118 +2,55 @@
 
 namespace Blixt\Storage\Entities;
 
-/**
- * @Entity
- * @Table(
- *     name="columns",
- *     uniqueConstraints={
- *         @UniqueConstraint(name="uq_columns_schema_id_name", columns={"schema_id", "name"})
- *     }
- * )
- */
-class Column
+interface Column
 {
     /**
-     * @Id
-     * @Column(type="integer")
-     * @GeneratedValue
-     * @var int
+     * @return int
      */
-    private $id;
+    public function getId();
 
     /**
-     * @Column(type="integer", name="schema_id")
-     * @var int
+     * @param int|mixed $id
      */
-    private $schemaId;
-
-    /**
-     * @Column(type="string")
-     * @var string
-     */
-    private $name;
-
-    /**
-     * @Column(type="boolean", name="is_indexed")
-     * @var bool
-     */
-    private $indexed;
-
-    /**
-     * @Column(type="boolean", name="is_stored")
-     * @var bool
-     */
-    private $stored;
+    public function setId($id);
 
     /**
      * @return int
      */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * @return int
-     */
-    public function getSchemaId()
-    {
-        return $this->schemaId;
-    }
+    public function getSchemaId();
 
     /**
      * @param int|mixed $schemaId
      */
-    public function setSchemaId($schemaId)
-    {
-        $this->schemaId = intval($schemaId);
-    }
+    public function setSchemaId($schemaId);
 
     /**
      * @return string
      */
-    public function getName()
-    {
-        return $this->name;
-    }
+    public function getName();
 
     /**
      * @param string|mixed $name
      */
-    public function setName($name)
-    {
-        $this->name = strval($name);
-    }
+    public function setName($name);
 
     /**
      * @return bool
      */
-    public function isIndexed()
-    {
-        return $this->indexed;
-    }
+    public function isIndexed();
 
     /**
      * @param bool|mixed $indexed
      */
-    public function setIndexed($indexed)
-    {
-        $this->indexed = !! $indexed;
-    }
+    public function setIndexed($indexed);
 
     /**
      * @return bool
      */
-    public function isStored()
-    {
-        return $this->stored;
-    }
+    public function isStored();
 
     /**
      * @param bool|mixed $stored
      */
-    public function setStored($stored)
-    {
-        $this->stored = !! $stored;
-    }
+    public function setStored($stored);
 }

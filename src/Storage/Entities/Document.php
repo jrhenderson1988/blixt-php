@@ -2,74 +2,35 @@
 
 namespace Blixt\Storage\Entities;
 
-/**
- * @Entity
- * @Table(
- *     name="documents",
- *     uniqueConstraints={
- *         @UniqueConstraint(name="uq_documents_schema_id_key", columns={"schema_id", "key"})
- *     }
- * )
- */
-class Document
+interface Document
 {
-    /**
-     * @Id
-     * @Column(type="integer")
-     * @GeneratedValue
-     * @var int
-     */
-    private $id;
-
-    /**
-     * @Column(type="integer", name="schema_id")
-     * @var int|mixed
-     */
-    private $schemaId;
-
-    /**
-     * @Column(type="string")
-     * @var mixed
-     */
-    private $key;
-
     /**
      * @return int
      */
-    public function getId()
-    {
-        return $this->id;
-    }
+    public function getId();
+
+    /**
+     * @param int|mixed $id
+     */
+    public function setId($id);
 
     /**
      * @return int|mixed
      */
-    public function getSchemaId()
-    {
-        return $this->schemaId;
-    }
+    public function getSchemaId();
 
     /**
      * @param int|mixed $schemaId
      */
-    public function setSchemaId($schemaId)
-    {
-        $this->schemaId = intval($schemaId);
-    }
+    public function setSchemaId($schemaId);
 
     /**
      * @return mixed
      */
-    public function getKey()
-    {
-        return $this->key;
-    }
+    public function getKey();
 
     /**
      * @param mixed $key
      */
-    public function setKey($key)
-    {
-        $this->key = $key;
-    }
+    public function setKey($key);
 }

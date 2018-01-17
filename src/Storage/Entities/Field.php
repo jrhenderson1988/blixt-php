@@ -2,96 +2,46 @@
 
 namespace Blixt\Storage\Entities;
 
-/**
- * @Entity
- * @Table(
- *     name="fields",
- *     uniqueConstraints={
- *         @UniqueConstraint(name="uq_fields_document_id_column_id", columns={"document_id", "column_id"})
- *     }
- * )
- */
-class Field
+
+interface Field
 {
     /**
-     * @Id
-     * @Column(type="integer")
-     * @GeneratedValue
-     * @var int
+     * @return int
      */
-    private $id;
+    public function getId();
 
     /**
-     * @Column(type="integer", name="document_id")
-     * @var int
+     * @param int|mixed $id
      */
-    private $documentId;
-
-    /**
-     * @Column(type="integer", name="column_id")
-     * @var int
-     */
-    private $columnId;
-
-    /**
-     * @Column(type="text", nullable=true)
-     * @var mixed|null
-     */
-    private $value;
+    public function setId($id);
 
     /**
      * @return int
      */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * @return int
-     */
-    public function getDocumentId()
-    {
-        return $this->documentId;
-    }
+    public function getDocumentId();
 
     /**
      * @param int|mixed $documentId
      */
-    public function setDocumentId($documentId)
-    {
-        $this->documentId = intval($documentId);
-    }
+    public function setDocumentId($documentId);
 
     /**
      * @return int
      */
-    public function getColumnId()
-    {
-        return $this->columnId;
-    }
+    public function getColumnId();
 
     /**
      * @param int|mixed $columnId
      */
-    public function setColumnId($columnId)
-    {
-        $this->columnId = intval($columnId);
-    }
+    public function setColumnId($columnId);
 
     /**
      * @return mixed|null
      */
-    public function getValue()
-    {
-        return $this->value;
-    }
+    public function getValue();
 
     /**
      * @param mixed $value
      */
-    public function setValue($value)
-    {
-        $this->value = is_null($value) || $value === '' ? null : $value;
-    }
+    public function setValue($value);
 }

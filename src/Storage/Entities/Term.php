@@ -2,98 +2,45 @@
 
 namespace Blixt\Storage\Entities;
 
-/**
- * @Entity
- * @Table(
- *     name="terms",
- *     uniqueConstraints={
- *         @UniqueConstraint(name="uq_terms_schema_id_word_id", columns={"schema_id", "word_id"})
- *     }
- * )
- */
-class Term
+interface Term
 {
-    /**
-     * @Id
-     * @Column(type="integer")
-     * @GeneratedValue
-     * @var int
-     */
-    private $id;
-
-    /**
-     * @Column(type="integer", name="schema_id")
-     * @var int|mixed
-     */
-    private $schemaId;
-
-    /**
-     * @Column(type="integer", name="word_id")
-     * @var int|mixed
-     */
-    private $wordId;
-
-    /**
-     * @Column(type="integer", name="document_count")
-     * @var int|mixed
-     */
-    private $documentCount;
-
     /**
      * @return int
      */
-    public function getId()
-    {
-        return $this->id;
-    }
+    public function getId();
+
+    /**
+     * @param int|mixed $id
+     */
+    public function setId($id);
 
     /**
      * @return int|mixed
      */
-    public function getSchemaId()
-    {
-        return $this->schemaId;
-    }
+    public function getSchemaId();
 
     /**
      * @param int|mixed $schemaId
      */
-    public function setSchemaId($schemaId)
-    {
-        $this->schemaId = intval($schemaId);
-    }
+    public function setSchemaId($schemaId);
 
     /**
      * @return int|mixed
      */
-    public function getWordId()
-    {
-        return $this->wordId;
-    }
+    public function getWordId();
 
     /**
      * @param int|mixed $wordId
      */
-    public function setWordId($wordId)
-    {
-        $this->wordId = intval($wordId);
-    }
+    public function setWordId($wordId);
 
     /**
      * @return int|mixed
      */
-    public function getDocumentCount()
-    {
-        return $this->documentCount;
-    }
+    public function getDocumentCount();
 
     /**
      * @param int|mixed $documentCount
      */
-    public function setDocumentCount($documentCount)
-    {
-        $this->documentCount = intval($documentCount);
-    }
-
-
+    public function setDocumentCount($documentCount);
 }

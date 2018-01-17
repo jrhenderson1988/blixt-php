@@ -2,52 +2,25 @@
 
 namespace Blixt\Storage\Entities;
 
-/**
- * @Entity
- * @Table(
- *     name="schemas",
- *     uniqueConstraints={
- *         @UniqueConstraint(name="uq_schemas_name", columns={"name"})
- *     }
- * )
- */
-class Schema
+interface Schema
 {
-    /**
-     * @Id
-     * @Column(type="integer")
-     * @GeneratedValue
-     * @var int
-     */
-    private $id;
-
-    /**
-     * @Column(type="string")
-     * @var string
-     */
-    private $name;
-
     /**
      * @return int
      */
-    public function getId()
-    {
-        return $this->id;
-    }
+    public function getId();
+
+    /**
+     * @param int|mixed $id
+     */
+    public function setId($id);
 
     /**
      * @return string
      */
-    public function getName()
-    {
-        return $this->name;
-    }
+    public function getName();
 
     /**
      * @param string|mixed $name
      */
-    public function setName($name)
-    {
-        $this->name = strval($name);
-    }
+    public function setName($name);
 }
