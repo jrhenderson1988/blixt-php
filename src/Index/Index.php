@@ -4,13 +4,13 @@ namespace Blixt\Index;
 
 use Blixt\Index\Document\Document as IndexableDocument;
 use Blixt\Index\Document\Field as IndexableField;
-use Blixt\Index\Schema\Column as SchemaColumn;
+use Blixt\Index\Schema\ColumnDefinition as SchemaColumn;
 use Blixt\Storage\Entities\Document;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Field;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\UndefinedSchemaException;
-use Blixt\Index\Schema\Schema;
+use Blixt\Index\Schema\Blueprint;
 use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Storage;
 use Blixt\Tokenization\Token;
@@ -70,7 +70,7 @@ class Index
         // Load all of the schemas from the storage, with their columns
     }
 
-    public function createSchema(Schema $schema)
+    public function createSchema(Blueprint $schema)
     {
         // Create a new schema record in the storage and add it to the schemas property
     }

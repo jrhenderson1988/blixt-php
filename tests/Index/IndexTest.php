@@ -6,7 +6,7 @@ use Blixt\Documents\Document as IndexableDocument;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\UndefinedSchemaException;
 use Blixt\Index\Index;
-use Blixt\Index\Schema\Schema;
+use Blixt\Index\Schema\Blueprint;
 use Blixt\Models\Document;
 use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Storage;
