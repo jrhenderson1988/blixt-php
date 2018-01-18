@@ -10,7 +10,7 @@ class Blueprint
     /**
      * @var \Illuminate\Support\Collection
      */
-    protected $columnDefinitions;
+    protected $columns;
 
     /**
      * Schema constructor.
@@ -19,51 +19,51 @@ class Blueprint
      */
     public function __construct($columns = null)
     {
-        $this->setColumnDefinitions(!is_null($columns) ? $columns : new Collection());
+        $this->setColumns(! is_null($columns) ? $columns : new Collection());
     }
 
     /**
      * Set the columns with the given array or collection.
      *
-     * @param \Illuminate\Support\Collection|array $columnDefinitions
+     * @param \Illuminate\Support\Collection|array $columns
      *
      * @throws \InvalidArgumentException
      */
-    public function setColumnDefinitions($columnDefinitions)
+    public function setColumns($columns)
     {
-        if (!$columnDefinitions instanceof Collection && !is_array($columnDefinitions)) {
+        if (!$columns instanceof Collection && !is_array($columns)) {
             throw new InvalidArgumentException(
                 "The columns provided must be an array or a collection."
             );
         }
 
-        $columnDefinitions = is_array($columnDefinitions) ? new Collection($columnDefinitions) : $columnDefinitions;
+        $columns = is_array($columns) ? new Collection($columns) : $columns;
 
-        $columnDefinitions->each(function ($column) {
-            $this->addColumnDefinition($column);
+        $columns->each(function ($column) {
+            $this->addColumn($column);
         });
     }
 
     /**
      * Add a column to the schema definition.
      *
-     * @param \Blixt\Index\Schema\ColumnDefinition|string $columnDefinition
-     * @param bool                                        $indexed
-     * @param bool                                        $stored
+     * @param \Blixt\Index\Schema\Column|string $column
+     * @param bool                              $indexed
+     * @param bool                              $stored
      */
-    public function addColumnDefinition($columnDefinition, $indexed = true, $stored = false)
+    public function addColumn($column, $indexed = true, $stored = false)
     {
-        if (!$columnDefinition instanceof ColumnDefinition) {
-            if (!is_string($columnDefinition)) {
+        if (!$column instanceof Column) {
+            if (!is_string($column)) {
                 throw new InvalidArgumentException(
-                    "The column definition provided must be a string or an instance of " . ColumnDefinition::class . "."
+                    "The column provided must be a string or an instance of " . Column::class . "."
                 );
             }
 
-            $columnDefinition = new ColumnDefinition($columnDefinition, $indexed, $stored);
+            $column = new Column($column, $indexed, $stored);
         }
 
-        $this->columnDefinitions->put($columnDefinition->getName(), $columnDefinition);
+        $this->columns->put($column->getName(), $column);
     }
 
     /**
@@ -71,8 +71,8 @@ class Blueprint
      *
      * @return \Illuminate\Support\Collection
      */
-    public function getColumnDefinitions()
+    public function getColumns()
     {
-        return $this->columnDefinitions;
+        return $this->columns;
     }
 }

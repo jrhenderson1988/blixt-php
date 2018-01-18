@@ -7,7 +7,7 @@ use Blixt\Documents\Document;
 use Blixt\Documents\Field;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\UndefinedSchemaException;
-use Blixt\Index\Schema\ColumnDefinition;
+use Blixt\Index\Schema\Column;
 use Blixt\Index\Schema\Blueprint;
 use Blixt\Stemming\EnglishStemmer;
 use Blixt\Storage\SQLite\SQLiteStorageFactory;

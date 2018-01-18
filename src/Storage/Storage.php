@@ -26,11 +26,11 @@ interface Storage
     public function destroy();
 
     /**
-     * Get (or create) the column repository.
+     * Get (or create) the attribute repository.
      *
-     * @return \Blixt\Storage\Repositories\ColumnRepository
+     * @return \Blixt\Storage\Repositories\AttributeRepository
      */
-    public function columnRepository();
+    public function attributeRepository();
 
     /**
      * Get (or create) the document repository.
