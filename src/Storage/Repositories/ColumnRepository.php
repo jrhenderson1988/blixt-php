@@ -2,11 +2,11 @@
 
 namespace Blixt\Storage\Repositories;
 
-use Blixt\Storage\Entities\Attribute;
+use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Schema;
 use Illuminate\Support\Collection;
 
-interface AttributeRepository
+interface ColumnRepository
 {
     /**
      * @return \Illuminate\Support\Collection
@@ -30,21 +30,21 @@ interface AttributeRepository
     /**
      * @param int|mixed $id
      *
-     * @return \Blixt\Storage\Entities\Attribute
+     * @return \Blixt\Storage\Entities\Column
      */
     public function find($id);
 
     /**
      * @param string|mixed $name
      *
-     * @return \Blixt\Storage\Entities\Attribute
+     * @return \Blixt\Storage\Entities\Column
      */
     public function findByName($name);
 
     /**
-     * @param \Blixt\Storage\Entities\Attribute $attribute
+     * @param \Blixt\Storage\Entities\Column $column
      *
-     * @return \Blixt\Storage\Entities\Attribute
+     * @return \Blixt\Storage\Entities\Column
      */
-    public function save(Attribute $attribute);
+    public function save(Column $column);
 }

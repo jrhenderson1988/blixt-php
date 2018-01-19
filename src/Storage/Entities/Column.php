@@ -2,7 +2,7 @@
 
 namespace Blixt\Storage\Entities;
 
-interface Attribute
+interface Column
 {
     /**
      * @return int

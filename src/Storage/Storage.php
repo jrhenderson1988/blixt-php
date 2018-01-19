@@ -26,58 +26,58 @@ interface Storage
     public function destroy();
 
     /**
-     * Get (or create) the attribute repository.
+     * Get (or create) the column repository.
      *
-     * @return \Blixt\Storage\Repositories\AttributeRepository
+     * @return \Blixt\Storage\Repositories\ColumnRepository
      */
-    public function attributeRepository();
+    public function columns();
 
     /**
      * Get (or create) the document repository.
      *
      * @return \Blixt\Storage\Repositories\DocumentRepository
      */
-    public function documentRepository();
+    public function documents();
 
     /**
      * Get (or create) the field repository.
      *
      * @return \Blixt\Storage\Repositories\FieldRepository
      */
-    public function fieldRepository();
+    public function fields();
 
     /**
      * Get (or create) the occurrence repository.
      *
      * @return \Blixt\Storage\Repositories\OccurrenceRepository
      */
-    public function occurrenceRepository();
+    public function occurrences();
 
     /**
      * Get (or create) the position repository.
      *
      * @return \Blixt\Storage\Repositories\PositionRepository
      */
-    public function positionRepository();
+    public function positions();
 
     /**
      * Get (or create) the schema repository.
      *
      * @return \Blixt\Storage\Repositories\SchemaRepository
      */
-    public function schemaRepository();
+    public function schemas();
 
     /**
      * Get (or create) the term repository.
      *
      * @return \Blixt\Storage\Repositories\TermRepository
      */
-    public function termRepository();
+    public function terms();
 
     /**
      * Get (or create) the word repository.
      *
      * @return \Blixt\Storage\Repositories\WordRepository
      */
-    public function wordRepository();
+    public function words();
 }

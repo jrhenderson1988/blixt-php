@@ -6,7 +6,7 @@ use Blixt\Index\Document\Document as IndexableDocument;
 use Blixt\Index\Document\Field as IndexableField;
 use Blixt\Index\Schema\Column as SchemaColumn;
 use Blixt\Storage\Entities\Document;
-use Blixt\Storage\Entities\Attribute;
+use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Field;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\UndefinedSchemaException;

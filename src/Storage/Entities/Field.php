@@ -28,12 +28,12 @@ interface Field
     /**
      * @return int
      */
-    public function getAttributeId();
+    public function getColumnId();
 
     /**
-     * @param int|mixed $attributeId
+     * @param int|mixed $columnId
      */
-    public function setAttributeId($attributeId);
+    public function setColumnId($columnId);
 
     /**
      * @return mixed|null

@@ -7,6 +7,7 @@ use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Storage;
 use Blixt\Tokenization\DefaultTokenizer;
 use Blixt\Tokenization\Tokenizer;
+use Illuminate\Support\Collection;
 
 // TODO - Blixt class now represents the parent index, the index class now represents a sub-index based around a schema
 
@@ -28,6 +29,11 @@ class Blixt
     protected $tokenizer;
 
     /**
+     * @var \Illuminate\Support\Collection
+     */
+    protected $schemasWithColumns;
+
+    /**
      * Blixt constructor.
      *
      * @param \Blixt\Storage\Storage             $storage
@@ -39,10 +45,24 @@ class Blixt
         $this->storage = $storage;
         $this->stemmer = $stemmer instanceof Stemmer ? $stemmer : new EnglishStemmer();
         $this->tokenizer = $tokenizer instanceof Tokenizer ? $tokenizer : new DefaultTokenizer();
+        $this->schemasWithColumns = $this->loadSchemasWithColumns();
+    }
 
-        if (! $this->exists()) {
-            $this->create();
+    /**
+     * Install Blixt into the storage engine. This effectively creates the underlying storage schema if it does not
+     * already exist.
+     *
+     * @param \Blixt\Storage\Storage $storage
+     *
+     * @return bool
+     */
+    public static function install(Storage $storage)
+    {
+        if (! $storage->exists()) {
+            return $storage->create();
         }
+
+        return true;
     }
 
     /**
@@ -71,6 +91,19 @@ class Blixt
     public function getTokenizer()
     {
         return $this->tokenizer;
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection
+     */
+    protected function loadSchemasWithColumns()
+    {
+        $schemas = $this->getStorage()->schemas()->all();
+        $columns = $this->getStorage()->columns()->all();
+
+        // TODO - Map the columns into the schemas and return them.
+
+        return new Collection();
     }
 
     /**
