@@ -33,7 +33,7 @@ class Blixt
     /**
      * @var \Illuminate\Support\Collection
      */
-    protected $schemasWithColumns;
+    protected $schemas;
 
     /**
      * Blixt constructor.
@@ -48,7 +48,7 @@ class Blixt
         $this->stemmer = $stemmer instanceof Stemmer ? $stemmer : new EnglishStemmer();
         $this->tokenizer = $tokenizer instanceof Tokenizer ? $tokenizer : new DefaultTokenizer();
 
-        $this->loadSchemasWithColumns();
+        $this->loadSchemas();
     }
 
     /**
@@ -99,15 +99,13 @@ class Blixt
     /**
      * Load all of the schemas from the storage, with their associated columns.
      */
-    protected function loadSchemasWithColumns()
+    protected function loadSchemas()
     {
-        $schemas = $this->getStorage()->schemas()->all();
         $columns = $this->getStorage()->columns()->all();
 
-        $this->schemasWithColumns = $schemas->map(function (Schema $schema) use ($columns) {
-            $schema->setColumns($columns->filter(function (Column $column) use ($schema) {
-                return $column->getSchemaId() == $schema->getId();
-            }));
+        // Note: The Schema::setColumns method filters out columns that do not belong to it.
+        $this->schemas = $this->getStorage()->schemas()->all()->map(function (Schema $schema) use ($columns) {
+            $schema->setColumns($columns);
         });
     }
 
