@@ -4,6 +4,8 @@ namespace Blixt;
 
 use Blixt\Stemming\EnglishStemmer;
 use Blixt\Stemming\Stemmer;
+use Blixt\Storage\Entities\Column;
+use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Storage;
 use Blixt\Tokenization\DefaultTokenizer;
 use Blixt\Tokenization\Tokenizer;
@@ -45,7 +47,8 @@ class Blixt
         $this->storage = $storage;
         $this->stemmer = $stemmer instanceof Stemmer ? $stemmer : new EnglishStemmer();
         $this->tokenizer = $tokenizer instanceof Tokenizer ? $tokenizer : new DefaultTokenizer();
-        $this->schemasWithColumns = $this->loadSchemasWithColumns();
+
+        $this->loadSchemasWithColumns();
     }
 
     /**
@@ -94,16 +97,18 @@ class Blixt
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * Load all of the schemas from the storage, with their associated columns.
      */
     protected function loadSchemasWithColumns()
     {
         $schemas = $this->getStorage()->schemas()->all();
         $columns = $this->getStorage()->columns()->all();
 
-        // TODO - Map the columns into the schemas and return them.
-
-        return new Collection();
+        $this->schemasWithColumns = $schemas->map(function (Schema $schema) use ($columns) {
+            $schema->setColumns($columns->filter(function (Column $column) use ($schema) {
+                return $column->getSchemaId() == $schema->getId();
+            }));
+        });
     }
 
     /**

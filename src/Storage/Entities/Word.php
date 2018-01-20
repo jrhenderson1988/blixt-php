@@ -2,25 +2,39 @@
 
 namespace Blixt\Storage\Entities;
 
-interface Word
+class Word extends Entity
 {
     /**
-     * @return int
+     * @var string
      */
-    public function getId();
+    protected $word;
 
     /**
-     * @param int|mixed $id
+     * Word constructor.
+     *
+     * @param $id
+     * @param $word
      */
-    public function setId($id);
+    public function __construct($id, $word)
+    {
+        parent::__construct($id);
+
+        $this->setWord($word);
+    }
 
     /**
      * @return string
      */
-    public function getWord();
+    public function getWord()
+    {
+        return $this->word;
+    }
 
     /**
      * @param string|mixed $word
      */
-    public function setWord($word);
+    public function setWord($word)
+    {
+        $this->word = strval($word);
+    }
 }

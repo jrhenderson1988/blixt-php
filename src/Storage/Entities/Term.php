@@ -2,45 +2,85 @@
 
 namespace Blixt\Storage\Entities;
 
-interface Term
+class Term extends Entity
 {
     /**
-     * @return int
+     * @var int
      */
-    public function getId();
+    protected $schemaId;
 
     /**
-     * @param int|mixed $id
+     * @var int
      */
-    public function setId($id);
+    protected $wordId;
+
+    /**
+     * @var int
+     */
+    protected $documentCount;
+
+    /**
+     * Term constructor.
+     *
+     * @param int|mixed $id
+     * @param int|mixed $schemaId
+     * @param int|mixed $wordId
+     * @param int|mixed $documentCount
+     */
+    public function __construct($id, $schemaId, $wordId, $documentCount)
+    {
+        parent::__construct($id);
+
+        $this->setSchemaId($schemaId);
+        $this->setWordId($wordId);
+        $this->setDocumentCount($documentCount);
+    }
 
     /**
      * @return int|mixed
      */
-    public function getSchemaId();
+    public function getSchemaId()
+    {
+        return $this->schemaId;
+    }
 
     /**
      * @param int|mixed $schemaId
      */
-    public function setSchemaId($schemaId);
+    public function setSchemaId($schemaId)
+    {
+        $this->schemaId = intval($schemaId);
+    }
 
     /**
      * @return int|mixed
      */
-    public function getWordId();
+    public function getWordId()
+    {
+        return $this->wordId;
+    }
 
     /**
      * @param int|mixed $wordId
      */
-    public function setWordId($wordId);
+    public function setWordId($wordId)
+    {
+        $this->wordId = intval($wordId);
+    }
 
     /**
      * @return int|mixed
      */
-    public function getDocumentCount();
+    public function getDocumentCount()
+    {
+        return $this->documentCount;
+    }
 
     /**
      * @param int|mixed $documentCount
      */
-    public function setDocumentCount($documentCount);
+    public function setDocumentCount($documentCount)
+    {
+        $this->documentCount = intval($documentCount);
+    }
 }

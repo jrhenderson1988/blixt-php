@@ -2,25 +2,63 @@
 
 namespace Blixt\Storage\Entities;
 
-interface Schema
+use Illuminate\Support\Collection;
+
+class Schema extends Entity
 {
     /**
-     * @return int
+     * @var string
      */
-    public function getId();
+    protected $name;
 
     /**
-     * @param int|mixed $id
+     * @var \Illuminate\Support\Collection
      */
-    public function setId($id);
+    protected $columns;
+
+    /**
+     * Schema constructor.
+     *
+     * @param int|mixed    $id
+     * @param string|mixed $name
+     */
+    public function __construct($id, $name)
+    {
+        parent::__construct($id);
+
+        $this->setName($name);
+        $this->setColumns(new Collection());
+    }
 
     /**
      * @return string
      */
-    public function getName();
+    public function getName()
+    {
+        return $this->name;
+    }
 
     /**
      * @param string|mixed $name
      */
-    public function setName($name);
+    public function setName($name)
+    {
+        $this->name = strval($name);
+    }
+
+    /**
+     * @param \Illuminate\Support\Collection $columns
+     */
+    public function setColumns(Collection $columns)
+    {
+        $this->columns = $columns;
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection
+     */
+    public function getColumns()
+    {
+        return $this->columns;
+    }
 }

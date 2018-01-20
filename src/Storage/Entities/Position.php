@@ -2,35 +2,62 @@
 
 namespace Blixt\Storage\Entities;
 
-interface Position
+class Position extends Entity
 {
     /**
-     * @return int
+     * @var int
      */
-    public function getId();
+    protected $occurrenceId;
 
     /**
+     * @var int
+     */
+    protected $position;
+
+    /**
+     * Position constructor.
+     *
      * @param int|mixed $id
+     * @param int|mixed $occurrenceId
+     * @param int|mixed $position
      */
-    public function setId($id);
+    public function __construct($id, $occurrenceId, $position)
+    {
+        parent::__construct($id);
+
+        $this->setOccurrenceId($occurrenceId);
+        $this->setPosition($position);
+    }
 
     /**
      * @return int
      */
-    public function getOccurrenceId();
+    public function getOccurrenceId()
+    {
+        return $this->occurrenceId;
+    }
 
     /**
      * @param int|mixed $occurrenceId
      */
-    public function setOccurrenceId($occurrenceId);
+    public function setOccurrenceId($occurrenceId)
+    {
+        $this->occurrenceId = intval($occurrenceId);
+    }
 
     /**
      * @return int
      */
-    public function getPosition();
+    public function getPosition()
+    {
+        return $this->position;
+    }
 
     /**
      * @param int|mixed $position
      */
-    public function setPosition($position);
+    public function setPosition($position)
+    {
+        $this->position = intval($position);
+    }
 }

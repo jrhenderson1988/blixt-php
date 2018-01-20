@@ -2,35 +2,62 @@
 
 namespace Blixt\Storage\Entities;
 
-interface Document
+class Document extends Entity
 {
     /**
-     * @return int
+     * @var int
      */
-    public function getId();
+    protected $schemaId;
 
     /**
-     * @param int|mixed $id
+     * @var mixed
      */
-    public function setId($id);
+    protected $key;
+
+    /**
+     * Document constructor.
+     *
+     * @param int|mixed $id
+     * @param int|mixed $schemaId
+     * @param mixed     $key
+     */
+    public function __construct($id, $schemaId, $key)
+    {
+        parent::__construct($id);
+
+        $this->setSchemaId($schemaId);
+        $this->setKey($key);
+    }
 
     /**
      * @return int|mixed
      */
-    public function getSchemaId();
+    public function getSchemaId()
+    {
+        return $this->schemaId;
+    }
 
     /**
      * @param int|mixed $schemaId
      */
-    public function setSchemaId($schemaId);
+    public function setSchemaId($schemaId)
+    {
+        $this->schemaId = intval($schemaId);
+    }
 
     /**
      * @return mixed
      */
-    public function getKey();
+    public function getKey()
+    {
+        return $this->key;
+    }
 
     /**
      * @param mixed $key
      */
-    public function setKey($key);
+    public function setKey($key)
+    {
+        $this->key = $key;
+    }
 }
