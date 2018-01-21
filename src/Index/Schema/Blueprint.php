@@ -13,13 +13,40 @@ class Blueprint
     protected $columns;
 
     /**
+     * @var string
+     */
+    protected $name;
+
+    /**
      * Schema constructor.
      *
+     * @param string|mixed                         $name
      * @param \Illuminate\Support\Collection|array $columns
      */
-    public function __construct($columns = null)
+    public function __construct($name, $columns = null)
     {
+        $this->setName($name);
         $this->setColumns(! is_null($columns) ? $columns : new Collection());
+    }
+
+    /**
+     * Set the name of the blueprint.
+     *
+     * @param string|mixed $name
+     */
+    public function setName($name)
+    {
+        $this->name = strval($name);
+    }
+
+    /**
+     * Get the name of the blueprint.
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
     }
 
     /**

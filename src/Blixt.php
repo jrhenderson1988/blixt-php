@@ -2,6 +2,9 @@
 
 namespace Blixt;
 
+use Blixt\Exceptions\IndexDoesNotExistException;
+use Blixt\Index\Index;
+use Blixt\Index\Schema\Blueprint;
 use Blixt\Stemming\EnglishStemmer;
 use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Column;
@@ -110,49 +113,75 @@ class Blixt
     }
 
     /**
-     * Open an existing index with the given name. An optional schema may be provided as a callable or Schema object
-     * that may be used to create a non-existent index.
+     * Open an index for the given schema.
      *
-     * @param \Blixt\Index\Schema\Blueprint|callable|null $schema
+     * @param string|int|mixed $schema
      *
      * @return \Blixt\Index\Index
+     * @throws \Blixt\Exceptions\IndexDoesNotExistException
      */
     public function open($schema = null)
     {
-//        $storageFactory = $this->getStorageFactory();
-//
-//        if (!is_null($schema) && is_callable($callable = $schema)) {
-//            $schema = new Schema();
-//
-//            call_user_func($callable, $schema);
-//        }
-//
-//        return new Index(
-//            $this->getStemmer(),
-//            $this->getTokenizer(),
-//            $storageFactory->create($name),
-//            $schema
-//        );
+        $schema = $this->findSchema($schema);
+
+        if (! $schema) {
+            throw new IndexDoesNotExistException(
+                'The requested schema does not exist.'
+            );
+        }
+
+        return $this->createIndexForSchema($schema);
+    }
+
+    public function create($blueprint, $closure = null)
+    {
+        // TODO
+        // - This method can be called in two ways, by either providing a blueprint directly, or by providing a name and
+        //   a closure that is responsible for building the blueprint.
+        // - Firstly, build a blueprint if the latter method is used.
+        // - Look up the name of the blueprint in our schemas, throwing an exception if we find an existing schema
+        // - Use the storage to create a schema object using the blueprint name
+        // - Use the storage to create a set of columns based upon the blueprint's columns
+        // - Ensure that the columns created are mapped into the given schema and that the schema is then added to the
+        //   schemas property.
+        // - Create an Index object for that schema
+        // - Cache the Index object and return it.
     }
 
     /**
-     * Tell if the index already exists, that is, all of the tables specified by the entities exist in the database. If
-     * any table is missing from the database, false is returned.
+     * Find the schema identified by the ID or name provided.
      *
-     * @return bool
+     * @param string|int|mixed $identifier
+     *
+     * @return \Blixt\Storage\Entities\Schema|null
      */
-    public function exists()
+    protected function findSchema($identifier)
     {
-        return $this->getStorage()->exists();
+        if (is_int($identifier) || ctype_digit($identifier)) {
+            $schema = $this->schemas->first(function (Schema $schema) use ($identifier) {
+                return $schema->getId() == $identifier;
+            });
+
+            if ($schema) {
+                return $schema;
+            }
+        }
+
+        // find by name
+        return $this->schemas->first(function (Schema $schema) use ($identifier) {
+            return $schema->getName() == $identifier;
+        });
     }
 
     /**
-     * Create the schema defined by the entities.
+     * Create an Index object for the given schema.
      *
-     * @return bool
+     * @param \Blixt\Storage\Entities\Schema $schema
+     *
+     * @return \Blixt\Index\Index
      */
-    public function create()
+    protected function createIndexForSchema(Schema $schema)
     {
-        return $this->getStorage()->create();
+        return new Index($this, $schema);
     }
 }

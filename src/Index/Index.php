@@ -2,6 +2,7 @@
 
 namespace Blixt\Index;
 
+use Blixt\Blixt;
 use Blixt\Index\Document\Document as IndexableDocument;
 use Blixt\Index\Document\Field as IndexableField;
 use Blixt\Index\Schema\Column as SchemaColumn;
@@ -12,86 +13,17 @@ use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\UndefinedSchemaException;
 use Blixt\Index\Schema\Blueprint;
 use Blixt\Stemming\Stemmer;
+use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Storage;
 use Blixt\Tokenization\Token;
 use Blixt\Tokenization\Tokenizer;
-use Doctrine\ORM\EntityManager;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
 class Index
 {
-    /**
-     * @var \Blixt\Storage\Storage
-     */
-    protected $entityManager;
-
-    /**
-     * @var \Blixt\Stemming\Stemmer
-     */
-    protected $stemmer;
-
-    /**
-     * @var \Blixt\Tokenization\Tokenizer
-     */
-    protected $tokenizer;
-
-    /**
-     * @var \Illuminate\Support\Collection
-     */
-    protected $schemas;
-
-    /**
-     * Index constructor.
-     *
-     * @param \Doctrine\ORM\EntityManager   $entityManager
-     * @param \Blixt\Stemming\Stemmer       $stemmer
-     * @param \Blixt\Tokenization\Tokenizer $tokenizer
-     */
-    public function __construct(EntityManager $entityManager, Stemmer $stemmer, Tokenizer $tokenizer)
+    public function __construct(Blixt $blixt, Schema $schema)
     {
-        $this->entityManager = $entityManager;
-        $this->stemmer = $stemmer;
-        $this->tokenizer = $tokenizer;
-        $this->schemas = new Collection();
-
-        $this->createStorageIfRequired();
-
-        $this->loadSchemas();
-    }
-
-    protected function createStorageIfRequired()
-    {
-        // Create the schema
-    }
-
-    protected function loadSchemas()
-    {
-        // Load all of the schemas from the storage, with their columns
-    }
-
-    public function createSchema(Blueprint $schema)
-    {
-        // Create a new schema record in the storage and add it to the schemas property
-    }
-
-    public function schemaExists($name)
-    {
-        // Tell if the given schema exists
-    }
-
-    public function add(IndexableDocument $document, $schema)
-    {
-        // Add the given document to the index against the given schema
-    }
-
-    public function search($query)
-    {
-        // SELECT d.* FROM documents AS d
-        // INNER JOIN fields AS f ON f.document_id = f.id
-        // INNER JOIN occurrences AS o ON o.field_id = f.id
-        // WHERE o.term_id IN () AND d.schema_id IN ()
-        // GROUP BY d.id
 
     }
 
