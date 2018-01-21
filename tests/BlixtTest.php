@@ -5,6 +5,8 @@ namespace BlixtTests;
 use Blixt\Blixt;
 use Blixt\Exceptions\IndexAlreadyExistsException;
 use Blixt\Exceptions\IndexDoesNotExistException;
+use Blixt\Exceptions\InvalidBlueprintException;
+use Blixt\Exceptions\StorageException;
 use Blixt\Index\Index;
 use Blixt\Index\Schema\Blueprint;
 use Blixt\Stemming\Stemmer;
@@ -100,10 +102,12 @@ class BlixtTest extends TestCase
         $storage->shouldReceive('columns')->andReturn($columnRepo);
 
         $blixt = new Blixt($storage);
+        $indexByName = $blixt->open('test');
+        $indexById = $blixt->open(1);
 
-        $index = $blixt->open('test');
-
-        $this->assertInstanceOf(Index::class, $index);
+        $this->assertInstanceOf(Index::class, $indexByName);
+        $this->assertInstanceOf(Index::class, $indexById);
+        $this->assertEquals($indexByName, $indexById);
     }
 
     /** @test */
@@ -159,7 +163,45 @@ class BlixtTest extends TestCase
         });
     }
 
-    // TODO - Create schema when no columns provided (InvalidBlueprintExcepetion)
-    // TODO - StorageException when storage is unable to create schema
-    // TODO - Open existing schema both by name and ID (Maybe integrate this one with testOpeningExistingSchemaReturnsIndex)
+    /** @test */
+    public function testCreatingSchemaWithoutDefiningColumnsThrowsException()
+    {
+        $storage = Mockery::mock(Storage::class);
+        $schemaRepo = Mockery::mock(SchemaRepository::class);
+        $columnRepo = Mockery::mock(ColumnRepository::class);
+
+        $schemaRepo->shouldReceive('all')->andReturn(new Collection());
+        $columnRepo->shouldReceive('all')->andReturn(new Collection());
+        $storage->shouldReceive('schemas')->andReturn($schemaRepo);
+        $storage->shouldReceive('columns')->andReturn($columnRepo);
+
+        $blixt = new Blixt($storage);
+
+        $this->expectException(InvalidBlueprintException::class);
+
+        $blixt->create('test');
+    }
+
+    /** @test */
+    public function testExceeptionIsThrownWhenStorageIsUnableToCreateSchema()
+    {
+        $storage = Mockery::mock(Storage::class);
+        $schemaRepo = Mockery::mock(SchemaRepository::class);
+        $columnRepo = Mockery::mock(ColumnRepository::class);
+
+        $schemaRepo->shouldReceive('all')->andReturn(new Collection());
+        $columnRepo->shouldReceive('all')->andReturn(new Collection());
+        $storage->shouldReceive('schemas')->andReturn($schemaRepo);
+        $storage->shouldReceive('columns')->andReturn($columnRepo);
+
+        $blixt = new Blixt($storage);
+
+        $schemaRepo->shouldReceive('create')->withArgs(['test'])->andReturn(null);
+
+        $this->expectException(StorageException::class);
+
+        $blixt->create('test', function (Blueprint $blueprint) {
+            $blueprint->addColumnDefinition('test', true, false);
+        });
+    }
 }

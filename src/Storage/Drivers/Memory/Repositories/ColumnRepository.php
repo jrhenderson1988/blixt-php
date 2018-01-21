@@ -30,12 +30,7 @@ class ColumnRepository extends AbstractRepository implements ColumnRepositoryInt
     }
 
     /**
-     * @param int|mixed    $schemaId
-     * @param string|mixed $name
-     * @param bool|mixed   $isIndexed
-     * @param bool|mixed   $isStored
-     *
-     * @return \Blixt\Storage\Entities\Column
+     * @inheritdoc
      */
     public function create($schemaId, $name, $isIndexed, $isStored)
     {

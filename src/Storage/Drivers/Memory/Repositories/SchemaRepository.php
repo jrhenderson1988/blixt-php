@@ -24,9 +24,7 @@ class SchemaRepository extends AbstractRepository implements SchemaRepositoryInt
     }
 
     /**
-     * @param string $name
-     *
-     * @return \Blixt\Storage\Entities\Schema
+     * @inheritdoc
      */
     public function create($name)
     {

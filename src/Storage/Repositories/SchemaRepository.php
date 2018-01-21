@@ -12,7 +12,7 @@ interface SchemaRepository
     /**
      * @param string $name
      *
-     * @return \Blixt\Storage\Entities\Schema
+     * @return \Blixt\Storage\Entities\Schema|null
      */
     public function create($name);
 }

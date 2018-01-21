@@ -15,7 +15,7 @@ interface ColumnRepository
      * @param bool|mixed   $isIndexed
      * @param bool|mixed   $isStored
      *
-     * @return \Blixt\Storage\Entities\Column
+     * @return \Blixt\Storage\Entities\Column|null
      */
     public function create($schemaId, $name, $isIndexed, $isStored);
 }
