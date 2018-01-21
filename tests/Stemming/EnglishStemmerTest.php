@@ -7,6 +7,7 @@ use BlixtTests\TestCase;
 
 class EnglishStemmerTest extends TestCase
 {
+    /** @test  */
     public function testStemmingWords()
     {
         $words = [

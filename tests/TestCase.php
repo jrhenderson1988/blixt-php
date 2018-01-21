@@ -3,6 +3,7 @@
 namespace BlixtTests;
 
 use Faker\Factory;
+use Mockery;
 use PHPUnit_Framework_TestCase;
 
 class TestCase extends PHPUnit_Framework_TestCase
@@ -18,5 +19,10 @@ class TestCase extends PHPUnit_Framework_TestCase
     public function __construct()
     {
         $this->faker = Factory::create();
+    }
+
+    public function tearDown()
+    {
+        Mockery::close();
     }
 }

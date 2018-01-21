@@ -9,6 +9,7 @@ use Illuminate\Support\Collection;
 
 class DefaultTokenizerTest extends TestCase
 {
+    /** @test  */
     public function testTokenizerReturnsCollectionOfTokens()
     {
         $tokenizer = new DefaultTokenizer();
@@ -21,17 +22,26 @@ class DefaultTokenizerTest extends TestCase
         });
     }
 
+    /** @test */
     public function testTokenizationOfBasicSentences()
     {
         $sentences = [
             'This is a basic test' => new Collection([
-                new Token('this', 0), new Token('is', 1), new Token('a', 2), new Token('basic', 3), new Token('test', 4)
+                new Token('this', 0),
+                new Token('is', 1),
+                new Token('a', 2),
+                new Token('basic', 3),
+                new Token('test', 4)
             ]),
             'RandOmly capitaLiseD lettErs' => new Collection([
-                new Token('randomly', 0), new Token('capitalised', 1), new Token('letters', 2)
+                new Token('randomly', 0),
+                new Token('capitalised', 1),
+                new Token('letters', 2)
             ]),
             'w0rds with numb3rs' => new Collection([
-                new Token('w0rds', 0), new Token('with', 1), new Token('numb3rs', 2)
+                new Token('w0rds', 0),
+                new Token('with', 1),
+                new Token('numb3rs', 2)
             ])
         ];
 
@@ -41,6 +51,7 @@ class DefaultTokenizerTest extends TestCase
         }
     }
 
+    /** @test */
     public function testTokenizationOfSentencesWithPunctuation()
     {
         $sentences = [

@@ -8,7 +8,7 @@ use Blixt\Exceptions\InvalidBlueprintException;
 use Blixt\Exceptions\StorageException;
 use Blixt\Index\Index;
 use Blixt\Index\Schema\Blueprint;
-use Blixt\Index\Schema\Column as ColumnDefinition;
+use Blixt\Index\Schema\ColumnDefinition as ColumnDefinition;
 use Blixt\Stemming\EnglishStemmer;
 use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Schema;
@@ -36,23 +36,7 @@ class Blixt
     /**
      * @var \Illuminate\Support\Collection
      */
-    protected $schemas;
-
-    /**
-     * Blixt constructor.
-     *
-     * @param \Blixt\Storage\Storage             $storage
-     * @param \Blixt\Stemming\Stemmer|null       $stemmer
-     * @param \Blixt\Tokenization\Tokenizer|null $tokenizer
-     */
-    public function __construct(Storage $storage, Stemmer $stemmer = null, Tokenizer $tokenizer = null)
-    {
-        $this->storage = $storage;
-        $this->stemmer = $stemmer instanceof Stemmer ? $stemmer : new EnglishStemmer();
-        $this->tokenizer = $tokenizer instanceof Tokenizer ? $tokenizer : new DefaultTokenizer();
-
-        $this->reloadSchemas();
-    }
+    public $schemas;
 
     /**
      * Install Blixt into the storage engine. This effectively creates the underlying storage schema if it does not
@@ -69,6 +53,22 @@ class Blixt
         }
 
         return true;
+    }
+
+    /**
+     * Blixt constructor.
+     *
+     * @param \Blixt\Storage\Storage             $storage
+     * @param \Blixt\Stemming\Stemmer|null       $stemmer
+     * @param \Blixt\Tokenization\Tokenizer|null $tokenizer
+     */
+    public function __construct(Storage $storage, Stemmer $stemmer = null, Tokenizer $tokenizer = null)
+    {
+        $this->storage = $storage;
+        $this->stemmer = $stemmer instanceof Stemmer ? $stemmer : new EnglishStemmer();
+        $this->tokenizer = $tokenizer instanceof Tokenizer ? $tokenizer : new DefaultTokenizer();
+
+        $this->reloadSchemas();
     }
 
     /**
@@ -109,6 +109,8 @@ class Blixt
         // Note: The Schema::setColumns method filters out columns that do not belong to it.
         $this->schemas = $this->getStorage()->schemas()->all()->map(function (Schema $schema) use ($columns) {
             $schema->setColumns($columns);
+
+            return $schema;
         });
     }
 
@@ -220,7 +222,7 @@ class Blixt
      */
     protected function createSchemaFromBlueprint(Blueprint $blueprint)
     {
-        if ($blueprint->getColumns()->count() < 1) {
+        if ($blueprint->getColumnDefinitions()->count() < 1) {
             throw new InvalidBlueprintException(
                 "At least one column must be defined to create a new index."
             );
@@ -233,7 +235,7 @@ class Blixt
             );
         }
 
-        $blueprint->getColumns()->each(function (ColumnDefinition $column) use ($schema) {
+        $blueprint->getColumnDefinitions()->each(function (ColumnDefinition $column) use ($schema) {
             $this->getStorage()->columns()->create(
                 $schema->getId(),
                 $column->getName(),

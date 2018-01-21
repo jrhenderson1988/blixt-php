@@ -17,12 +17,12 @@ class Column extends Entity
     /**
      * @var bool
      */
-    protected $indexed;
+    protected $isIndexed;
 
     /**
      * @var bool
      */
-    protected $stored;
+    protected $isStored;
 
     /**
      * Column constructor.
@@ -30,17 +30,17 @@ class Column extends Entity
      * @param int|mixed    $id
      * @param int|mixed    $schemaId
      * @param string|mixed $name
-     * @param bool|mixed   $indexed
-     * @param bool|mixed   $stored
+     * @param bool|mixed   $isIndexed
+     * @param bool|mixed   $isStored
      */
-    public function __construct($id, $schemaId, $name, $indexed, $stored)
+    public function __construct($id, $schemaId, $name, $isIndexed, $isStored)
     {
         parent::__construct($id);
 
         $this->setSchemaId($schemaId);
         $this->setName($name);
-        $this->setIndexed($name);
-        $this->setStored($name);
+        $this->setIndexed($isIndexed);
+        $this->setStored($isStored);
     }
 
     /**
@@ -80,15 +80,15 @@ class Column extends Entity
      */
     public function isIndexed()
     {
-        return $this->indexed;
+        return $this->isIndexed;
     }
 
     /**
-     * @param bool|mixed $indexed
+     * @param bool|mixed $isIndexed
      */
-    public function setIndexed($indexed)
+    public function setIndexed($isIndexed)
     {
-        $this->indexed = !! $indexed;
+        $this->isIndexed = !! $isIndexed;
     }
 
     /**
@@ -96,14 +96,14 @@ class Column extends Entity
      */
     public function isStored()
     {
-        return $this->stored;
+        return $this->isStored;
     }
 
     /**
-     * @param bool|mixed $stored
+     * @param bool|mixed $isStored
      */
-    public function setStored($stored)
+    public function setStored($isStored)
     {
-        $this->stored = !! $stored;
+        $this->isStored = !! $isStored;
     }
 }

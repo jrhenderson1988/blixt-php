@@ -2,23 +2,33 @@
 
 namespace BlixtTests\Models;
 
-use Blixt\Models\Column;
+use Blixt\Storage\Entities\Column;
 use BlixtTests\TestCase;
 
 class ColumnTest extends TestCase
 {
-
-    public function testGettersAndSetters()
+    /** @test */
+    public function testConstructor()
     {
-        $test = new Column(1, 'test', true, true, 1.0);
+        $test = new Column(1, 2, 'test', true, false);
+
         $this->assertEquals(1, $test->getId());
+        $this->assertEquals(2, $test->getSchemaId());
         $this->assertEquals('test', $test->getName());
         $this->assertEquals(true, $test->isIndexed());
-        $this->assertEquals(true, $test->isIndexed());
-        $this->assertEquals(1.0, $test->isIndexed());
+        $this->assertEquals(false, $test->isStored());
+    }
+
+    /** @test */
+    public function testGettersAndSettersGetAndSetCorrectValues()
+    {
+        $test = new Column(1, 2, 'test', true, false);
 
         $test->setId(2);
         $this->assertEquals(2, $test->getId());
+
+        $test->setSchemaId(1);
+        $this->assertEquals(1, $test->getSchemaId());
 
         $test->setName('another_test');
         $this->assertEquals('another_test', $test->getName());
@@ -26,19 +36,19 @@ class ColumnTest extends TestCase
         $test->setIndexed(false);
         $this->assertEquals(false, $test->isIndexed());
 
-        $test->setStored(false);
-        $this->assertEquals(false, $test->isStored());
-
-        $test->setWeight(2.5);
-        $this->assertEquals(2.5, $test->getWeight());
+        $test->setStored(true);
+        $this->assertEquals(true, $test->isStored());
     }
 
     public function testSettersCastToCorrectTypes()
     {
-        $test = new Column(1, 'test', true, true, 1.0);
+        $test = new Column(1, 2, 'test', true, false);
 
         $test->setId(true);
         $this->assertSame(1, $test->getId());
+
+        $test->setSchemaId(1.4);
+        $this->assertSame(1, $test->getSchemaId());
 
         $test->setName(1);
         $this->assertSame('1', $test->getName());
@@ -48,9 +58,6 @@ class ColumnTest extends TestCase
 
         $test->setStored('1');
         $this->assertSame(true, $test->isStored());
-
-        $test->setWeight('1.23');
-        $this->assertSame(1.23, $test->getWeight());
     }
 
 }

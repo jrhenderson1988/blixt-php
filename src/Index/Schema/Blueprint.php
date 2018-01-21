@@ -8,25 +8,25 @@ use InvalidArgumentException;
 class Blueprint
 {
     /**
-     * @var \Illuminate\Support\Collection
-     */
-    protected $columns;
-
-    /**
      * @var string
      */
     protected $name;
 
     /**
+     * @var \Illuminate\Support\Collection
+     */
+    protected $columnDefinitions;
+
+    /**
      * Schema constructor.
      *
      * @param string|mixed                         $name
-     * @param \Illuminate\Support\Collection|array $columns
+     * @param \Illuminate\Support\Collection|array $columnDefinitions
      */
-    public function __construct($name, $columns = null)
+    public function __construct($name, $columnDefinitions = null)
     {
         $this->setName($name);
-        $this->setColumns(! is_null($columns) ? $columns : new Collection());
+        $this->setColumnDefinitions(! is_null($columnDefinitions) ? $columnDefinitions : new Collection());
     }
 
     /**
@@ -50,56 +50,75 @@ class Blueprint
     }
 
     /**
-     * Set the columns with the given array or collection.
+     * Set the column definitions to the given array or collection.
      *
-     * @param \Illuminate\Support\Collection|array $columns
+     * @param \Illuminate\Support\Collection|array $columnDefinitions
      *
      * @throws \InvalidArgumentException
      */
-    public function setColumns($columns)
+    public function setColumnDefinitions($columnDefinitions)
     {
-        if (!$columns instanceof Collection && !is_array($columns)) {
+        if (! $columnDefinitions instanceof Collection && ! is_array($columnDefinitions)) {
             throw new InvalidArgumentException(
-                "The columns provided must be an array or a collection."
+                "The column definitions provided must be an array or a collection."
             );
         }
 
-        $columns = is_array($columns) ? new Collection($columns) : $columns;
+        $this->columnDefinitions = new Collection();
 
-        $columns->each(function ($column) {
-            $this->addColumn($column);
+        (new Collection($columnDefinitions))->each(function ($columnDefinition) {
+            $this->addColumnDefinition($columnDefinition);
         });
     }
 
     /**
-     * Add a column to the schema definition.
+     * Add a column definition to the schema blueprint.
      *
-     * @param \Blixt\Index\Schema\Column|string $column
-     * @param bool                              $indexed
-     * @param bool                              $stored
+     * @param \Blixt\Index\Schema\ColumnDefinition|string $name
+     * @param bool                                        $isIndexed
+     * @param bool                                        $isStored
      */
-    public function addColumn($column, $indexed = true, $stored = false)
+    public function addColumnDefinition($name, $isIndexed = true, $isStored = false)
     {
-        if (!$column instanceof Column) {
-            if (!is_string($column)) {
-                throw new InvalidArgumentException(
-                    "The column provided must be a string or an instance of " . Column::class . "."
-                );
-            }
+        $columnDefinition = $this->createColumnDefinition($name, $isIndexed, $isStored);
 
-            $column = new Column($column, $indexed, $stored);
-        }
-
-        $this->columns->put($column->getName(), $column);
+        $this->columnDefinitions->put(
+            $columnDefinition->getName(), $columnDefinition
+        );
     }
 
     /**
-     * Get the columns.
+     * Get the column definitions.
      *
      * @return \Illuminate\Support\Collection
      */
-    public function getColumns()
+    public function getColumnDefinitions()
     {
-        return $this->columns;
+        return $this->columnDefinitions;
+    }
+
+    /**
+     * Create a column definition from the given data. If the first parameter is already a column definiton, it is
+     * returned as is.
+     *
+     * @param \Blixt\Index\Schema\ColumnDefinition|string $name
+     * @param bool                                        $isIndexed
+     * @param bool                                        $isStored
+     *
+     * @return \Blixt\Index\Schema\ColumnDefinition
+     */
+    protected function createColumnDefinition($name, $isIndexed = true, $isStored = false)
+    {
+        if ($name instanceof ColumnDefinition) {
+            return $name;
+        }
+
+        if (! is_string($name) || empty($name)) {
+            throw new InvalidArgumentException(
+                'Invalid column definition name, expected non-empty string.'
+            );
+        }
+
+        return new ColumnDefinition($name, $isIndexed, $isStored);
     }
 }

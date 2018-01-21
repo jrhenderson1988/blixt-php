@@ -5,7 +5,7 @@ namespace Blixt\Index;
 use Blixt\Blixt;
 use Blixt\Index\Document\Document as IndexableDocument;
 use Blixt\Index\Document\Field as IndexableField;
-use Blixt\Index\Schema\Column as SchemaColumn;
+use Blixt\Index\Schema\ColumnDefinition as SchemaColumn;
 use Blixt\Storage\Entities\Document;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Field;

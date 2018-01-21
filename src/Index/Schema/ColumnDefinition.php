@@ -2,7 +2,7 @@
 
 namespace Blixt\Index\Schema;
 
-class Column
+class ColumnDefinition
 {
     /**
      * @var string
