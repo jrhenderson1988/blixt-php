@@ -10,7 +10,7 @@ use Blixt\Storage\Entities\Document;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Field;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
-use Blixt\Exceptions\UndefinedSchemaException;
+use Blixt\Exceptions\InvalidBlueprintException;
 use Blixt\Index\Schema\Blueprint;
 use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Schema;

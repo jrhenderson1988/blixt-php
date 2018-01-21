@@ -4,7 +4,7 @@ namespace BlixtTests\Index;
 
 use Blixt\Documents\Document as IndexableDocument;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
-use Blixt\Exceptions\UndefinedSchemaException;
+use Blixt\Exceptions\InvalidBlueprintException;
 use Blixt\Index\Index;
 use Blixt\Index\Schema\Blueprint;
 use Blixt\Models\Document;

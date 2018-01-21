@@ -78,7 +78,7 @@ class Storage implements StorageInterface
      *
      * @return int
      */
-    protected function insert($table, array $data)
+    public function insert($table, array $data)
     {
         $this->assertTableExists($table);
 

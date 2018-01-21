@@ -28,4 +28,22 @@ class ColumnRepository extends AbstractRepository implements ColumnRepositoryInt
             $row[static::FIELD_IS_STORED]
         );
     }
+
+    /**
+     * @param int|mixed    $schemaId
+     * @param string|mixed $name
+     * @param bool|mixed   $isIndexed
+     * @param bool|mixed   $isStored
+     *
+     * @return \Blixt\Storage\Entities\Column
+     */
+    public function create($schemaId, $name, $isIndexed, $isStored)
+    {
+        return $this->insert([
+            static::FIELD_SCHEMA_ID => $schemaId,
+            static::FIELD_NAME => $name,
+            static::FIELD_IS_INDEXED => $isIndexed,
+            static::FIELD_IS_STORED => $isStored
+        ]);
+    }
 }

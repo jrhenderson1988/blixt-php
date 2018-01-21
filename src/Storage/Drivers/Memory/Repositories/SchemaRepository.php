@@ -22,4 +22,14 @@ class SchemaRepository extends AbstractRepository implements SchemaRepositoryInt
             $row[static::FIELD_NAME]
         );
     }
+
+    /**
+     * @param string $name
+     *
+     * @return \Blixt\Storage\Entities\Schema
+     */
+    public function create($name)
+    {
+        return $this->insert([static::FIELD_NAME => $name]);
+    }
 }

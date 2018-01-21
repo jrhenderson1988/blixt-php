@@ -6,7 +6,7 @@ use Blixt\Blixt;
 use Blixt\Documents\Document;
 use Blixt\Documents\Field;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
-use Blixt\Exceptions\UndefinedSchemaException;
+use Blixt\Exceptions\InvalidBlueprintException;
 use Blixt\Index\Schema\Column;
 use Blixt\Index\Schema\Blueprint;
 use Blixt\Stemming\EnglishStemmer;

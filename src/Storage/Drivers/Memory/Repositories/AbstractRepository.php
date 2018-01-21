@@ -61,4 +61,16 @@ abstract class AbstractRepository
 
         return null;
     }
+
+    /**
+     * @param array $data
+     *
+     * @return \Blixt\Storage\Entities\Entity
+     */
+    public function insert(array $data)
+    {
+        $id = $this->storage->insert(static::TABLE, $data);
+
+        return $this->map(array_merge($data, [static::FIELD_ID => $id]));
+    }
 }

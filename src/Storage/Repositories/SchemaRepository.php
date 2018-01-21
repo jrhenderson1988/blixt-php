@@ -8,4 +8,11 @@ interface SchemaRepository
      * @return \Illuminate\Support\Collection
      */
     public function all();
+
+    /**
+     * @param string $name
+     *
+     * @return \Blixt\Storage\Entities\Schema
+     */
+    public function create($name);
 }

@@ -2,19 +2,19 @@
 
 namespace Blixt;
 
+use Blixt\Exceptions\IndexAlreadyExistsException;
 use Blixt\Exceptions\IndexDoesNotExistException;
+use Blixt\Exceptions\InvalidBlueprintException;
+use Blixt\Exceptions\StorageException;
 use Blixt\Index\Index;
 use Blixt\Index\Schema\Blueprint;
+use Blixt\Index\Schema\Column as ColumnDefinition;
 use Blixt\Stemming\EnglishStemmer;
 use Blixt\Stemming\Stemmer;
-use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Storage;
 use Blixt\Tokenization\DefaultTokenizer;
 use Blixt\Tokenization\Tokenizer;
-use Illuminate\Support\Collection;
-
-// TODO - Blixt class now represents the parent index, the index class now represents a sub-index based around a schema
 
 class Blixt
 {
@@ -51,7 +51,7 @@ class Blixt
         $this->stemmer = $stemmer instanceof Stemmer ? $stemmer : new EnglishStemmer();
         $this->tokenizer = $tokenizer instanceof Tokenizer ? $tokenizer : new DefaultTokenizer();
 
-        $this->loadSchemas();
+        $this->reloadSchemas();
     }
 
     /**
@@ -102,7 +102,7 @@ class Blixt
     /**
      * Load all of the schemas from the storage, with their associated columns.
      */
-    protected function loadSchemas()
+    protected function reloadSchemas()
     {
         $columns = $this->getStorage()->columns()->all();
 
@@ -120,7 +120,7 @@ class Blixt
      * @return \Blixt\Index\Index
      * @throws \Blixt\Exceptions\IndexDoesNotExistException
      */
-    public function open($schema = null)
+    public function open($schema)
     {
         $schema = $this->findSchema($schema);
 
@@ -133,19 +133,32 @@ class Blixt
         return $this->createIndexForSchema($schema);
     }
 
+    /**
+     * Create an Index object using the Schema created by the Blueprint.
+     *
+     * @param \Blixt\Index\Schema\Blueprint|string|mixed $blueprint
+     * @param \Closure|callable|null                     $closure
+     *
+     * @return \Blixt\Index\Index
+     * @throws \Blixt\Exceptions\IndexAlreadyExistsException
+     * @throws \Blixt\Exceptions\InvalidBlueprintException
+     * @throws \Blixt\Exceptions\StorageException
+     * @throws \Blixt\Exceptions\IndexDoesNotExistException
+     */
     public function create($blueprint, $closure = null)
     {
-        // TODO
-        // - This method can be called in two ways, by either providing a blueprint directly, or by providing a name and
-        //   a closure that is responsible for building the blueprint.
-        // - Firstly, build a blueprint if the latter method is used.
-        // - Look up the name of the blueprint in our schemas, throwing an exception if we find an existing schema
-        // - Use the storage to create a schema object using the blueprint name
-        // - Use the storage to create a set of columns based upon the blueprint's columns
-        // - Ensure that the columns created are mapped into the given schema and that the schema is then added to the
-        //   schemas property.
-        // - Create an Index object for that schema
-        // - Cache the Index object and return it.
+        $blueprint = $this->buildBlueprint($blueprint, $closure);
+        if ($schema = $this->findSchema($blueprint->getName())) {
+            throw new IndexAlreadyExistsException(
+                "An index with name '{$blueprint->getName()}' already exists."
+            );
+        }
+
+        $schema = $this->createSchemaFromBlueprint($blueprint);
+
+        $this->reloadSchemas();
+
+        return $this->open($schema->getName());
     }
 
     /**
@@ -171,6 +184,65 @@ class Blixt
         return $this->schemas->first(function (Schema $schema) use ($identifier) {
             return $schema->getName() == $identifier;
         });
+    }
+
+    /**
+     * Build a Blueprint object with the given parameters. If the blueprint parameter provided is not an instance of
+     * Blueprint, create a new one assuming it is a name. If a callable is provided, call it and pass in the (new or
+     * provided) Blueprint object, which allows the developer to dynamically specify a column definition.
+     *
+     * @param \Blixt\Index\Schema\Blueprint|string|mixed $blueprint
+     * @param \Closure|callable|null                     $callable
+     *
+     * @return \Blixt\Index\Schema\Blueprint
+     */
+    protected function buildBlueprint($blueprint, $callable)
+    {
+        if (! $blueprint instanceof Blueprint) {
+            $blueprint = new Blueprint($blueprint);
+        }
+
+        if (is_callable($callable)) {
+            call_user_func($callable, $blueprint);
+        }
+
+        return $blueprint;
+    }
+
+    /**
+     * Create a Schema for the given Blueprint.
+     *
+     * @param \Blixt\Index\Schema\Blueprint $blueprint
+     *
+     * @return \Blixt\Storage\Entities\Schema
+     * @throws \Blixt\Exceptions\InvalidBlueprintException
+     * @throws \Blixt\Exceptions\StorageException
+     */
+    protected function createSchemaFromBlueprint(Blueprint $blueprint)
+    {
+        if ($blueprint->getColumns()->count() < 1) {
+            throw new InvalidBlueprintException(
+                "At least one column must be defined to create a new index."
+            );
+        }
+
+        $schema = $this->getStorage()->schemas()->create($blueprint->getName());
+        if (! $schema) {
+            throw new StorageException(
+                "Could not create schema '{$blueprint->getName()}'."
+            );
+        }
+
+        $blueprint->getColumns()->each(function (ColumnDefinition $column) use ($schema) {
+            $this->getStorage()->columns()->create(
+                $schema->getId(),
+                $column->getName(),
+                $column->isIndexed(),
+                $column->isStored()
+            );
+        });
+
+        return $schema;
     }
 
     /**
