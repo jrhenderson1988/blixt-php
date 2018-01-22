@@ -1,6 +1,6 @@
 <?php
 
-namespace BlixtTests\Models;
+namespace BlixtTests\Storage\Entities;
 
 use Blixt\Storage\Entities\Column;
 use BlixtTests\TestCase;
@@ -40,6 +40,7 @@ class ColumnTest extends TestCase
         $this->assertEquals(true, $test->isStored());
     }
 
+    /** @test */
     public function testSettersCastToCorrectTypes()
     {
         $test = new Column(1, 2, 'test', true, false);

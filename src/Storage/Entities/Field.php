@@ -27,7 +27,7 @@ class Field extends Entity
      * @param int|mixed $columnId
      * @param mixed     $value
      */
-    public function __construct($id, $documentId, $columnId, $value)
+    public function __construct($id, $documentId, $columnId, $value = null)
     {
         parent::__construct($id);
 
@@ -81,6 +81,6 @@ class Field extends Entity
      */
     public function setValue($value)
     {
-        $this->value = $value;
+        $this->value = ! $value ? null : $value;
     }
 }
