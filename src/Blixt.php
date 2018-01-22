@@ -8,7 +8,7 @@ use Blixt\Exceptions\InvalidBlueprintException;
 use Blixt\Exceptions\StorageException;
 use Blixt\Index\Index;
 use Blixt\Index\Schema\Blueprint;
-use Blixt\Index\Schema\ColumnDefinition as ColumnDefinition;
+use Blixt\Index\Schema\Definition;
 use Blixt\Stemming\EnglishStemmer;
 use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Schema;
@@ -222,7 +222,7 @@ class Blixt
      */
     protected function createSchemaFromBlueprint(Blueprint $blueprint)
     {
-        if ($blueprint->getColumnDefinitions()->count() < 1) {
+        if ($blueprint->getDefinitions()->count() < 1) {
             throw new InvalidBlueprintException(
                 "At least one column must be defined to create a new index."
             );
@@ -235,7 +235,7 @@ class Blixt
             );
         }
 
-        $blueprint->getColumnDefinitions()->each(function (ColumnDefinition $column) use ($schema) {
+        $blueprint->getDefinitions()->each(function (Definition $column) use ($schema) {
             $this->getStorage()->columns()->create(
                 $schema->getId(),
                 $column->getName(),

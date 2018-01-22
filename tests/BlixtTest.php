@@ -134,7 +134,7 @@ class BlixtTest extends TestCase
         $columnRepo->shouldReceive('all')->andReturn(new Collection([$column]));
 
         $index = $blixt->create('test', function (Blueprint $blueprint) {
-            $blueprint->addColumnDefinition('test', true, false);
+            $blueprint->addDefinition('test', true, false);
         });
 
         $this->assertInstanceOf(Index::class, $index);
@@ -159,7 +159,7 @@ class BlixtTest extends TestCase
 
         $blixt = new Blixt($storage);
         $blixt->create('test', function (Blueprint $blueprint) {
-            $blueprint->addColumnDefinition('test', true, false);
+            $blueprint->addDefinition('test', true, false);
         });
     }
 
@@ -201,7 +201,7 @@ class BlixtTest extends TestCase
         $this->expectException(StorageException::class);
 
         $blixt->create('test', function (Blueprint $blueprint) {
-            $blueprint->addColumnDefinition('test', true, false);
+            $blueprint->addDefinition('test', true, false);
         });
     }
 }

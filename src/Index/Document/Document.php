@@ -8,7 +8,7 @@ use InvalidArgumentException;
 class Document
 {
     /**
-     * @var mixed
+     * @var int
      */
     protected $key;
 
@@ -20,23 +20,23 @@ class Document
     /**
      * Document constructor.
      *
-     * @param mixed $key
-     * @param \Illuminate\Support\Collection|array|\Blixt\Documents\Field|null $fields
+     * @param int|mixed $key
+     * @param \Illuminate\Support\Collection|array|null $fields
      */
     public function __construct($key, $fields = null)
     {
         $this->setKey($key);
-        $this->setFields(is_null($fields) ? [] : $fields);
+        $this->setFields(! is_null($fields) ? $fields : new Collection());
     }
 
     /**
      * Set the key for the document.
      *
-     * @param mixed $key
+     * @param int|mixed $key
      */
     public function setKey($key)
     {
-        $this->key = $key;
+        $this->key = intval($key);
     }
 
     /**
@@ -50,33 +50,46 @@ class Document
     }
 
     /**
+     * Get a field's value by its key.
+     *
+     * @param string $key
+     *
+     * @return mixed|null
+     */
+    public function getField($key)
+    {
+        return $this->fields->get($key);
+    }
+
+    /**
      * Add a field to the fields collection.
      *
-     * @param \Blixt\Documents\Field $field
+     * @param string|mixed $key
+     * @param mixed        $value
      */
-    public function addField(Field $field)
+    public function setField($key, $value)
     {
-        $this->fields->push($field);
+        $this->fields->put($key, $value);
     }
 
     /**
      * Set the fields for the document.
      *
-     * @param \Illuminate\Support\Collection|\Blixt\Documents\Field|array $fields
+     * @param \Illuminate\Support\Collection|array $fields
      */
     public function setFields($fields)
     {
-        $this->fields = new Collection();
-
-        if (!$fields instanceof Collection && !is_array($fields) && !$fields instanceof Field) {
+        if (! $fields instanceof Collection && ! is_array($fields)) {
             throw new InvalidArgumentException(
-                'Fields must be a Collection, an array or a single Field.'
+                'Fields must be a collection of an array.'
             );
         }
 
-        foreach (new Collection($fields instanceof Field ? [$fields] : $fields) as $field) {
-            $this->addField($field);
-        }
+        $this->fields = new Collection();
+
+        (new Collection($fields))->each(function ($item, $key) {
+            $this->setField($key, $item);
+        });
     }
 
     /**

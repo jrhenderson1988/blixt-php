@@ -2,7 +2,7 @@
 
 namespace Blixt\Index\Schema;
 
-class ColumnDefinition
+class Definition
 {
     /**
      * @var string
@@ -20,7 +20,7 @@ class ColumnDefinition
     protected $stored;
 
     /**
-     * Column constructor.
+     * Definition constructor.
      *
      * @param string|mixed $name
      * @param bool|mixed   $indexed

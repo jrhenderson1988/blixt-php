@@ -3,28 +3,47 @@
 namespace Blixt\Index;
 
 use Blixt\Blixt;
-use Blixt\Index\Document\Document as IndexableDocument;
-use Blixt\Index\Document\Field as IndexableField;
-use Blixt\Index\Schema\ColumnDefinition as SchemaColumn;
-use Blixt\Storage\Entities\Document;
-use Blixt\Storage\Entities\Column;
-use Blixt\Storage\Entities\Field;
-use Blixt\Exceptions\DocumentAlreadyExistsException;
-use Blixt\Exceptions\InvalidBlueprintException;
-use Blixt\Index\Schema\Blueprint;
-use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Schema;
-use Blixt\Storage\Storage;
-use Blixt\Tokenization\Token;
-use Blixt\Tokenization\Tokenizer;
-use Illuminate\Support\Collection;
-use InvalidArgumentException;
 
 class Index
 {
+    /**
+     * @var \Blixt\Storage\Entities\Schema
+     */
+    protected $schema;
+
+    /**
+     * @var \Blixt\Storage\Storage
+     */
+    protected $storage;
+
+    /**
+     * @var \Blixt\Tokenization\Tokenizer
+     */
+    protected $tokenizer;
+
+    /**
+     * @var \Blixt\Stemming\Stemmer
+     */
+    protected $stemmer;
+
+    /**
+     * Index constructor.
+     *
+     * @param \Blixt\Blixt                   $blixt
+     * @param \Blixt\Storage\Entities\Schema $schema
+     */
     public function __construct(Blixt $blixt, Schema $schema)
     {
+        $this->storage = $blixt->getStorage();
+        $this->tokenizer = $blixt->getTokenizer();
+        $this->stemmer = $blixt->getStemmer();
+        $this->schema = $schema;
+    }
 
+    public function add()
+    {
+        
     }
 
 
