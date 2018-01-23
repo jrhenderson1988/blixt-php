@@ -26,4 +26,28 @@ class DocumentRepository extends AbstractRepository implements DocumentRepositor
             $row[static::FIELD_KEY]
         );
     }
+
+    /**
+     * @param int|mixed $key
+     *
+     * @return \Blixt\Storage\Entities\Document
+     */
+    public function findByKey($key)
+    {
+        return $this->findBy(static::FIELD_KEY, $key);
+    }
+
+    /**
+     * @param int       $schemaId
+     * @param int|mixed $key
+     *
+     * @return \Blixt\Storage\Entities\Document
+     */
+    public function create($schemaId, $key)
+    {
+        return $this->insert([
+            static::FIELD_SCHEMA_ID => $schemaId,
+            static::FIELD_KEY => $key
+        ]);
+    }
 }

@@ -3,6 +3,10 @@
 namespace Blixt\Index;
 
 use Blixt\Blixt;
+use Blixt\Exceptions\DocumentAlreadyExistsException;
+use Blixt\Exceptions\InvalidDocumentException;
+use Blixt\Index\Document\Document as Indexable;
+use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Schema;
 
 class Index
@@ -41,9 +45,71 @@ class Index
         $this->schema = $schema;
     }
 
-    public function add()
+    /**
+     * @param \Blixt\Index\Document\Document $indexable
+     *
+     * @return bool
+     * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
+     * @throws \Blixt\Exceptions\InvalidDocumentException
+     */
+    public function add(Indexable $indexable)
     {
-        
+        $this->assertDocumentDoesNotExist($indexable);
+        $this->assertDocumentMatchesSchema($indexable);
+        $this->addDocumentToIndex($indexable);
+
+        return true;
+    }
+
+    /**
+     * Assert that the document provided does not already exist in the index.
+     *
+     * @param \Blixt\Index\Document\Document $indexable
+     *
+     * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
+     */
+    protected function assertDocumentDoesNotExist(Indexable $indexable)
+    {
+        if ($document = $this->storage->documents()->findByKey($indexable->getKey())) {
+            throw new DocumentAlreadyExistsException(
+                "Document '{$document->getKey()}' already exists in schema '{$this->schema->getName()}'."
+            );
+        }
+    }
+
+    /**
+     * @param \Blixt\Index\Document\Document $document
+     *
+     * @throws \Blixt\Exceptions\InvalidDocumentException
+     */
+    public function assertDocumentMatchesSchema(Indexable $document)
+    {
+        $fields = $document->getFields();
+
+        $this->schema->getColumns()->each(function (Column $column) use ($fields) {
+            if (! $fields->has($column->getName())) {
+                throw new InvalidDocumentException(
+                    "The field '{$column->getName()}' is missing from the provided document."
+                );
+            }
+        });
+    }
+
+    protected function addDocumentToIndex(Indexable $document)
+    {
+        // Create document
+        $document = $this->storage->documents()->create($this->schema->getId(), $document->getKey());
+        var_dump($document);die();
+        // Go through each column in the schema and process the corresponding field in the indexable document
+        // Add field to the storage (only store content if schema column indicates it should be stored)
+        // If it is indexable:
+        // - Tokenize and stem each word
+        // - Look up or create word records and get a collection of words
+        // - Look up or create term records for the schema/word and get a collection of terms
+        // - Create occurrence records for each term against the field, making sure to store document counts
+        // - Create position records for each occurrence representing each terms position in the field
+        // - Update term field counts to reflect new fields added
+        //
     }
 
 

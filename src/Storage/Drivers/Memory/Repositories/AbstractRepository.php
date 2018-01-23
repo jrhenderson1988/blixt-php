@@ -73,4 +73,17 @@ abstract class AbstractRepository
 
         return $this->map(array_merge($data, [static::FIELD_ID => $id]));
     }
+
+    /**
+     * @param string|mixed $column
+     * @param mixed        $value
+     *
+     * @return \Blixt\Storage\Entities\Entity|null
+     */
+    public function findBy($column, $value)
+    {
+        $results = $this->storage->getWhere(static::TABLE, $column, $value);
+
+        return count($results) > 0 ? $this->map($results[0]) : null;
+    }
 }

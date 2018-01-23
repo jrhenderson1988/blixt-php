@@ -122,6 +122,25 @@ class Storage implements StorageInterface
     }
 
     /**
+     * Get all of the entries in the dataset for the given table, where the value identified by the column in each item
+     * is equal to the provided value.
+     *
+     * @param string       $table
+     * @param string|mixed $column
+     * @param mixed        $value
+     *
+     * @return array
+     */
+    public function getWhere($table, $column, $value)
+    {
+        $this->assertTableExists($table);
+
+        return array_filter($this->data[$table], function ($item) use ($column, $value) {
+            return $item[$column] == $value;
+        });
+    }
+
+    /**
      * Get all of the data for the given table.
      *
      * @param string $table
