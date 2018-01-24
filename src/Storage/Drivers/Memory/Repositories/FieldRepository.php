@@ -28,4 +28,20 @@ class FieldRepository extends AbstractRepository implements FieldRepositoryInter
             $row[static::FIELD_VALUE]
         );
     }
+
+    /**
+     * @param int|mixed         $documentId
+     * @param int|mixed         $columnId
+     * @param string|mixed|null $value
+     *
+     * @return \Blixt\Storage\Entities\Field
+     */
+    public function create($documentId, $columnId, $value = null)
+    {
+        return $this->insert([
+            static::FIELD_DOCUMENT_ID => $documentId,
+            static::FIELD_COLUMN_ID => $columnId,
+            static::FIELD_VALUE => $value ? $value : null,
+        ]);
+    }
 }

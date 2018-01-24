@@ -7,7 +7,9 @@ use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
 use Blixt\Index\Document\Document as Indexable;
 use Blixt\Storage\Entities\Column;
+use Blixt\Storage\Entities\Document;
 use Blixt\Storage\Entities\Schema;
+use Blixt\Tokenization\Token;
 
 class Index
 {
@@ -56,7 +58,7 @@ class Index
     {
         $this->assertDocumentDoesNotExist($indexable);
         $this->assertDocumentMatchesSchema($indexable);
-        $this->addDocumentToIndex($indexable);
+        $this->createDocument($indexable);
 
         return true;
     }
@@ -95,23 +97,85 @@ class Index
         });
     }
 
-    protected function addDocumentToIndex(Indexable $document)
+    /**
+     * Add a document to the index for the given indexable document.
+     *
+     * @param \Blixt\Index\Document\Document $indexable
+     *
+     * @return \Blixt\Storage\Entities\Document
+     */
+    protected function createDocument(Indexable $indexable)
     {
-        // Create document
-        $document = $this->storage->documents()->create($this->schema->getId(), $document->getKey());
-        var_dump($document);die();
-        // Go through each column in the schema and process the corresponding field in the indexable document
-        // Add field to the storage (only store content if schema column indicates it should be stored)
-        // If it is indexable:
-        // - Tokenize and stem each word
-        // - Look up or create word records and get a collection of words
-        // - Look up or create term records for the schema/word and get a collection of terms
-        // - Create occurrence records for each term against the field, making sure to store document counts
-        // - Create position records for each occurrence representing each terms position in the field
-        // - Update term field counts to reflect new fields added
-        //
+        $document = $this->storage->documents()->create($this->schema->getId(), $indexable->getKey());
+
+        $this->schema->getColumns()->each(function (Column $column) use ($document, $indexable) {
+            $this->createField(
+                $document,
+                $column,
+                $indexable->getField($column->getName())
+            );
+        });
+
+        return $document;
     }
 
+    /**
+     * Create a field for the given document and column using the given field string.
+     *
+     * @param \Blixt\Storage\Entities\Document $document
+     * @param \Blixt\Storage\Entities\Column   $column
+     * @param string|mixed                     $content
+     *
+     * @return \Blixt\Storage\Entities\Field
+     */
+    protected function createField(Document $document, Column $column, $content)
+    {
+        $field = $this->storage->fields()->create(
+            $document->getId(),
+            $column->getId(),
+            $column->isStored() ? $content : null
+        );
+
+        if ($column->isIndexed()) {
+            $this->indexField($document, $column, $content);
+        }
+
+        return $field;
+    }
+
+    protected function indexField(Document $document, Column $column, $field)
+    {
+        $this->tokenizer->tokenize($field)->each(function (Token $token) {
+            // - Tokenize and stem each word
+            $stem = $this->stemmer->stem($token->getText());
+
+            // - Look up or create word records and get a collection of words
+            $word = $this->findOrCreateWord($stem);
+            
+            // - Look up or create term records for the schema/word and get a collection of terms
+            // - Create occurrence records for each term against the field, making sure to store document counts
+            // - Create position records for each occurrence representing each terms position in the field
+            // - Update term field counts to reflect new fields added
+
+
+        });
+    }
+
+    /**
+     * Find or create the given word in the index.
+     *
+     * @param string|mixed $word
+     *
+     * @return \Blixt\Storage\Entities\Word
+     */
+    protected function findOrCreateWord($word)
+    {
+        if ($found = $this->storage->words()->findByWord($word)) {
+            return $found;
+        }
+
+        return $this->storage->words()->create($word);
+    }
 
 
 

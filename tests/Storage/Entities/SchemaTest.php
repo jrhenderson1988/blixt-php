@@ -2,8 +2,10 @@
 
 namespace BlixtTests\Storage\Entities;
 
+use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Schema;
 use BlixtTests\TestCase;
+use Illuminate\Support\Collection;
 
 class SchemaTest extends TestCase
 {
@@ -40,6 +42,26 @@ class SchemaTest extends TestCase
         $this->assertSame('1', $test->getName());
         $test->setName(true);
         $this->assertSame('1', $test->getName());
+    }
+
+    /** @test */
+    public function testSetColumnsOnlySetsColumnsThatBelongToSchema()
+    {
+        $columns = new Collection([
+            new Column(1, 1, 'column1', true, true),
+            new Column(2, 1, 'column2', true, true),
+            new Column(3, 1, 'column3', true, true),
+            new Column(4, 2, 'column4', true, true)
+        ]);
+
+        $schema1 = new Schema(1, 'schema1');
+        $schema1->setColumns($columns);
+
+        $this->assertEquals(3, $schema1->getColumns()->count());
+        foreach ($schema1->getColumns() as $column) {
+            $this->assertInstanceOf(Column::class, $column);
+            $this->assertTrue(in_array($column->getName(), ['column1', 'column2', 'column3']));
+        }
     }
 
 }

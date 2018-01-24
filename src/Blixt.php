@@ -150,6 +150,7 @@ class Blixt
     public function create($blueprint, $closure = null)
     {
         $blueprint = $this->buildBlueprint($blueprint, $closure);
+
         if ($schema = $this->findSchema($blueprint->getName())) {
             throw new IndexAlreadyExistsException(
                 "An index with name '{$blueprint->getName()}' already exists."

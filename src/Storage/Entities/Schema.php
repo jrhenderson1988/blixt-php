@@ -52,7 +52,7 @@ class Schema extends Entity
     public function setColumns(Collection $columns)
     {
         $this->columns = $columns->filter(function (Column $column) {
-            $column->getSchemaId() === $this->getId();
+            return $column->getSchemaId() === $this->getId();
         });
     }
 

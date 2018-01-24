@@ -24,4 +24,26 @@ class WordRepository extends AbstractRepository implements WordRepositoryInterfa
             $row[static::FIELD_WORD]
         );
     }
+
+    /**
+     * @param string|mixed $word
+     *
+     * @return \Blixt\Storage\Entities\Word
+     */
+    public function findByWord($word)
+    {
+        return $this->findBy(static::FIELD_WORD, $word);
+    }
+
+    /**
+     * @param string|mixed $word
+     *
+     * @return \Blixt\Storage\Entities\Word
+     */
+    public function create($word)
+    {
+        return $this->insert([
+            static::FIELD_WORD => $word
+        ]);
+    }
 }
