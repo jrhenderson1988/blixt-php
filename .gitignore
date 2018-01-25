@@ -3,3 +3,4 @@ composer.phar
 .idea/
 /tests/data/*
 /indexes/
+/.vscode/
