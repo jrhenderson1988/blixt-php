@@ -2,14 +2,16 @@
 
 namespace Blixt\Storage\Repositories;
 
+use Blixt\Storage\Entities\Document;
+
 interface FieldRepository
 {
     /**
-     * @param int|mixed         $documentId
-     * @param int|mixed         $columnId
-     * @param string|mixed|null $value
+     * @param \Blixt\Storage\Entities\Document $document
+     * @param int|mixed                        $columnId
+     * @param string|mixed|null                $value
      *
      * @return \Blixt\Storage\Entities\Field
      */
-    public function create($documentId, $columnId, $value = null);
+    public function create(Document $document, $columnId, $value = null);
 }

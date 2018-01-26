@@ -2,6 +2,8 @@
 
 namespace Blixt\Storage\Repositories;
 
+use Blixt\Storage\Entities\Schema;
+
 interface ColumnRepository
 {
     /**
@@ -10,12 +12,12 @@ interface ColumnRepository
     public function all();
 
     /**
-     * @param int|mixed    $schemaId
-     * @param string|mixed $name
-     * @param bool|mixed   $isIndexed
-     * @param bool|mixed   $isStored
+     * @param \Blixt\Storage\Entities\Schema $schema
+     * @param string|mixed                   $name
+     * @param bool|mixed                     $isIndexed
+     * @param bool|mixed                     $isStored
      *
      * @return \Blixt\Storage\Entities\Column|null
      */
-    public function create($schemaId, $name, $isIndexed, $isStored);
+    public function create(Schema $schema, $name, $isIndexed, $isStored);
 }

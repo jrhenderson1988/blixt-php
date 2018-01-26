@@ -2,6 +2,7 @@
 
 namespace Blixt\Storage\Drivers\Memory\Repositories;
 
+use Blixt\Storage\Entities\Document;
 use Blixt\Storage\Entities\Field;
 use Blixt\Storage\Repositories\FieldRepository as FieldRepositoryInterface;
 
@@ -30,16 +31,16 @@ class FieldRepository extends AbstractRepository implements FieldRepositoryInter
     }
 
     /**
-     * @param int|mixed         $documentId
-     * @param int|mixed         $columnId
-     * @param string|mixed|null $value
+     * @param \Blixt\Storage\Entities\Document $document
+     * @param int|mixed                        $columnId
+     * @param string|mixed|null                $value
      *
      * @return \Blixt\Storage\Entities\Field
      */
-    public function create($documentId, $columnId, $value = null)
+    public function create(Document $document, $columnId, $value = null)
     {
         return $this->insert([
-            static::FIELD_DOCUMENT_ID => $documentId,
+            static::FIELD_DOCUMENT_ID => $document->getId(),
             static::FIELD_COLUMN_ID => $columnId,
             static::FIELD_VALUE => $value ? $value : null,
         ]);

@@ -32,7 +32,9 @@ class WordRepository extends AbstractRepository implements WordRepositoryInterfa
      */
     public function findByWord($word)
     {
-        return $this->findBy(static::FIELD_WORD, $word);
+        return $this->findBy([
+            static::FIELD_WORD => $word
+        ]);
     }
 
     /**

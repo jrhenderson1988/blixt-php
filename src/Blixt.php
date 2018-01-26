@@ -238,7 +238,7 @@ class Blixt
 
         $blueprint->getDefinitions()->each(function (Definition $column) use ($schema) {
             $this->getStorage()->columns()->create(
-                $schema->getId(),
+                $schema,
                 $column->getName(),
                 $column->isIndexed(),
                 $column->isStored()

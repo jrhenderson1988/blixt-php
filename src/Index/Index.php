@@ -9,6 +9,7 @@ use Blixt\Index\Document\Document as Indexable;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Document;
 use Blixt\Storage\Entities\Schema;
+use Blixt\Storage\Entities\Word;
 use Blixt\Tokenization\Token;
 
 class Index
@@ -106,7 +107,7 @@ class Index
      */
     protected function createDocument(Indexable $indexable)
     {
-        $document = $this->storage->documents()->create($this->schema->getId(), $indexable->getKey());
+        $document = $this->storage->documents()->create($this->schema, $indexable->getKey());
 
         $this->schema->getColumns()->each(function (Column $column) use ($document, $indexable) {
             $this->createField(
@@ -131,7 +132,7 @@ class Index
     protected function createField(Document $document, Column $column, $content)
     {
         $field = $this->storage->fields()->create(
-            $document->getId(),
+            $document,
             $column->getId(),
             $column->isStored() ? $content : null
         );
@@ -143,6 +144,15 @@ class Index
         return $field;
     }
 
+    /**
+     * Index the field, given as a string for the given document and column.
+     *
+     * TODO: Improve this method by grouping together lookups for words, terms etc (by whole field or all fields)
+     *
+     * @param \Blixt\Storage\Entities\Document $document
+     * @param \Blixt\Storage\Entities\Column   $column
+     * @param string|mixed|null                $field
+     */
     protected function indexField(Document $document, Column $column, $field)
     {
         $this->tokenizer->tokenize($field)->each(function (Token $token) {
@@ -151,8 +161,10 @@ class Index
 
             // - Look up or create word records and get a collection of words
             $word = $this->findOrCreateWord($stem);
-            
+
             // - Look up or create term records for the schema/word and get a collection of terms
+            $term = $this->findOrCreateTerm($word);
+
             // - Create occurrence records for each term against the field, making sure to store document counts
             // - Create position records for each occurrence representing each terms position in the field
             // - Update term field counts to reflect new fields added
@@ -175,6 +187,23 @@ class Index
         }
 
         return $this->storage->words()->create($word);
+    }
+
+    /**
+     * Find a term that matches the schema that this index represents and the given word, or if no such term exists,
+     * create a new one.
+     *
+     * @param \Blixt\Storage\Entities\Word $word
+     *
+     * @return \Blixt\Storage\Entities\Term
+     */
+    protected function findOrCreateTerm(Word $word)
+    {
+        if ($term = $this->storage->terms()->findBySchemaAndWord($this->schema, $word)) {
+            return $term;
+        }
+
+        return $this->storage->terms()->create($this->schema, $word);
     }
 
 

@@ -75,14 +75,13 @@ abstract class AbstractRepository
     }
 
     /**
-     * @param string|mixed $column
-     * @param mixed        $value
+     * @param array $conditions
      *
      * @return \Blixt\Storage\Entities\Entity|null
      */
-    public function findBy($column, $value)
+    public function findBy(array $conditions)
     {
-        $results = $this->storage->getWhere(static::TABLE, $column, $value);
+        $results = $this->storage->getWhere(static::TABLE, $conditions);
 
         return count($results) > 0 ? $this->map($results[0]) : null;
     }

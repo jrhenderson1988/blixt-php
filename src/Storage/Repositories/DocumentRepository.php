@@ -2,6 +2,8 @@
 
 namespace Blixt\Storage\Repositories;
 
+use Blixt\Storage\Entities\Schema;
+
 interface DocumentRepository
 {
     /**
@@ -12,10 +14,10 @@ interface DocumentRepository
     public function findByKey($key);
 
     /**
-     * @param int       $schemaId
-     * @param int|mixed $key
+     * @param \Blixt\Storage\Entities\Schema $schema
+     * @param int|mixed                      $key
      *
      * @return \Blixt\Storage\Entities\Document
      */
-    public function create($schemaId, $key);
+    public function create(Schema $schema, $key);
 }

@@ -3,6 +3,7 @@
 namespace Blixt\Storage\Drivers\Memory\Repositories;
 
 use Blixt\Storage\Entities\Column;
+use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Repositories\ColumnRepository as ColumnRepositoryInterface;
 
 class ColumnRepository extends AbstractRepository implements ColumnRepositoryInterface
@@ -32,10 +33,10 @@ class ColumnRepository extends AbstractRepository implements ColumnRepositoryInt
     /**
      * @inheritdoc
      */
-    public function create($schemaId, $name, $isIndexed, $isStored)
+    public function create(Schema $schema, $name, $isIndexed, $isStored)
     {
         return $this->insert([
-            static::FIELD_SCHEMA_ID => $schemaId,
+            static::FIELD_SCHEMA_ID => $schema->getId(),
             static::FIELD_NAME => $name,
             static::FIELD_IS_INDEXED => $isIndexed,
             static::FIELD_IS_STORED => $isStored

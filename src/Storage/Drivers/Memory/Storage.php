@@ -125,18 +125,23 @@ class Storage implements StorageInterface
      * Get all of the entries in the dataset for the given table, where the value identified by the column in each item
      * is equal to the provided value.
      *
-     * @param string       $table
-     * @param string|mixed $column
-     * @param mixed        $value
+     * @param string $table
+     * @param array  $conditions
      *
      * @return array
      */
-    public function getWhere($table, $column, $value)
+    public function getWhere($table, array $conditions)
     {
         $this->assertTableExists($table);
 
-        return array_filter($this->data[$table], function ($item) use ($column, $value) {
-            return $item[$column] == $value;
+        return array_filter($this->data[$table], function ($item) use ($conditions) {
+            foreach ($conditions as $key => $value) {
+                if ($item[$key] != $value) {
+                    return false;
+                }
+            }
+
+            return true;
         });
     }
 

@@ -2,7 +2,9 @@
 
 namespace Blixt\Storage\Drivers\Memory\Repositories;
 
+use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Entities\Term;
+use Blixt\Storage\Entities\Word;
 use Blixt\Storage\Repositories\TermRepository as TermRepositoryInterface;
 
 class TermRepository extends AbstractRepository implements TermRepositoryInterface
@@ -27,5 +29,35 @@ class TermRepository extends AbstractRepository implements TermRepositoryInterfa
             $row[static::FIELD_WORD_ID],
             $row[static::FIELD_DOCUMENT_COUNT]
         );
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Schema $schema
+     * @param \Blixt\Storage\Entities\Word   $word
+     *
+     * @return \Blixt\Storage\Entities\Term
+     */
+    public function findBySchemaAndWord(Schema $schema, Word $word)
+    {
+        return $this->findBy([
+            static::FIELD_SCHEMA_ID => $schema->getId(),
+            static::FIELD_WORD_ID => $word->getId(),
+        ]);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Schema $schema
+     * @param \Blixt\Storage\Entities\Word   $word
+     * @param int|mixed                      $count
+     *
+     * @return \Blixt\Storage\Entities\Term
+     */
+    public function create(Schema $schema, Word $word, $count = 0)
+    {
+        return $this->insert([
+            static::FIELD_SCHEMA_ID => $schema->getId(),
+            static::FIELD_WORD_ID => $word->getId(),
+            static::FIELD_DOCUMENT_COUNT => intval($count),
+        ]);
     }
 }

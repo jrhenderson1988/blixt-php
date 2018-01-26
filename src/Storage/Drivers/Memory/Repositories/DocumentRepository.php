@@ -3,6 +3,7 @@
 namespace Blixt\Storage\Drivers\Memory\Repositories;
 
 use Blixt\Storage\Entities\Document;
+use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Repositories\DocumentRepository as DocumentRepositoryInterface;
 
 class DocumentRepository extends AbstractRepository implements DocumentRepositoryInterface
@@ -34,19 +35,21 @@ class DocumentRepository extends AbstractRepository implements DocumentRepositor
      */
     public function findByKey($key)
     {
-        return $this->findBy(static::FIELD_KEY, $key);
+        return $this->findBy([
+            static::FIELD_KEY => $key
+        ]);
     }
 
     /**
-     * @param int       $schemaId
-     * @param int|mixed $key
+     * @param \Blixt\Storage\Entities\Schema $schema
+     * @param int|mixed                      $key
      *
      * @return \Blixt\Storage\Entities\Document
      */
-    public function create($schemaId, $key)
+    public function create(Schema $schema, $key)
     {
         return $this->insert([
-            static::FIELD_SCHEMA_ID => $schemaId,
+            static::FIELD_SCHEMA_ID => $schema->getId(),
             static::FIELD_KEY => $key
         ]);
     }
