@@ -11,6 +11,7 @@ use Blixt\Storage\Entities\Document;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Entities\Word;
 use Blixt\Tokenization\Token;
+use Illuminate\Support\Collection;
 
 class Index
 {
@@ -155,22 +156,33 @@ class Index
      */
     protected function indexField(Document $document, Column $column, $field)
     {
-        $this->tokenizer->tokenize($field)->each(function (Token $token) {
-            // - Tokenize and stem each word
+        $positions = new Collection();
+
+        $this->tokenizer->tokenize($field)->each(function (Token $token) use (&$positions) {
             $stem = $this->stemmer->stem($token->getText());
 
-            // - Look up or create word records and get a collection of words
-            $word = $this->findOrCreateWord($stem);
-
-            // - Look up or create term records for the schema/word and get a collection of terms
-            $term = $this->findOrCreateTerm($word);
-
-            // - Create occurrence records for each term against the field, making sure to store document counts
-            // - Create position records for each occurrence representing each terms position in the field
-            // - Update term field counts to reflect new fields added
-
-
+            $positions->put($stem, array_merge($positions->get($stem, []), [$token->getPosition()]));
         });
+
+        var_dump($positions);
+
+
+//        $this->tokenizer->tokenize($field)->each(function (Token $token) {
+//            // - Tokenize and stem each word
+//            $stem = $this->stemmer->stem($token->getText());
+//
+//            // - Look up or create word records and get a collection of words
+//            $word = $this->findOrCreateWord($stem);
+//
+//            // - Look up or create term records for the schema/word and get a collection of terms
+//            $term = $this->findOrCreateTerm($word);
+//
+//            // - Create occurrence records for each term against the field, making sure to store document counts
+//            // - Create position records for each occurrence representing each terms position in the field
+//            // - Update term field counts to reflect new fields added
+//
+//
+//        });
     }
 
     /**
