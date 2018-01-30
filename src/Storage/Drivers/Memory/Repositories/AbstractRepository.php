@@ -93,7 +93,6 @@ abstract class AbstractRepository
      */
     public function getWhere(array $conditions)
     {
-        // TODO - Add support for a condition value to be an array/collection of multiple items, emulating a WHERE IN
         $collection = new Collection();
 
         foreach ($this->storage->getWhere(static::TABLE, $conditions) as $result) {

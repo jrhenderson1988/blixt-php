@@ -128,7 +128,7 @@ class BlixtTest extends TestCase
         $blixt = new Blixt($storage);
 
         $schemaRepo->shouldReceive('create')->withArgs(['test'])->andReturn($schema);
-        $columnRepo->shouldReceive('create')->withArgs([1, 'test', true, false])->andReturn($column);
+        $columnRepo->shouldReceive('create')->withArgs([$schema, 'test', true, false])->andReturn($column);
 
         $schemaRepo->shouldReceive('all')->andReturn(new Collection([$schema]));
         $columnRepo->shouldReceive('all')->andReturn(new Collection([$column]));

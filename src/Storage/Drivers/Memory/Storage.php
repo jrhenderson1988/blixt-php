@@ -136,7 +136,7 @@ class Storage implements StorageInterface
 
         return array_filter($this->data[$table], function ($item) use ($conditions) {
             foreach ($conditions as $key => $value) {
-                if ($item[$key] != $value) {
+                if ((is_array($value) && ! in_array($item[$key], $value)) || $item[$key] != $value) {
                     return false;
                 }
             }
