@@ -4,6 +4,7 @@ namespace Blixt\Storage\Drivers\Memory\Repositories;
 
 use Blixt\Storage\Entities\Word;
 use Blixt\Storage\Repositories\WordRepository as WordRepositoryInterface;
+use Illuminate\Support\Collection;
 
 class WordRepository extends AbstractRepository implements WordRepositoryInterface
 {
@@ -46,6 +47,18 @@ class WordRepository extends AbstractRepository implements WordRepositoryInterfa
     {
         return $this->insert([
             static::FIELD_WORD => $word
+        ]);
+    }
+
+    /**
+     * @param \Illuminate\Support\Collection $words
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getByWords(Collection $words)
+    {
+        return $this->getWhere([
+            static::FIELD_WORD => $words
         ]);
     }
 }

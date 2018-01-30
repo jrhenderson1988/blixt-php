@@ -85,4 +85,21 @@ abstract class AbstractRepository
 
         return count($results) > 0 ? $this->map($results[0]) : null;
     }
+
+    /**
+     * @param array $conditions
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getWhere(array $conditions)
+    {
+        // TODO - Add support for a condition value to be an array/collection of multiple items, emulating a WHERE IN
+        $collection = new Collection();
+
+        foreach ($this->storage->getWhere(static::TABLE, $conditions) as $result) {
+            $collection->push($this->map($result));
+        }
+
+        return $collection;
+    }
 }

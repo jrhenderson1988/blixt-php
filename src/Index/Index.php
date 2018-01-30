@@ -161,10 +161,13 @@ class Index
         $this->tokenizer->tokenize($field)->each(function (Token $token) use (&$positions) {
             $stem = $this->stemmer->stem($token->getText());
 
-            $positions->put($stem, array_merge($positions->get($stem, []), [$token->getPosition()]));
+            $positions->put(
+                $stem, array_merge($positions->get($stem, []), [$token->getPosition()])
+            );
         });
 
-        var_dump($positions);
+        $words = $this->findOrCreateWords($positions->keys());
+        var_dump($words);die();
 
 
 //        $this->tokenizer->tokenize($field)->each(function (Token $token) {
@@ -188,17 +191,23 @@ class Index
     /**
      * Find or create the given word in the index.
      *
-     * @param string|mixed $word
+     * @param \Illuminate\Support\Collection $terms
      *
-     * @return \Blixt\Storage\Entities\Word
+     * @return \Illuminate\Support\Collection
      */
-    protected function findOrCreateWord($word)
+    protected function findOrCreateWords(Collection $terms)
     {
-        if ($found = $this->storage->words()->findByWord($word)) {
-            return $found;
-        }
+        $words = $this->storage->words()->getByWords($terms);
 
-        return $this->storage->words()->create($word);
+        $toCreate = $terms->diff($words->map(function (Word $word) {
+            return $word->getWord();
+        }));
+
+        $toCreate->each(function ($term) use (&$words) {
+            $words->push($this->storage->words()->create($term));
+        });
+
+        return $words;
     }
 
     /**
