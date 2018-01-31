@@ -58,7 +58,7 @@ class WordRepository extends AbstractRepository implements WordRepositoryInterfa
     public function getByWords(Collection $words)
     {
         return $this->getWhere([
-            static::FIELD_WORD => $words
+            static::FIELD_WORD => $words->toArray()
         ]);
     }
 }

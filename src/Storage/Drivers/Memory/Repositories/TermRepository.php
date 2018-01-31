@@ -6,6 +6,7 @@ use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Entities\Term;
 use Blixt\Storage\Entities\Word;
 use Blixt\Storage\Repositories\TermRepository as TermRepositoryInterface;
+use Illuminate\Support\Collection;
 
 class TermRepository extends AbstractRepository implements TermRepositoryInterface
 {
@@ -42,6 +43,22 @@ class TermRepository extends AbstractRepository implements TermRepositoryInterfa
         return $this->findBy([
             static::FIELD_SCHEMA_ID => $schema->getId(),
             static::FIELD_WORD_ID => $word->getId(),
+        ]);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Schema $schema
+     * @param \Illuminate\Support\Collection $words
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getBySchemaAndWords(Schema $schema, Collection $words)
+    {
+        return $this->getWhere([
+            static::FIELD_SCHEMA_ID => $schema->getId(),
+            static::FIELD_WORD_ID => $words->map(function (Word $word) {
+                return $word->getId();
+            })->toArray()
         ]);
     }
 

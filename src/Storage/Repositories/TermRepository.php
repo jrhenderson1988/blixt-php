@@ -4,6 +4,7 @@ namespace Blixt\Storage\Repositories;
 
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Entities\Word;
+use Illuminate\Support\Collection;
 
 interface TermRepository
 {
@@ -14,6 +15,14 @@ interface TermRepository
      * @return \Blixt\Storage\Entities\Term
      */
     public function findBySchemaAndWord(Schema $schema, Word $word);
+
+    /**
+     * @param \Blixt\Storage\Entities\Schema $schema
+     * @param \Illuminate\Support\Collection $words
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getBySchemaAndWords(Schema $schema, Collection $words);
 
     /**
      * @param \Blixt\Storage\Entities\Schema $schema
