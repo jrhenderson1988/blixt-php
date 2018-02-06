@@ -8,6 +8,7 @@ use Blixt\Exceptions\InvalidDocumentException;
 use Blixt\Index\Document\Document as Indexable;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Document;
+use Blixt\Storage\Entities\Field;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Entities\Term;
 use Blixt\Storage\Entities\Word;
@@ -140,7 +141,7 @@ class Index
         );
 
         if ($column->isIndexed()) {
-            $this->indexField($document, $column, $content);
+            $this->indexField($field, $document, $column, $content);
         }
 
         return $field;
@@ -151,15 +152,14 @@ class Index
      *
      * TODO: Improve this method by grouping together lookups for words, terms etc (by whole field or all fields)
      *
-     * @param \Blixt\Storage\Entities\Document $document
-     * @param \Blixt\Storage\Entities\Column   $column
-     * @param string|mixed|null                $field
+     * @param \Blixt\Storage\Entities\Field $field
+     * @param string|mixed|null             $content
      */
-    protected function indexField(Document $document, Column $column, $field)
+    protected function indexField(Field $field, $content)
     {
         $positions = new Collection();
 
-        $this->tokenizer->tokenize($field)->each(function (Token $token) use (&$positions) {
+        $this->tokenizer->tokenize($content)->each(function (Token $token) use (&$positions) {
             $stem = $this->stemmer->stem($token->getText());
 
             $positions->put(
@@ -170,6 +170,11 @@ class Index
         $terms = $this->findOrCreateTerms(
             $words = $this->findOrCreateWords($positions->keys())
         );
+
+//        $terms->each(function (Term $term) use ($field, $positions) {
+//            $occurrence = $this->createOccurrence($field, $term, count($positions->get()));
+//        });
+
 
         // TODO - Continue
 
@@ -247,6 +252,11 @@ class Index
 
         // Return the collection of terms that were either found or created.
         return $terms->values();
+    }
+
+    protected function createOccurrence(Field $field, Term $term, $frequency)
+    {
+        return $this->storage->occurrences()->create($field, $term, $frequency);
     }
 
 
