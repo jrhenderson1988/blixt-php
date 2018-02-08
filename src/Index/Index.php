@@ -9,6 +9,7 @@ use Blixt\Index\Document\Document as Indexable;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Document;
 use Blixt\Storage\Entities\Field;
+use Blixt\Storage\Entities\Occurrence;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Entities\Term;
 use Blixt\Storage\Entities\Word;
@@ -167,16 +168,19 @@ class Index
             );
         });
 
-        $terms = $this->findOrCreateTerms(
-            $words = $this->findOrCreateWords($positions->keys())
-        );
+        $positions->each(function ($positions, $stem) use ($field) {
+            $term = $this->findOrCreateTerm(
+                $word = $this->findOrCreateWord($stem)
+            );
 
-//        $terms->each(function (Term $term) use ($field, $positions) {
-//            $occurrence = $this->createOccurrence($field, $term, count($positions->get()));
-//        });
+            $occurrence = $this->createOccurrence($field, $term, count($positions));
 
+            foreach ($positions as $position) {
+                $position = $this->createPosition($occurrence, $position);
+            }
 
-        // TODO - Continue
+            // TODO Update term count to reflect new occurrences.
+        });
 
 //        $this->tokenizer->tokenize($field)->each(function (Token $token) {
 //            // - Tokenize and stem each word
@@ -197,66 +201,112 @@ class Index
     }
 
     /**
-     * Find or create the given set of words in the index.
+     * Find or create a word for the given word stem.
      *
-     * @param \Illuminate\Support\Collection $stemmedWords
+     * @param string $stem
      *
-     * @return \Illuminate\Support\Collection
+     * @return \Blixt\Storage\Entities\Word
      */
-    protected function findOrCreateWords(Collection $stemmedWords)
+    protected function findOrCreateWord($stem)
     {
-        $words = $this->storage->words()->getByWords($stemmedWords);
+        $word = $this->storage->words()->findByWord($stem);
 
-        $toCreate = $stemmedWords->diff($words->map(function (Word $word) {
-            return $word->getWord();
-        }));
-
-        $toCreate->each(function ($term) use (&$words) {
-            $words->push($this->storage->words()->create($term));
-        });
-
-        return $words;
+        return $word ?: $this->storage->words()->create($stem);
     }
 
     /**
-     * Find or create terms by the given set of words and the schema this index represents.
+     * Find or create a term for the given word and the schema represented by this index.
      *
-     * @param \Illuminate\Support\Collection $words
+     * @param \Blixt\Storage\Entities\Word $word
      *
-     * @return \Illuminate\Support\Collection
+     * @return \Blixt\Storage\Entities\Term
      */
-    protected function findOrCreateTerms(Collection $words)
+    protected function findOrCreateTerm(Word $word)
     {
-        // Get a collection of terms from the repository, matching the given words and the schema represented by this
-        // index, ensure uniqueness and then key the collection by each term's word ID for quick and easy look ups.
-        $terms = $this->storage->terms()->getBySchemaAndWords($this->schema, $words)->unique(function (Term $term) {
-            return $term->getId();
-        })->keyBy(function (Term $term) {
-            return $term->getWordId();
-        });
+        $term = $this->storage->terms()->findBySchemaAndWord($this->schema, $word);
 
-        // From the provided collection of words, determine those that we now need to create by find out which ones
-        // aren't present in the terms collection we've just retrieved.
-        $toCreate = $words->filter(function (Word $word) use ($terms) {
-            return ! $terms->has($word->getId());
-        });
-
-        // Create each missing word using the storage repository and add it to the collection of terms, keyed by the
-        // word ID.
-        $toCreate->each(function (Word $word) use (&$terms) {
-            $terms->put(
-                $word->getId(),
-                $this->storage->terms()->create($this->schema, $word, 0)
-            );
-        });
-
-        // Return the collection of terms that were either found or created.
-        return $terms->values();
+        return $term ?: $this->storage->terms()->create($this->schema, $word, 0);
     }
 
+//    /**
+//     * Find or create the given set of words in the index.
+//     *
+//     * @param \Illuminate\Support\Collection $stemmedWords
+//     *
+//     * @return \Illuminate\Support\Collection
+//     */
+//    protected function findOrCreateWords(Collection $stemmedWords)
+//    {
+//        $words = $this->storage->words()->getByWords($stemmedWords);
+//
+//        $toCreate = $stemmedWords->diff($words->map(function (Word $word) {
+//            return $word->getWord();
+//        }));
+//
+//        $toCreate->each(function ($term) use (&$words) {
+//            $words->push($this->storage->words()->create($term));
+//        });
+//
+//        return $words;
+//    }
+//
+//    /**
+//     * Find or create terms by the given set of words and the schema this index represents.
+//     *
+//     * @param \Illuminate\Support\Collection $words
+//     *
+//     * @return \Illuminate\Support\Collection
+//     */
+//    protected function findOrCreateTerms(Collection $words)
+//    {
+//        // Get a collection of terms from the repository, matching the given words and the schema represented by this
+//        // index, ensure uniqueness and then key the collection by each term's word ID for quick and easy look ups.
+//        $terms = $this->storage->terms()->getBySchemaAndWords($this->schema, $words)->unique(function (Term $term) {
+//            return $term->getId();
+//        })->keyBy(function (Term $term) {
+//            return $term->getWordId();
+//        });
+//
+//        // From the provided collection of words, determine those that we now need to create by find out which ones
+//        // aren't present in the terms collection we've just retrieved.
+//        $toCreate = $words->filter(function (Word $word) use ($terms) {
+//            return ! $terms->has($word->getId());
+//        });
+//
+//        // Create each missing word using the storage repository and add it to the collection of terms, keyed by the
+//        // word ID.
+//        $toCreate->each(function (Word $word) use (&$terms) {
+//            $terms->put(
+//                $word->getId(),
+//                $this->storage->terms()->create($this->schema, $word, 0)
+//            );
+//        });
+//
+//        // Return the collection of terms that were either found or created.
+//        return $terms->values();
+//    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Field $field
+     * @param \Blixt\Storage\Entities\Term  $term
+     * @param int                           $frequency
+     *
+     * @return \Blixt\Storage\Entities\Occurrence
+     */
     protected function createOccurrence(Field $field, Term $term, $frequency)
     {
         return $this->storage->occurrences()->create($field, $term, $frequency);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Occurrence $occurrence
+     * @param int                                $position
+     *
+     * @return \Blixt\Storage\Entities\Position
+     */
+    protected function createPosition(Occurrence $occurrence, $position)
+    {
+        return $this->storage->positions()->create($occurrence, $position);
     }
 
 
