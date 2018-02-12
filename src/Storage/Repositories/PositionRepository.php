@@ -3,6 +3,7 @@
 namespace Blixt\Storage\Repositories;
 
 use Blixt\Storage\Entities\Occurrence;
+use Blixt\Storage\Entities\Position;
 
 interface PositionRepository
 {
@@ -13,4 +14,11 @@ interface PositionRepository
      * @return \Blixt\Storage\Entities\Position
      */
     public function create(Occurrence $occurrence, $position);
+
+    /**
+     * @param \Blixt\Storage\Entities\Position $position
+     *
+     * @return \Blixt\Storage\Entities\Position
+     */
+    public function save(Position $position);
 }

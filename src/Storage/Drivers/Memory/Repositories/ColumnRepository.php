@@ -42,4 +42,16 @@ class ColumnRepository extends AbstractRepository implements ColumnRepositoryInt
             static::FIELD_IS_STORED => $isStored
         ]);
     }
+
+    /**
+     * @param \Blixt\Storage\Entities\Column $column
+     *
+     * @return \Blixt\Storage\Entities\Column
+     */
+    public function save(Column $column)
+    {
+        if ($column->getId()) {
+            // Update
+        }
+    }
 }

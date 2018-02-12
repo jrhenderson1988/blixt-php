@@ -5,39 +5,22 @@ namespace Blixt\Storage\Entities;
 class Occurrence extends Entity
 {
     /**
-     * @var int
+     * @var int|null
      */
     protected $fieldId;
 
     /**
-     * @var int
+     * @var int|null
      */
     protected $termId;
 
     /**
-     * @var int
+     * @var int|null
      */
     protected $frequency;
 
     /**
-     * Occurrence constructor.
-     *
-     * @param int|mixed $id
-     * @param int|mixed $fieldId
-     * @param int|mixed $termId
-     * @param int|mixed $frequency
-     */
-    public function __construct($id, $fieldId, $termId, $frequency)
-    {
-        parent::__construct($id);
-
-        $this->setFieldId($fieldId);
-        $this->setTermId($termId);
-        $this->setFrequency($frequency);
-    }
-
-    /**
-     * @return int
+     * @return int|null
      */
     public function getFieldId()
     {
@@ -45,15 +28,15 @@ class Occurrence extends Entity
     }
 
     /**
-     * @param int|mixed $fieldId
+     * @param int|null|mixed $fieldId
      */
     public function setFieldId($fieldId)
     {
-        $this->fieldId = intval($fieldId);
+        $this->fieldId = $fieldId !== null ? intval($fieldId) : null;
     }
 
     /**
-     * @return int
+     * @return int|null
      */
     public function getTermId()
     {
@@ -61,15 +44,15 @@ class Occurrence extends Entity
     }
 
     /**
-     * @param int|mixed $termId
+     * @param int|null|mixed $termId
      */
     public function setTermId($termId)
     {
-        $this->termId = intval($termId);
+        $this->termId = $termId !== null ? intval($termId) : null;
     }
 
     /**
-     * @return int
+     * @return int|null
      */
     public function getFrequency()
     {
@@ -77,10 +60,10 @@ class Occurrence extends Entity
     }
 
     /**
-     * @param int|mixed $frequency
+     * @param int|null|mixed $frequency
      */
     public function setFrequency($frequency)
     {
-        $this->frequency = intval($frequency);
+        $this->frequency = $frequency !== null ? intval($frequency) : null;
     }
 }

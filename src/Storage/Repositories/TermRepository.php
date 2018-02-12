@@ -3,6 +3,7 @@
 namespace Blixt\Storage\Repositories;
 
 use Blixt\Storage\Entities\Schema;
+use Blixt\Storage\Entities\Term;
 use Blixt\Storage\Entities\Word;
 use Illuminate\Support\Collection;
 
@@ -32,4 +33,11 @@ interface TermRepository
      * @return \Blixt\Storage\Entities\Term
      */
     public function create(Schema $schema, Word $word, $fieldCount = 0);
+
+    /**
+     * @param \Blixt\Storage\Entities\Term $term
+     *
+     * @return \Blixt\Storage\Entities\Term
+     */
+    public function save(Term $term);
 }

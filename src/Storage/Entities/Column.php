@@ -5,46 +5,27 @@ namespace Blixt\Storage\Entities;
 class Column extends Entity
 {
     /**
-     * @var int
+     * @var int|null
      */
     protected $schemaId;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $name;
 
     /**
-     * @var bool
+     * @var bool|null
      */
     protected $isIndexed;
 
     /**
-     * @var bool
+     * @var bool|null
      */
     protected $isStored;
 
     /**
-     * Column constructor.
-     *
-     * @param int|mixed    $id
-     * @param int|mixed    $schemaId
-     * @param string|mixed $name
-     * @param bool|mixed   $isIndexed
-     * @param bool|mixed   $isStored
-     */
-    public function __construct($id, $schemaId, $name, $isIndexed, $isStored)
-    {
-        parent::__construct($id);
-
-        $this->setSchemaId($schemaId);
-        $this->setName($name);
-        $this->setIndexed($isIndexed);
-        $this->setStored($isStored);
-    }
-
-    /**
-     * @return int
+     * @return int|null
      */
     public function getSchemaId()
     {
@@ -52,15 +33,15 @@ class Column extends Entity
     }
 
     /**
-     * @param int|mixed $schemaId
+     * @param int|null|mixed $schemaId
      */
     public function setSchemaId($schemaId)
     {
-        $this->schemaId = intval($schemaId);
+        $this->schemaId = $schemaId !== null ? intval($schemaId) : null;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getName()
     {
@@ -68,15 +49,15 @@ class Column extends Entity
     }
 
     /**
-     * @param string|mixed $name
+     * @param string|null|mixed $name
      */
     public function setName($name)
     {
-        $this->name = strval($name);
+        $this->name = $name !== null ? strval($name) : null;
     }
 
     /**
-     * @return bool
+     * @return bool|null
      */
     public function isIndexed()
     {
@@ -84,15 +65,15 @@ class Column extends Entity
     }
 
     /**
-     * @param bool|mixed $isIndexed
+     * @param bool|null|mixed $isIndexed
      */
     public function setIndexed($isIndexed)
     {
-        $this->isIndexed = !! $isIndexed;
+        $this->isIndexed = $isIndexed !== null ? !! $isIndexed : null;
     }
 
     /**
-     * @return bool
+     * @return bool|null
      */
     public function isStored()
     {
@@ -100,10 +81,10 @@ class Column extends Entity
     }
 
     /**
-     * @param bool|mixed $isStored
+     * @param bool|null|mixed $isStored
      */
     public function setStored($isStored)
     {
-        $this->isStored = !! $isStored;
+        $this->isStored = $isStored !== null ? !! $isStored : null;
     }
 }

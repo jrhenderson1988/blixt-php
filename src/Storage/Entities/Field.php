@@ -5,39 +5,22 @@ namespace Blixt\Storage\Entities;
 class Field extends Entity
 {
     /**
-     * @var int
+     * @var int|null
      */
     protected $documentId;
 
-    /**q
-     * @var int
+    /**
+     * @var int|null
      */
     protected $columnId;
 
     /**
-     * @var mixed
+     * @var null|mixed
      */
     protected $value;
 
     /**
-     * Field constructor.
-     *
-     * @param int|mixed $id
-     * @param int|mixed $documentId
-     * @param int|mixed $columnId
-     * @param mixed     $value
-     */
-    public function __construct($id, $documentId, $columnId, $value = null)
-    {
-        parent::__construct($id);
-
-        $this->setDocumentId($documentId);
-        $this->setColumnId($columnId);
-        $this->setValue($value);
-    }
-
-    /**
-     * @return int
+     * @return int|null
      */
     public function getDocumentId()
     {
@@ -45,15 +28,15 @@ class Field extends Entity
     }
 
     /**
-     * @param int|mixed $documentId
+     * @param int|null|mixed $documentId
      */
     public function setDocumentId($documentId)
     {
-        $this->documentId = intval($documentId);
+        $this->documentId = $documentId !== null ? intval($documentId) : null;
     }
 
     /**
-     * @return int
+     * @return int|null
      */
     public function getColumnId()
     {
@@ -61,15 +44,15 @@ class Field extends Entity
     }
 
     /**
-     * @param int|mixed $columnId
+     * @param int|null|mixed $columnId
      */
     public function setColumnId($columnId)
     {
-        $this->columnId = intval($columnId);
+        $this->columnId = $columnId !== null ? intval($columnId) : null;
     }
 
     /**
-     * @return mixed|null
+     * @return null|mixed
      */
     public function getValue()
     {
@@ -77,10 +60,10 @@ class Field extends Entity
     }
 
     /**
-     * @param mixed $value
+     * @param null|mixed $value
      */
     public function setValue($value)
     {
-        $this->value = ! $value ? null : $value;
+        $this->value = $value !== '' && $value !== null ? $value : null;
     }
 }

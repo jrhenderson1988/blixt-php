@@ -7,31 +7,17 @@ use Illuminate\Support\Collection;
 class Schema extends Entity
 {
     /**
-     * @var string
+     * @var string|null
      */
     protected $name;
 
     /**
-     * @var \Illuminate\Support\Collection
+     * @var \Illuminate\Support\Collection|null
      */
     protected $columns;
 
     /**
-     * Schema constructor.
-     *
-     * @param int|mixed    $id
-     * @param string|mixed $name
-     */
-    public function __construct($id, $name)
-    {
-        parent::__construct($id);
-
-        $this->setName($name);
-        $this->setColumns(new Collection());
-    }
-
-    /**
-     * @return string
+     * @return string|null
      */
     public function getName()
     {
@@ -39,11 +25,11 @@ class Schema extends Entity
     }
 
     /**
-     * @param string|mixed $name
+     * @param string|null|mixed $name
      */
     public function setName($name)
     {
-        $this->name = strval($name);
+        $this->name = $name !== null ? strval($name) : null;
     }
 
     /**
@@ -57,7 +43,7 @@ class Schema extends Entity
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return \Illuminate\Support\Collection|null
      */
     public function getColumns()
     {

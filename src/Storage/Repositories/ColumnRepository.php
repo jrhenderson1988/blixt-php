@@ -2,6 +2,7 @@
 
 namespace Blixt\Storage\Repositories;
 
+use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Schema;
 
 interface ColumnRepository
@@ -20,4 +21,11 @@ interface ColumnRepository
      * @return \Blixt\Storage\Entities\Column|null
      */
     public function create(Schema $schema, $name, $isIndexed, $isStored);
+
+    /**
+     * @param \Blixt\Storage\Entities\Column $column
+     *
+     * @return \Blixt\Storage\Entities\Column
+     */
+    public function save(Column $column);
 }

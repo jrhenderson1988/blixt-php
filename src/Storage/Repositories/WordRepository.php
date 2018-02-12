@@ -2,6 +2,7 @@
 
 namespace Blixt\Storage\Repositories;
 
+use Blixt\Storage\Entities\Word;
 use Illuminate\Support\Collection;
 
 interface WordRepository
@@ -26,4 +27,11 @@ interface WordRepository
      * @return \Blixt\Storage\Entities\Word
      */
     public function create($word);
+
+    /**
+     * @param \Blixt\Storage\Entities\Word $word
+     *
+     * @return \Blixt\Storage\Entities\Word
+     */
+    public function save(Word $word);
 }

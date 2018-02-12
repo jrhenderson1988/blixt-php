@@ -5,22 +5,12 @@ namespace Blixt\Storage\Entities;
 abstract class Entity
 {
     /**
-     * @var int
+     * @var int|null
      */
     protected $id;
 
     /**
-     * Entity constructor.
-     *
-     * @param int|mixed $id
-     */
-    public function __construct($id)
-    {
-        $this->setId($id);
-    }
-
-    /**
-     * @return int
+     * @return int|null
      */
     public function getId()
     {
@@ -28,10 +18,20 @@ abstract class Entity
     }
 
     /**
-     * @param int|mixed $id
+     * @param int|null|mixed $id
      */
     public function setId($id)
     {
-        $this->id = intval($id);
+        $this->id = $id !== null ? intval($id) : null;
+    }
+
+    /**
+     * Tell if this entity exists, that is, whether its ID property is not null.
+     *
+     * @return bool
+     */
+    public function exists()
+    {
+        return $this->getId() !== null;
     }
 }

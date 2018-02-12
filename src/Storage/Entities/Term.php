@@ -5,39 +5,22 @@ namespace Blixt\Storage\Entities;
 class Term extends Entity
 {
     /**
-     * @var int
+     * @var int|null
      */
     protected $schemaId;
 
     /**
-     * @var int
+     * @var int|null
      */
     protected $wordId;
 
     /**
-     * @var int
+     * @var int|null
      */
     protected $fieldCount;
 
     /**
-     * Term constructor.
-     *
-     * @param int|mixed $id
-     * @param int|mixed $schemaId
-     * @param int|mixed $wordId
-     * @param int|mixed $fieldCount
-     */
-    public function __construct($id, $schemaId, $wordId, $fieldCount)
-    {
-        parent::__construct($id);
-
-        $this->setSchemaId($schemaId);
-        $this->setWordId($wordId);
-        $this->setFieldCount($fieldCount);
-    }
-
-    /**
-     * @return int|mixed
+     * @return int|null|mixed
      */
     public function getSchemaId()
     {
@@ -45,15 +28,15 @@ class Term extends Entity
     }
 
     /**
-     * @param int|mixed $schemaId
+     * @param int|null|mixed $schemaId
      */
     public function setSchemaId($schemaId)
     {
-        $this->schemaId = intval($schemaId);
+        $this->schemaId = $schemaId !== null ? intval($schemaId) : null;
     }
 
     /**
-     * @return int|mixed
+     * @return int|null|mixed
      */
     public function getWordId()
     {
@@ -61,15 +44,15 @@ class Term extends Entity
     }
 
     /**
-     * @param int|mixed $wordId
+     * @param int|null|mixed $wordId
      */
     public function setWordId($wordId)
     {
-        $this->wordId = intval($wordId);
+        $this->wordId = $wordId !== null ? intval($wordId) : null;
     }
 
     /**
-     * @return int|mixed
+     * @return int|null|mixed
      */
     public function getFieldCount()
     {
@@ -77,10 +60,10 @@ class Term extends Entity
     }
 
     /**
-     * @param int|mixed $fieldCount
+     * @param int|null|mixed $fieldCount
      */
     public function setFieldCount($fieldCount)
     {
-        $this->fieldCount = intval($fieldCount);
+        $this->fieldCount = $fieldCount !== null ? intval($fieldCount) : null;
     }
 }

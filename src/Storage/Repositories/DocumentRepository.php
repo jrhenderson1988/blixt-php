@@ -2,6 +2,7 @@
 
 namespace Blixt\Storage\Repositories;
 
+use Blixt\Storage\Entities\Document;
 use Blixt\Storage\Entities\Schema;
 
 interface DocumentRepository
@@ -20,4 +21,11 @@ interface DocumentRepository
      * @return \Blixt\Storage\Entities\Document
      */
     public function create(Schema $schema, $key);
+
+    /**
+     * @param \Blixt\Storage\Entities\Document $document
+     *
+     * @return \Blixt\Storage\Entities\Document
+     */
+    public function save(Document $document);
 }

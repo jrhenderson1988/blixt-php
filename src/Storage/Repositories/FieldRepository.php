@@ -3,6 +3,7 @@
 namespace Blixt\Storage\Repositories;
 
 use Blixt\Storage\Entities\Document;
+use Blixt\Storage\Entities\Field;
 
 interface FieldRepository
 {
@@ -14,4 +15,11 @@ interface FieldRepository
      * @return \Blixt\Storage\Entities\Field
      */
     public function create(Document $document, $columnId, $value = null);
+
+    /**
+     * @param \Blixt\Storage\Entities\Field $field
+     *
+     * @return \Blixt\Storage\Entities\Field
+     */
+    public function save(Field $field);
 }

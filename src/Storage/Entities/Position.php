@@ -5,32 +5,17 @@ namespace Blixt\Storage\Entities;
 class Position extends Entity
 {
     /**
-     * @var int
+     * @var int|null
      */
     protected $occurrenceId;
 
     /**
-     * @var int
+     * @var int|null
      */
     protected $position;
 
     /**
-     * Position constructor.
-     *
-     * @param int|mixed $id
-     * @param int|mixed $occurrenceId
-     * @param int|mixed $position
-     */
-    public function __construct($id, $occurrenceId, $position)
-    {
-        parent::__construct($id);
-
-        $this->setOccurrenceId($occurrenceId);
-        $this->setPosition($position);
-    }
-
-    /**
-     * @return int
+     * @return int|null
      */
     public function getOccurrenceId()
     {
@@ -38,15 +23,15 @@ class Position extends Entity
     }
 
     /**
-     * @param int|mixed $occurrenceId
+     * @param int|null|mixed $occurrenceId
      */
     public function setOccurrenceId($occurrenceId)
     {
-        $this->occurrenceId = intval($occurrenceId);
+        $this->occurrenceId = $occurrenceId !== null ? intval($occurrenceId) : null;
     }
 
     /**
-     * @return int
+     * @return int|null
      */
     public function getPosition()
     {
@@ -54,10 +39,10 @@ class Position extends Entity
     }
 
     /**
-     * @param int|mixed $position
+     * @param int|null|mixed $position
      */
     public function setPosition($position)
     {
-        $this->position = intval($position);
+        $this->position = $position !== null ? intval($position) : null;
     }
 }
