@@ -17,7 +17,7 @@ class Term extends Entity
     /**
      * @var int
      */
-    protected $documentCount;
+    protected $fieldCount;
 
     /**
      * Term constructor.
@@ -25,15 +25,15 @@ class Term extends Entity
      * @param int|mixed $id
      * @param int|mixed $schemaId
      * @param int|mixed $wordId
-     * @param int|mixed $documentCount
+     * @param int|mixed $fieldCount
      */
-    public function __construct($id, $schemaId, $wordId, $documentCount)
+    public function __construct($id, $schemaId, $wordId, $fieldCount)
     {
         parent::__construct($id);
 
         $this->setSchemaId($schemaId);
         $this->setWordId($wordId);
-        $this->setDocumentCount($documentCount);
+        $this->setFieldCount($fieldCount);
     }
 
     /**
@@ -71,16 +71,16 @@ class Term extends Entity
     /**
      * @return int|mixed
      */
-    public function getDocumentCount()
+    public function getFieldCount()
     {
-        return $this->documentCount;
+        return $this->fieldCount;
     }
 
     /**
-     * @param int|mixed $documentCount
+     * @param int|mixed $fieldCount
      */
-    public function setDocumentCount($documentCount)
+    public function setFieldCount($fieldCount)
     {
-        $this->documentCount = intval($documentCount);
+        $this->fieldCount = intval($fieldCount);
     }
 }

@@ -4,7 +4,7 @@
 
 - **schemas:** id, name
 - **words:** id, word
-- **terms:** id, schema_id, word_id, document_count
+- **terms:** id, schema_id, word_id, field_count
 - **columns:** id, schema_id, name, is_stored, is_indexed
 - **documents:** id, schema_id, key
 - **fields:** id, document_id, column_id, value

@@ -27,9 +27,9 @@ interface TermRepository
     /**
      * @param \Blixt\Storage\Entities\Schema $schema
      * @param \Blixt\Storage\Entities\Word   $word
-     * @param int|mixed                      $count
+     * @param int|mixed                      $fieldCount
      *
      * @return \Blixt\Storage\Entities\Term
      */
-    public function create(Schema $schema, Word $word, $count = 0);
+    public function create(Schema $schema, Word $word, $fieldCount = 0);
 }

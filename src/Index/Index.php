@@ -142,7 +142,7 @@ class Index
         );
 
         if ($column->isIndexed()) {
-            $this->indexField($field, $document, $column, $content);
+            $this->indexField($field, $content);
         }
 
         return $field;
@@ -174,12 +174,12 @@ class Index
             );
 
             $occurrence = $this->createOccurrence($field, $term, count($positions));
-
             foreach ($positions as $position) {
-                $position = $this->createPosition($occurrence, $position);
+                $this->createPosition($occurrence, $position);
             }
 
             // TODO Update term count to reflect new occurrences.
+            // Add one to
         });
 
 //        $this->tokenizer->tokenize($field)->each(function (Token $token) {

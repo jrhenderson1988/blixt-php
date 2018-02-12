@@ -15,7 +15,7 @@ class TermTest extends TestCase
         $this->assertEquals(1, $test->getId());
         $this->assertEquals(2, $test->getSchemaId());
         $this->assertEquals(3, $test->getWordId());
-        $this->assertEquals(10, $test->getDocumentCount());
+        $this->assertEquals(10, $test->getFieldCount());
     }
 
     /** @test */
@@ -32,8 +32,8 @@ class TermTest extends TestCase
         $test->setWordId(2);
         $this->assertEquals(2, $test->getWordId());
 
-        $test->setDocumentCount(50);
-        $this->assertEquals(50, $test->getDocumentCount());
+        $test->setFieldCount(50);
+        $this->assertEquals(50, $test->getFieldCount());
     }
 
     /** @test */
@@ -50,8 +50,8 @@ class TermTest extends TestCase
         $test->setWordId(2.4);
         $this->assertSame(2, $test->getWordId());
 
-        $test->setDocumentCount('1000');
-        $this->assertSame(1000, $test->getDocumentCount());
+        $test->setFieldCount('1000');
+        $this->assertSame(1000, $test->getFieldCount());
     }
 
 }

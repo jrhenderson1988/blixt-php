@@ -65,16 +65,16 @@ class TermRepository extends AbstractRepository implements TermRepositoryInterfa
     /**
      * @param \Blixt\Storage\Entities\Schema $schema
      * @param \Blixt\Storage\Entities\Word   $word
-     * @param int|mixed                      $count
+     * @param int|mixed                      $fieldCount
      *
      * @return \Blixt\Storage\Entities\Term
      */
-    public function create(Schema $schema, Word $word, $count = 0)
+    public function create(Schema $schema, Word $word, $fieldCount = 0)
     {
         return $this->insert([
             static::FIELD_SCHEMA_ID => $schema->getId(),
             static::FIELD_WORD_ID => $word->getId(),
-            static::FIELD_DOCUMENT_COUNT => intval($count),
+            static::FIELD_DOCUMENT_COUNT => intval($fieldCount),
         ]);
     }
 }

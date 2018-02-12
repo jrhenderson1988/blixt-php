@@ -2,6 +2,7 @@
 
 namespace Blixt\Storage\Drivers\Memory\Repositories;
 
+use Blixt\Storage\Entities\Occurrence;
 use Blixt\Storage\Entities\Position;
 use Blixt\Storage\Repositories\PositionRepository as PositionRepositoryInterface;
 
@@ -25,5 +26,19 @@ class PositionRepository extends AbstractRepository implements PositionRepositor
             $row[static::FIELD_OCCURRENCE_ID],
             $row[static::FIELD_POSITION]
         );
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Occurrence $occurrence
+     * @param int                                $position
+     *
+     * @return \Blixt\Storage\Entities\Position
+     */
+    public function create(Occurrence $occurrence, $position)
+    {
+        return $this->insert([
+            static::FIELD_OCCURRENCE_ID => $occurrence->getId(),
+            static::FIELD_POSITION => $position
+        ]);
     }
 }
