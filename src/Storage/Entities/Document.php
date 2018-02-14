@@ -17,9 +17,9 @@ class Document extends Entity
     /**
      * Document constructor.
      *
-     * @param int|mixed $id
-     * @param int|mixed $schemaId
-     * @param mixed     $key
+     * @param int|null|mixed $id
+     * @param int|null|mixed $schemaId
+     * @param null|mixed     $key
      */
     public function __construct($id = null, $schemaId = null, $key = null)
     {

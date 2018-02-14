@@ -17,9 +17,9 @@ class Position extends Entity
     /**
      * Position constructor.
      *
-     * @param int|mixed $id
-     * @param int|mixed $occurrenceId
-     * @param int|mixed $position
+     * @param int|null|mixed $id
+     * @param int|null|mixed $occurrenceId
+     * @param int|null|mixed $position
      */
     public function __construct($id = null, $occurrenceId = null, $position = null)
     {

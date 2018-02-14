@@ -27,11 +27,11 @@ class Column extends Entity
     /**
      * Column constructor.
      *
-     * @param int|mixed    $id
-     * @param int|mixed    $schemaId
-     * @param string|mixed $name
-     * @param bool|mixed   $isIndexed
-     * @param bool|mixed   $isStored
+     * @param int|null|mixed    $id
+     * @param int|null|mixed    $schemaId
+     * @param string|null|mixed $name
+     * @param bool|null|mixed   $isIndexed
+     * @param bool|null|mixed   $isStored
      */
     public function __construct($id = null, $schemaId = null, $name = null, $isIndexed = null, $isStored = null)
     {

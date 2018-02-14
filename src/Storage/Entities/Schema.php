@@ -19,8 +19,8 @@ class Schema extends Entity
     /**
      * Schema constructor.
      *
-     * @param int|mixed    $id
-     * @param string|mixed $name
+     * @param int|null|mixed    $id
+     * @param string|null|mixed $name
      */
     public function __construct($id = null, $name = null)
     {

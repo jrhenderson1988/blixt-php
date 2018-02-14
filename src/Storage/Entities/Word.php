@@ -12,8 +12,8 @@ class Word extends Entity
     /**
      * Word constructor.
      *
-     * @param $id
-     * @param $word
+     * @param int|null|mixed $id
+     * @param int|null|mixed $word
      */
     public function __construct($id = null, $word = null)
     {

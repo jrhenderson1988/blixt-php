@@ -22,10 +22,10 @@ class Occurrence extends Entity
     /**
      * Occurrence constructor.
      *
-     * @param int|mixed $id
-     * @param int|mixed $fieldId
-     * @param int|mixed $termId
-     * @param int|mixed $frequency
+     * @param int|null|mixed $id
+     * @param int|null|mixed $fieldId
+     * @param int|null|mixed $termId
+     * @param int|null|mixed $frequency
      */
     public function __construct($id = null, $fieldId = null, $termId = null, $frequency = null)
     {

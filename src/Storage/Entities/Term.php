@@ -22,10 +22,10 @@ class Term extends Entity
     /**
      * Term constructor.
      *
-     * @param int|mixed $id
-     * @param int|mixed $schemaId
-     * @param int|mixed $wordId
-     * @param int|mixed $fieldCount
+     * @param int|null|mixed $id
+     * @param int|null|mixed $schemaId
+     * @param int|null|mixed $wordId
+     * @param int|null|mixed $fieldCount
      */
     public function __construct($id = null, $schemaId = null, $wordId = null, $fieldCount = null)
     {

@@ -22,10 +22,10 @@ class Field extends Entity
     /**
      * Field constructor.
      *
-     * @param int|mixed $id
-     * @param int|mixed $documentId
-     * @param int|mixed $columnId
-     * @param mixed     $value
+     * @param int|null|mixed $id
+     * @param int|null|mixed $documentId
+     * @param int|null|mixed $columnId
+     * @param null|mixed     $value
      */
     public function __construct($id = null, $documentId = null, $columnId = null, $value = null)
     {
