@@ -21,7 +21,7 @@ class Position extends Entity
      * @param int|mixed $occurrenceId
      * @param int|mixed $position
      */
-    public function __construct($id, $occurrenceId, $position)
+    public function __construct($id = null, $occurrenceId = null, $position = null)
     {
         parent::__construct($id);
 

@@ -27,7 +27,7 @@ class Field extends Entity
      * @param int|mixed $columnId
      * @param mixed     $value
      */
-    public function __construct($id, $documentId, $columnId, $value = null)
+    public function __construct($id = null, $documentId = null, $columnId = null, $value = null)
     {
         parent::__construct($id);
 

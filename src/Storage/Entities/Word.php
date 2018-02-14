@@ -15,7 +15,7 @@ class Word extends Entity
      * @param $id
      * @param $word
      */
-    public function __construct($id, $word)
+    public function __construct($id = null, $word = null)
     {
         parent::__construct($id);
 

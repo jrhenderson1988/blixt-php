@@ -21,7 +21,7 @@ class Document extends Entity
      * @param int|mixed $schemaId
      * @param mixed     $key
      */
-    public function __construct($id, $schemaId, $key)
+    public function __construct($id = null, $schemaId = null, $key = null)
     {
         parent::__construct($id);
 

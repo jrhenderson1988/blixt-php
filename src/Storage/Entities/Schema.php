@@ -22,7 +22,7 @@ class Schema extends Entity
      * @param int|mixed    $id
      * @param string|mixed $name
      */
-    public function __construct($id, $name)
+    public function __construct($id = null, $name = null)
     {
         parent::__construct($id);
 

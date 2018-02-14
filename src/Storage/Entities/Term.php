@@ -27,7 +27,7 @@ class Term extends Entity
      * @param int|mixed $wordId
      * @param int|mixed $fieldCount
      */
-    public function __construct($id, $schemaId, $wordId, $fieldCount)
+    public function __construct($id = null, $schemaId = null, $wordId = null, $fieldCount = null)
     {
         parent::__construct($id);
 

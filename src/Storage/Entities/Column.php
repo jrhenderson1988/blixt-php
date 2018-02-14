@@ -33,7 +33,7 @@ class Column extends Entity
      * @param bool|mixed   $isIndexed
      * @param bool|mixed   $isStored
      */
-    public function __construct($id, $schemaId, $name, $isIndexed, $isStored)
+    public function __construct($id = null, $schemaId = null, $name = null, $isIndexed = null, $isStored = null)
     {
         parent::__construct($id);
 

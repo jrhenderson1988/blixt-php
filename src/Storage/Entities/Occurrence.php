@@ -27,7 +27,7 @@ class Occurrence extends Entity
      * @param int|mixed $termId
      * @param int|mixed $frequency
      */
-    public function __construct($id, $fieldId, $termId, $frequency)
+    public function __construct($id = null, $fieldId = null, $termId = null, $frequency = null)
     {
         parent::__construct($id);
 
