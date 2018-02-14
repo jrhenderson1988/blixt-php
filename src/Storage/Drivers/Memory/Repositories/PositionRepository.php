@@ -13,16 +13,12 @@ class PositionRepository extends AbstractRepository implements PositionRepositor
     const FIELD_POSITION = 'position';
 
     /**
-     * Map an array, representing an entity into a relevant Entity object.
-     *
-     * @param array $row
-     *
-     * @return \Blixt\Storage\Entities\Position
+     * @inheritdoc
      */
-    protected function map(array $row)
+    protected function map($key, array $row)
     {
         return new Position(
-            $row[static::FIELD_ID],
+            $key,
             $row[static::FIELD_OCCURRENCE_ID],
             $row[static::FIELD_POSITION]
         );
@@ -40,5 +36,15 @@ class PositionRepository extends AbstractRepository implements PositionRepositor
             static::FIELD_OCCURRENCE_ID => $occurrence->getId(),
             static::FIELD_POSITION => $position
         ]);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Position $position
+     *
+     * @return \Blixt\Storage\Entities\Position
+     */
+    public function save(Position $position)
+    {
+        // TODO: Implement save() method.
     }
 }

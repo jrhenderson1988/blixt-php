@@ -11,14 +11,12 @@ class SchemaRepository extends AbstractRepository implements SchemaRepositoryInt
     const FIELD_NAME = 'name';
 
     /**
-     * @param array $row
-     *
-     * @return \Blixt\Storage\Entities\Schema
+     * @inheritdoc
      */
-    protected function map(array $row)
+    protected function map($key, array $row)
     {
         return new Schema(
-            $row[static::FIELD_ID],
+            $key,
             $row[static::FIELD_NAME]
         );
     }
@@ -29,5 +27,15 @@ class SchemaRepository extends AbstractRepository implements SchemaRepositoryInt
     public function create($name)
     {
         return $this->insert([static::FIELD_NAME => $name]);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Schema $schema
+     *
+     * @return \Blixt\Storage\Entities\Schema
+     */
+    public function save(Schema $schema)
+    {
+        // TODO: Implement save() method.
     }
 }

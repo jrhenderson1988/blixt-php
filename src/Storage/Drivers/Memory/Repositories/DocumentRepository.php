@@ -13,16 +13,12 @@ class DocumentRepository extends AbstractRepository implements DocumentRepositor
     const FIELD_KEY = 'key';
 
     /**
-     * Map an array, representing an entity into a relevant Entity object.
-     *
-     * @param array $row
-     *
-     * @return \Blixt\Storage\Entities\Document
+     * @inheritdoc
      */
-    protected function map(array $row)
+    protected function map($key, array $row)
     {
         return new Document(
-            $row[static::FIELD_ID],
+            $key,
             $row[static::FIELD_SCHEMA_ID],
             $row[static::FIELD_KEY]
         );
@@ -52,5 +48,15 @@ class DocumentRepository extends AbstractRepository implements DocumentRepositor
             static::FIELD_SCHEMA_ID => $schema->getId(),
             static::FIELD_KEY => $key
         ]);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Document $document
+     *
+     * @return \Blixt\Storage\Entities\Document
+     */
+    public function save(Document $document)
+    {
+        // TODO: Implement save() method.
     }
 }

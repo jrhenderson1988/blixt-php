@@ -28,11 +28,12 @@ abstract class AbstractRepository
     /**
      * Map an array, representing an entity into a relevant Entity object.
      *
+     * @param int   $key
      * @param array $row
      *
      * @return \Blixt\Storage\Entities\Entity
      */
-    abstract protected function map(array $row);
+    abstract protected function map($key, array $row);
 
     /**
      * @return \Illuminate\Support\Collection
@@ -42,24 +43,10 @@ abstract class AbstractRepository
         $results = new Collection();
 
         foreach ($this->storage->all(static::TABLE) as $key => $row) {
-            $results->put($key, $this->map(array_merge([static::FIELD_ID => $key], $row)));
+            $results->put($key, $this->map($key, $row));
         }
 
         return $results;
-    }
-
-    /**
-     * @param int $id
-     *
-     * @return \Blixt\Storage\Entities\Entity
-     */
-    public function find($id)
-    {
-        if ($result = $this->storage->find(static::TABLE, $id)) {
-            return $this->map($result);
-        }
-
-        return null;
     }
 
     /**
@@ -71,7 +58,20 @@ abstract class AbstractRepository
     {
         $id = $this->storage->insert(static::TABLE, $data);
 
-        return $this->map(array_merge($data, [static::FIELD_ID => $id]));
+        return $this->map($id, $data);
+    }
+
+    /**
+     * @param int   $id
+     * @param array $data
+     *
+     * @return \Blixt\Storage\Entities\Entity
+     */
+    public function update($id, array $data)
+    {
+        $this->storage->update(static::TABLE, $id, $data);
+
+        return $this->find($id);
     }
 
     /**
@@ -81,9 +81,25 @@ abstract class AbstractRepository
      */
     public function findBy(array $conditions)
     {
-        $results = $this->storage->getWhere(static::TABLE, $conditions);
+        if ($item = $this->getWhere($conditions)->first()) {
+            return $item;
+        }
 
-        return count($results) > 0 ? $this->map($results[0]) : null;
+        return null;
+    }
+
+    /**
+     * @param int $id
+     *
+     * @return \Blixt\Storage\Entities\Entity
+     */
+    public function find($id)
+    {
+        if ($result = $this->storage->find(static::TABLE, $id)) {
+            return $this->map($id, $result);
+        }
+
+        return null;
     }
 
     /**
@@ -95,8 +111,8 @@ abstract class AbstractRepository
     {
         $collection = new Collection();
 
-        foreach ($this->storage->getWhere(static::TABLE, $conditions) as $result) {
-            $collection->push($this->map($result));
+        foreach ($this->storage->getWhere(static::TABLE, $conditions) as $key => $result) {
+            $collection->push($this->map($key, $result));
         }
 
         return $collection;

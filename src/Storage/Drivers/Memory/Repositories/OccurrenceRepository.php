@@ -15,16 +15,12 @@ class OccurrenceRepository extends AbstractRepository implements OccurrenceRepos
     const FIELD_FREQUENCY = 'frequency';
 
     /**
-     * Map an array, representing an entity into a relevant Entity object.
-     *
-     * @param array $row
-     *
-     * @return \Blixt\Storage\Entities\Occurrence
+     * @inheritdoc
      */
-    protected function map(array $row)
+    protected function map($key, array $row)
     {
         return new Occurrence(
-            $row[static::FIELD_ID],
+            $key,
             $row[static::FIELD_FIELD_ID],
             $row[static::FIELD_TERM_ID],
             $row[static::FIELD_FREQUENCY]
@@ -45,5 +41,15 @@ class OccurrenceRepository extends AbstractRepository implements OccurrenceRepos
             static::FIELD_TERM_ID => $term->getId(),
             static::FIELD_FREQUENCY => intval($frequency),
         ]);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Occurrence $occurrence
+     *
+     * @return \Blixt\Storage\Entities\Occurrence
+     */
+    public function save(Occurrence $occurrence)
+    {
+        // TODO: Implement save() method.
     }
 }

@@ -15,14 +15,12 @@ class ColumnRepository extends AbstractRepository implements ColumnRepositoryInt
     const FIELD_IS_STORED = 'is_stored';
 
     /**
-     * @param array $row
-     *
-     * @return \Blixt\Storage\Entities\Column
+     * @inheritdoc
      */
-    protected function map(array $row)
+    protected function map($key, array $row)
     {
         return new Column(
-            $row[static::FIELD_ID],
+            $key,
             $row[static::FIELD_SCHEMA_ID],
             $row[static::FIELD_NAME],
             $row[static::FIELD_IS_INDEXED],
@@ -50,8 +48,20 @@ class ColumnRepository extends AbstractRepository implements ColumnRepositoryInt
      */
     public function save(Column $column)
     {
-        if ($column->getId()) {
-            // Update
-        }
+        $attributes = $this->getAttributesFor($column);
+
+        return $column->exists()
+            ? $this->update($column->getId(), $attributes)
+            : $this->insert($attributes);
+    }
+
+    protected function getAttributesFor(Column $column)
+    {
+        return [
+            static::FIELD_SCHEMA_ID => $column->getSchemaId(),
+            static::FIELD_NAME => $column->getName(),
+            static::FIELD_IS_INDEXED => $column->isIndexed(),
+            static::FIELD_IS_STORED => $column->isStored()
+        ];
     }
 }

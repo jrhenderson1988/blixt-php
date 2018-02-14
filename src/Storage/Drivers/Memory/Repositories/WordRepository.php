@@ -12,16 +12,12 @@ class WordRepository extends AbstractRepository implements WordRepositoryInterfa
     const FIELD_WORD = 'word';
 
     /**
-     * Map an array, representing an entity into a relevant Entity object.
-     *
-     * @param array $row
-     *
-     * @return \Blixt\Storage\Entities\Word
+     * @inheritdoc
      */
-    protected function map(array $row)
+    protected function map($key, array $row)
     {
         return new Word(
-            $row[static::FIELD_ID],
+            $key,
             $row[static::FIELD_WORD]
         );
     }
@@ -60,5 +56,15 @@ class WordRepository extends AbstractRepository implements WordRepositoryInterfa
         return $this->getWhere([
             static::FIELD_WORD => $words->toArray()
         ]);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Word $word
+     *
+     * @return \Blixt\Storage\Entities\Word
+     */
+    public function save(Word $word)
+    {
+        // TODO: Implement save() method.
     }
 }

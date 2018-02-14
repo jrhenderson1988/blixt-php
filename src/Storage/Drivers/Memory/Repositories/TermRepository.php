@@ -16,16 +16,12 @@ class TermRepository extends AbstractRepository implements TermRepositoryInterfa
     const FIELD_DOCUMENT_COUNT = 'document_count';
 
     /**
-     * Map an array, representing an entity into a relevant Entity object.
-     *
-     * @param array $row
-     *
-     * @return \Blixt\Storage\Entities\Term
+     * @inheritdoc
      */
-    protected function map(array $row)
+    protected function map($key, array $row)
     {
         return new Term(
-            $row[static::FIELD_ID],
+            $key,
             $row[static::FIELD_SCHEMA_ID],
             $row[static::FIELD_WORD_ID],
             $row[static::FIELD_DOCUMENT_COUNT]
@@ -76,5 +72,15 @@ class TermRepository extends AbstractRepository implements TermRepositoryInterfa
             static::FIELD_WORD_ID => $word->getId(),
             static::FIELD_DOCUMENT_COUNT => intval($fieldCount),
         ]);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Term $term
+     *
+     * @return \Blixt\Storage\Entities\Term
+     */
+    public function save(Term $term)
+    {
+        // TODO: Implement save() method.
     }
 }

@@ -14,16 +14,12 @@ class FieldRepository extends AbstractRepository implements FieldRepositoryInter
     const FIELD_VALUE = 'value';
 
     /**
-     * Map an array, representing an entity into a relevant Entity object.
-     *
-     * @param array $row
-     *
-     * @return \Blixt\Storage\Entities\Field
+     * @inheritdoc
      */
-    protected function map(array $row)
+    protected function map($key, array $row)
     {
         return new Field(
-            $row[static::FIELD_ID],
+            $key,
             $row[static::FIELD_DOCUMENT_ID],
             $row[static::FIELD_COLUMN_ID],
             $row[static::FIELD_VALUE]
@@ -44,5 +40,15 @@ class FieldRepository extends AbstractRepository implements FieldRepositoryInter
             static::FIELD_COLUMN_ID => $columnId,
             static::FIELD_VALUE => $value ? $value : null,
         ]);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Field $field
+     *
+     * @return \Blixt\Storage\Entities\Field
+     */
+    public function save(Field $field)
+    {
+        // TODO: Implement save() method.
     }
 }
