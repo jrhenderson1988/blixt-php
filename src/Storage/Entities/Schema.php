@@ -17,6 +17,20 @@ class Schema extends Entity
     protected $columns;
 
     /**
+     * Schema constructor.
+     *
+     * @param int|mixed    $id
+     * @param string|mixed $name
+     */
+    public function __construct($id, $name)
+    {
+        parent::__construct($id);
+
+        $this->setName($name);
+        $this->setColumns(new Collection());
+    }
+
+    /**
      * @return string|null
      */
     public function getName()

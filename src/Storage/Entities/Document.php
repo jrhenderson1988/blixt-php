@@ -15,6 +15,21 @@ class Document extends Entity
     protected $key;
 
     /**
+     * Document constructor.
+     *
+     * @param int|mixed $id
+     * @param int|mixed $schemaId
+     * @param mixed     $key
+     */
+    public function __construct($id, $schemaId, $key)
+    {
+        parent::__construct($id);
+
+        $this->setSchemaId($schemaId);
+        $this->setKey($key);
+    }
+
+    /**
      * @return int|null|mixed
      */
     public function getSchemaId()

@@ -10,6 +10,19 @@ class Word extends Entity
     protected $word;
 
     /**
+     * Word constructor.
+     *
+     * @param $id
+     * @param $word
+     */
+    public function __construct($id, $word)
+    {
+        parent::__construct($id);
+
+        $this->setWord($word);
+    }
+
+    /**
      * @return string|null
      */
     public function getWord()

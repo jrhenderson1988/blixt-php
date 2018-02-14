@@ -25,6 +25,25 @@ class Column extends Entity
     protected $isStored;
 
     /**
+     * Column constructor.
+     *
+     * @param int|mixed    $id
+     * @param int|mixed    $schemaId
+     * @param string|mixed $name
+     * @param bool|mixed   $isIndexed
+     * @param bool|mixed   $isStored
+     */
+    public function __construct($id, $schemaId, $name, $isIndexed, $isStored)
+    {
+        parent::__construct($id);
+
+        $this->setSchemaId($schemaId);
+        $this->setName($name);
+        $this->setIndexed($isIndexed);
+        $this->setStored($isStored);
+    }
+
+    /**
      * @return int|null
      */
     public function getSchemaId()

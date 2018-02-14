@@ -10,6 +10,16 @@ abstract class Entity
     protected $id;
 
     /**
+     * Entity constructor.
+     *
+     * @param int|null $id
+     */
+    public function __construct($id)
+    {
+        $this->setId($id);
+    }
+
+    /**
      * @return int|null
      */
     public function getId()

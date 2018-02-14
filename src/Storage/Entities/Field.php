@@ -20,6 +20,23 @@ class Field extends Entity
     protected $value;
 
     /**
+     * Field constructor.
+     *
+     * @param int|mixed $id
+     * @param int|mixed $documentId
+     * @param int|mixed $columnId
+     * @param mixed     $value
+     */
+    public function __construct($id, $documentId, $columnId, $value = null)
+    {
+        parent::__construct($id);
+
+        $this->setDocumentId($documentId);
+        $this->setColumnId($columnId);
+        $this->setValue($value);
+    }
+
+    /**
      * @return int|null
      */
     public function getDocumentId()

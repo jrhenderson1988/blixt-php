@@ -20,6 +20,23 @@ class Occurrence extends Entity
     protected $frequency;
 
     /**
+     * Occurrence constructor.
+     *
+     * @param int|mixed $id
+     * @param int|mixed $fieldId
+     * @param int|mixed $termId
+     * @param int|mixed $frequency
+     */
+    public function __construct($id, $fieldId, $termId, $frequency)
+    {
+        parent::__construct($id);
+
+        $this->setFieldId($fieldId);
+        $this->setTermId($termId);
+        $this->setFrequency($frequency);
+    }
+
+    /**
      * @return int|null
      */
     public function getFieldId()
