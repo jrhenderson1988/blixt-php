@@ -12,13 +12,6 @@ interface SchemaRepository
     public function all();
 
     /**
-     * @param string $name
-     *
-     * @return \Blixt\Storage\Entities\Schema|null
-     */
-    public function create($name);
-
-    /**
      * @param \Blixt\Storage\Entities\Schema $schema
      *
      * @return \Blixt\Storage\Entities\Schema

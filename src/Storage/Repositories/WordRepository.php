@@ -22,13 +22,6 @@ interface WordRepository
     public function getByWords(Collection $words);
 
     /**
-     * @param string|mixed $word
-     *
-     * @return \Blixt\Storage\Entities\Word
-     */
-    public function create($word);
-
-    /**
      * @param \Blixt\Storage\Entities\Word $word
      *
      * @return \Blixt\Storage\Entities\Word

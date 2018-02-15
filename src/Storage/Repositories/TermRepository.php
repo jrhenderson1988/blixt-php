@@ -26,15 +26,6 @@ interface TermRepository
     public function getBySchemaAndWords(Schema $schema, Collection $words);
 
     /**
-     * @param \Blixt\Storage\Entities\Schema $schema
-     * @param \Blixt\Storage\Entities\Word   $word
-     * @param int|mixed                      $fieldCount
-     *
-     * @return \Blixt\Storage\Entities\Term
-     */
-    public function create(Schema $schema, Word $word, $fieldCount = 0);
-
-    /**
      * @param \Blixt\Storage\Entities\Term $term
      *
      * @return \Blixt\Storage\Entities\Term
