@@ -2,11 +2,12 @@
 
 namespace Blixt\Storage\Drivers\Memory\Repositories;
 
+use Blixt\Storage\Drivers\Memory\Storage;
 use Blixt\Storage\Entities\Column;
-use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Repositories\ColumnRepository as ColumnRepositoryInterface;
+use Illuminate\Support\Collection;
 
-class ColumnRepository extends AbstractRepository implements ColumnRepositoryInterface
+class ColumnRepository implements ColumnRepositoryInterface
 {
     const TABLE = 'columns';
     const FIELD_SCHEMA_ID = 'schema_id';
@@ -15,7 +16,77 @@ class ColumnRepository extends AbstractRepository implements ColumnRepositoryInt
     const FIELD_IS_STORED = 'is_stored';
 
     /**
-     * @inheritdoc
+     * @var \Blixt\Storage\Drivers\Memory\Storage
+     */
+    protected $storage;
+
+    /**
+     * ColumnRepository constructor.
+     *
+     * @param \Blixt\Storage\Drivers\Memory\Storage $storage
+     */
+    public function __construct(Storage $storage)
+    {
+        $this->storage = $storage;
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection
+     */
+    public function all()
+    {
+        $results = new Collection();
+
+        foreach ($this->storage->all(static::TABLE) as $key => $row) {
+            $results->put($key, $this->map($key, $row));
+        }
+
+        return $results;
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Column $column
+     *
+     * @return \Blixt\Storage\Entities\Column
+     */
+    public function save(Column $column)
+    {
+        return $column->exists() ? $this->update($column) : $this->create($column);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Column $column
+     *
+     * @return \Blixt\Storage\Entities\Column
+     */
+    protected function create(Column $column)
+    {
+        $attributes = $this->getAttributes($column);
+
+        $id = $this->storage->insert(static::TABLE, $attributes);
+
+        return $this->map($id, $attributes);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Column $column
+     *
+     * @return \Blixt\Storage\Entities\Column
+     */
+    protected function update(Column $column)
+    {
+        $attributes = $this->getAttributes($column);
+
+        $this->storage->update(static::TABLE, $column->getId(), $attributes);
+
+        return $column;
+    }
+
+    /**
+     * @param int   $key
+     * @param array $row
+     *
+     * @return \Blixt\Storage\Entities\Column
      */
     protected function map($key, array $row)
     {
@@ -29,33 +100,11 @@ class ColumnRepository extends AbstractRepository implements ColumnRepositoryInt
     }
 
     /**
-     * @inheritdoc
-     */
-    public function create(Schema $schema, $name, $isIndexed, $isStored)
-    {
-        return $this->insert([
-            static::FIELD_SCHEMA_ID => $schema->getId(),
-            static::FIELD_NAME => $name,
-            static::FIELD_IS_INDEXED => $isIndexed,
-            static::FIELD_IS_STORED => $isStored
-        ]);
-    }
-
-    /**
      * @param \Blixt\Storage\Entities\Column $column
      *
-     * @return \Blixt\Storage\Entities\Column
+     * @return array
      */
-    public function save(Column $column)
-    {
-        $attributes = $this->getAttributesFor($column);
-
-        return $column->exists()
-            ? $this->update($column->getId(), $attributes)
-            : $this->insert($attributes);
-    }
-
-    protected function getAttributesFor(Column $column)
+    protected function getAttributes(Column $column)
     {
         return [
             static::FIELD_SCHEMA_ID => $column->getSchemaId(),

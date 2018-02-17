@@ -2,30 +2,33 @@
 
 namespace Blixt\Storage\Drivers\Memory\Repositories;
 
+use Blixt\Storage\Drivers\Memory\Storage;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Entities\Term;
 use Blixt\Storage\Entities\Word;
 use Blixt\Storage\Repositories\TermRepository as TermRepositoryInterface;
 use Illuminate\Support\Collection;
 
-class TermRepository extends AbstractRepository implements TermRepositoryInterface
+class TermRepository implements TermRepositoryInterface
 {
     const TABLE = 'terms';
     const FIELD_SCHEMA_ID = 'schema_id';
     const FIELD_WORD_ID = 'word_id';
-    const FIELD_DOCUMENT_COUNT = 'document_count';
+    const FIELD_FIELD_COUNT = 'field_count';
 
     /**
-     * @inheritdoc
+     * @var \Blixt\Storage\Drivers\Memory\Storage
      */
-    protected function map($key, array $row)
+    protected $storage;
+
+    /**
+     * TermRepository constructor.
+     *
+     * @param \Blixt\Storage\Drivers\Memory\Storage $storage
+     */
+    public function __construct(Storage $storage)
     {
-        return new Term(
-            $key,
-            $row[static::FIELD_SCHEMA_ID],
-            $row[static::FIELD_WORD_ID],
-            $row[static::FIELD_DOCUMENT_COUNT]
-        );
+        $this->storage = $storage;
     }
 
     /**
@@ -36,10 +39,18 @@ class TermRepository extends AbstractRepository implements TermRepositoryInterfa
      */
     public function findBySchemaAndWord(Schema $schema, Word $word)
     {
-        return $this->findBy([
+        $items = $this->storage->getWhere(static::TABLE, [
             static::FIELD_SCHEMA_ID => $schema->getId(),
-            static::FIELD_WORD_ID => $word->getId(),
+            static::FIELD_WORD_ID => $word->getId()
         ]);
+
+        if (count($items) > 0) {
+            reset($items);
+
+            return $this->map($id = key($items), $items[$id]);
+        }
+
+        return null;
     }
 
     /**
@@ -50,28 +61,20 @@ class TermRepository extends AbstractRepository implements TermRepositoryInterfa
      */
     public function getBySchemaAndWords(Schema $schema, Collection $words)
     {
-        return $this->getWhere([
+        $items = $this->storage->getWhere(static::TABLE, [
             static::FIELD_SCHEMA_ID => $schema->getId(),
             static::FIELD_WORD_ID => $words->map(function (Word $word) {
                 return $word->getId();
             })->toArray()
         ]);
-    }
 
-    /**
-     * @param \Blixt\Storage\Entities\Schema $schema
-     * @param \Blixt\Storage\Entities\Word   $word
-     * @param int|mixed                      $fieldCount
-     *
-     * @return \Blixt\Storage\Entities\Term
-     */
-    public function create(Schema $schema, Word $word, $fieldCount = 0)
-    {
-        return $this->insert([
-            static::FIELD_SCHEMA_ID => $schema->getId(),
-            static::FIELD_WORD_ID => $word->getId(),
-            static::FIELD_DOCUMENT_COUNT => intval($fieldCount),
-        ]);
+        $results = new Collection();
+
+        foreach ($items as $key => $item) {
+            $results->put($key, $this->map($key, $item));
+        }
+
+        return $results;
     }
 
     /**
@@ -81,6 +84,64 @@ class TermRepository extends AbstractRepository implements TermRepositoryInterfa
      */
     public function save(Term $term)
     {
-        // TODO: Implement save() method.
+        return $term->exists() ? $this->update($term) : $this->create($term);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Term $term
+     *
+     * @return \Blixt\Storage\Entities\Term
+     */
+    protected function create(Term $term)
+    {
+        $attributes = $this->getAttributes($term);
+
+        $id = $this->storage->insert(static::TABLE, $attributes);
+
+        return $this->map($id, $attributes);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Term $term
+     *
+     * @return \Blixt\Storage\Entities\Term
+     */
+    protected function update(Term $term)
+    {
+        $attributes = $this->getAttributes($term);
+
+        $this->storage->update(static::TABLE, $term->getId(), $attributes);
+
+        return $term;
+    }
+
+    /**
+     * @param int   $key
+     * @param array $row
+     *
+     * @return \Blixt\Storage\Entities\Term
+     */
+    protected function map($key, array $row)
+    {
+        return new Term(
+            $key,
+            $row[static::FIELD_SCHEMA_ID],
+            $row[static::FIELD_WORD_ID],
+            $row[static::FIELD_FIELD_COUNT]
+        );
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Term $term
+     *
+     * @return array
+     */
+    protected function getAttributes(Term $term)
+    {
+        return [
+            static::FIELD_SCHEMA_ID   => $term->getSchemaId(),
+            static::FIELD_WORD_ID     => $term->getWordId(),
+            static::FIELD_FIELD_COUNT => $term->getFieldCount()
+        ];
     }
 }

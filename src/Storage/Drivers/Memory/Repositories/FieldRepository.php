@@ -2,11 +2,11 @@
 
 namespace Blixt\Storage\Drivers\Memory\Repositories;
 
-use Blixt\Storage\Entities\Document;
+use Blixt\Storage\Drivers\Memory\Storage;
 use Blixt\Storage\Entities\Field;
 use Blixt\Storage\Repositories\FieldRepository as FieldRepositoryInterface;
 
-class FieldRepository extends AbstractRepository implements FieldRepositoryInterface
+class FieldRepository implements FieldRepositoryInterface
 {
     const TABLE = 'fields';
     const FIELD_DOCUMENT_ID = 'document_id';
@@ -14,7 +14,63 @@ class FieldRepository extends AbstractRepository implements FieldRepositoryInter
     const FIELD_VALUE = 'value';
 
     /**
-     * @inheritdoc
+     * @var \Blixt\Storage\Drivers\Memory\Storage
+     */
+    protected $storage;
+
+    /**
+     * FieldRepository constructor.
+     *
+     * @param \Blixt\Storage\Drivers\Memory\Storage $storage
+     */
+    public function __construct(Storage $storage)
+    {
+        $this->storage = $storage;
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Field $field
+     *
+     * @return \Blixt\Storage\Entities\Field
+     */
+    public function save(Field $field)
+    {
+        return $field->exists() ? $this->update($field) : $this->create($field);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Field $field
+     *
+     * @return \Blixt\Storage\Entities\Field
+     */
+    protected function create(Field $field)
+    {
+        $attributes = $this->getAttributes($field);
+
+        $id = $this->storage->insert(static::TABLE, $attributes);
+
+        return $this->map($id, $attributes);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Field $field
+     *
+     * @return \Blixt\Storage\Entities\Field
+     */
+    protected function update(Field $field)
+    {
+        $attributes = $this->getAttributes($field);
+
+        $this->storage->update(static::TABLE, $field->getId(), $attributes);
+
+        return $field;
+    }
+
+    /**
+     * @param int   $key
+     * @param array $row
+     *
+     * @return \Blixt\Storage\Entities\Field
      */
     protected function map($key, array $row)
     {
@@ -27,28 +83,16 @@ class FieldRepository extends AbstractRepository implements FieldRepositoryInter
     }
 
     /**
-     * @param \Blixt\Storage\Entities\Document $document
-     * @param int|mixed                        $columnId
-     * @param string|mixed|null                $value
-     *
-     * @return \Blixt\Storage\Entities\Field
-     */
-    public function create(Document $document, $columnId, $value = null)
-    {
-        return $this->insert([
-            static::FIELD_DOCUMENT_ID => $document->getId(),
-            static::FIELD_COLUMN_ID => $columnId,
-            static::FIELD_VALUE => $value ? $value : null,
-        ]);
-    }
-
-    /**
      * @param \Blixt\Storage\Entities\Field $field
      *
-     * @return \Blixt\Storage\Entities\Field
+     * @return array
      */
-    public function save(Field $field)
+    protected function getAttributes(Field $field)
     {
-        // TODO: Implement save() method.
+        return [
+            static::FIELD_DOCUMENT_ID => $field->getDocumentId(),
+            static::FIELD_COLUMN_ID => $field->getColumnId(),
+            static::FIELD_VALUE => $field->getValue()
+        ];
     }
 }

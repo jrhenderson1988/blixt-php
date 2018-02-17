@@ -2,12 +2,11 @@
 
 namespace Blixt\Storage\Drivers\Memory\Repositories;
 
-use Blixt\Storage\Entities\Field;
+use Blixt\Storage\Drivers\Memory\Storage;
 use Blixt\Storage\Entities\Occurrence;
-use Blixt\Storage\Entities\Term;
 use Blixt\Storage\Repositories\OccurrenceRepository as OccurrenceRepositoryInterface;
 
-class OccurrenceRepository extends AbstractRepository implements OccurrenceRepositoryInterface
+class OccurrenceRepository implements OccurrenceRepositoryInterface
 {
     const TABLE = 'occurrences';
     const FIELD_FIELD_ID = 'field_id';
@@ -15,7 +14,63 @@ class OccurrenceRepository extends AbstractRepository implements OccurrenceRepos
     const FIELD_FREQUENCY = 'frequency';
 
     /**
-     * @inheritdoc
+     * @var \Blixt\Storage\Drivers\Memory\Storage
+     */
+    protected $storage;
+
+    /**
+     * OccurrenceRepository constructor.
+     *
+     * @param \Blixt\Storage\Drivers\Memory\Storage $storage
+     */
+    public function __construct(Storage $storage)
+    {
+        $this->storage = $storage;
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Occurrence $occurrence
+     *
+     * @return \Blixt\Storage\Entities\Occurrence
+     */
+    public function save(Occurrence $occurrence)
+    {
+        return $occurrence->exists() ? $this->update($occurrence) : $this->create($occurrence);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Occurrence $occurrence
+     *
+     * @return \Blixt\Storage\Entities\Occurrence
+     */
+    protected function create(Occurrence $occurrence)
+    {
+        $attributes = $this->getAttributes($occurrence);
+
+        $id = $this->storage->insert(static::TABLE, $attributes);
+
+        return $this->map($id, $attributes);
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Occurrence $occurrence
+     *
+     * @return \Blixt\Storage\Entities\Occurrence
+     */
+    protected function update(Occurrence $occurrence)
+    {
+        $attributes = $this->getAttributes($occurrence);
+
+        $this->storage->update(static::TABLE, $occurrence->getId(), $attributes);
+
+        return $occurrence;
+    }
+
+    /**
+     * @param int   $key
+     * @param array $row
+     *
+     * @return \Blixt\Storage\Entities\Occurrence
      */
     protected function map($key, array $row)
     {
@@ -28,28 +83,16 @@ class OccurrenceRepository extends AbstractRepository implements OccurrenceRepos
     }
 
     /**
-     * @param \Blixt\Storage\Entities\Field $field
-     * @param \Blixt\Storage\Entities\Term  $term
-     * @param int                           $frequency
-     *
-     * @return \Blixt\Storage\Entities\Occurrence
-     */
-    public function create(Field $field, Term $term, $frequency)
-    {
-        return $this->insert([
-            static::FIELD_FIELD_ID => $field->getId(),
-            static::FIELD_TERM_ID => $term->getId(),
-            static::FIELD_FREQUENCY => intval($frequency),
-        ]);
-    }
-
-    /**
      * @param \Blixt\Storage\Entities\Occurrence $occurrence
      *
-     * @return \Blixt\Storage\Entities\Occurrence
+     * @return array
      */
-    public function save(Occurrence $occurrence)
+    protected function getAttributes(Occurrence $occurrence)
     {
-        // TODO: Implement save() method.
+        return [
+            static::FIELD_FIELD_ID => $occurrence->getFieldId(),
+            static::FIELD_TERM_ID => $occurrence->getTermId(),
+            static::FIELD_FREQUENCY => $occurrence->getFrequency()
+        ];
     }
 }
