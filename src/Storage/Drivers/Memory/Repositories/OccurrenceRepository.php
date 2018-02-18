@@ -2,68 +2,27 @@
 
 namespace Blixt\Storage\Drivers\Memory\Repositories;
 
-use Blixt\Storage\Drivers\Memory\Storage;
+use Blixt\Storage\Entities\Entity;
 use Blixt\Storage\Entities\Occurrence;
 use Blixt\Storage\Repositories\OccurrenceRepository as OccurrenceRepositoryInterface;
 
-class OccurrenceRepository implements OccurrenceRepositoryInterface
+class OccurrenceRepository extends AbstractRepository implements OccurrenceRepositoryInterface
 {
+    const ENTITY = Occurrence::class;
     const TABLE = 'occurrences';
     const FIELD_FIELD_ID = 'field_id';
     const FIELD_TERM_ID = 'term_id';
     const FIELD_FREQUENCY = 'frequency';
 
     /**
-     * @var \Blixt\Storage\Drivers\Memory\Storage
-     */
-    protected $storage;
-
-    /**
-     * OccurrenceRepository constructor.
-     *
-     * @param \Blixt\Storage\Drivers\Memory\Storage $storage
-     */
-    public function __construct(Storage $storage)
-    {
-        $this->storage = $storage;
-    }
-
-    /**
      * @param \Blixt\Storage\Entities\Occurrence $occurrence
      *
      * @return \Blixt\Storage\Entities\Occurrence
+     * @throws \Blixt\Exceptions\StorageException
      */
     public function save(Occurrence $occurrence)
     {
-        return $occurrence->exists() ? $this->update($occurrence) : $this->create($occurrence);
-    }
-
-    /**
-     * @param \Blixt\Storage\Entities\Occurrence $occurrence
-     *
-     * @return \Blixt\Storage\Entities\Occurrence
-     */
-    protected function create(Occurrence $occurrence)
-    {
-        $attributes = $this->getAttributes($occurrence);
-
-        $id = $this->storage->insert(static::TABLE, $attributes);
-
-        return $this->map($id, $attributes);
-    }
-
-    /**
-     * @param \Blixt\Storage\Entities\Occurrence $occurrence
-     *
-     * @return \Blixt\Storage\Entities\Occurrence
-     */
-    protected function update(Occurrence $occurrence)
-    {
-        $attributes = $this->getAttributes($occurrence);
-
-        $this->storage->update(static::TABLE, $occurrence->getId(), $attributes);
-
-        return $occurrence;
+        return $this->saveEntity($occurrence);
     }
 
     /**
@@ -83,16 +42,16 @@ class OccurrenceRepository implements OccurrenceRepositoryInterface
     }
 
     /**
-     * @param \Blixt\Storage\Entities\Occurrence $occurrence
+     * @param \Blixt\Storage\Entities\Entity $entity
      *
      * @return array
      */
-    protected function getAttributes(Occurrence $occurrence)
+    protected function getAttributes(Entity $entity)
     {
         return [
-            static::FIELD_FIELD_ID => $occurrence->getFieldId(),
-            static::FIELD_TERM_ID => $occurrence->getTermId(),
-            static::FIELD_FREQUENCY => $occurrence->getFrequency()
+            static::FIELD_FIELD_ID => $entity->getFieldId(),
+            static::FIELD_TERM_ID => $entity->getTermId(),
+            static::FIELD_FREQUENCY => $entity->getFrequency()
         ];
     }
 }

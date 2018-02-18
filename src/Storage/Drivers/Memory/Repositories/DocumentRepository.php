@@ -2,87 +2,39 @@
 
 namespace Blixt\Storage\Drivers\Memory\Repositories;
 
-use Blixt\Storage\Drivers\Memory\Storage;
 use Blixt\Storage\Entities\Document;
+use Blixt\Storage\Entities\Entity;
 use Blixt\Storage\Repositories\DocumentRepository as DocumentRepositoryInterface;
 
-class DocumentRepository implements DocumentRepositoryInterface
+class DocumentRepository extends AbstractRepository implements DocumentRepositoryInterface
 {
+    const ENTITY = Document::class;
     const TABLE = 'documents';
     const FIELD_SCHEMA_ID = 'schema_id';
     const FIELD_KEY = 'key';
 
     /**
-     * @var \Blixt\Storage\Drivers\Memory\Storage
-     */
-    protected $storage;
-
-    /**
-     * DocumentRepository constructor.
-     *
-     * @param \Blixt\Storage\Drivers\Memory\Storage $storage
-     */
-    public function __construct(Storage $storage)
-    {
-        $this->storage = $storage;
-    }
-
-    /**
      * @param int|mixed $key
      *
      * @return \Blixt\Storage\Entities\Document|null
+     * @throws \Blixt\Exceptions\StorageException
      */
     public function findByKey($key)
     {
-        $items = $this->storage->getWhere(static::TABLE, [
+        return $this->findEntityBy([
             static::FIELD_KEY => $key
         ]);
-
-        if (count($items) > 0) {
-            reset($items);
-
-            return $this->map($id = key($items), $items[$id]);
-        }
-
-        return null;
     }
 
     /**
      * @param \Blixt\Storage\Entities\Document $document
      *
      * @return \Blixt\Storage\Entities\Document
+     * @throws \Blixt\Exceptions\StorageException
      */
     public function save(Document $document)
     {
-        return $document->exists() ? $this->update($document) : $this->create($document);
-    }
-
-    /**
-     * @param \Blixt\Storage\Entities\Document $document
-     *
-     * @return \Blixt\Storage\Entities\Document
-     */
-    protected function create(Document $document)
-    {
-        $attributes = $this->getAttributes($document);
-
-        $id = $this->storage->insert(static::TABLE, $attributes);
-
-        return $this->map($id, $attributes);
-    }
-
-    /**
-     * @param \Blixt\Storage\Entities\Document $document
-     *
-     * @return \Blixt\Storage\Entities\Document
-     */
-    protected function update(Document $document)
-    {
-        $attributes = $this->getAttributes($document);
-
-        $this->storage->update(static::TABLE, $document->getId(), $attributes);
-
-        return $document;
+        return $this->saveEntity($document);
     }
 
     /**
@@ -101,11 +53,11 @@ class DocumentRepository implements DocumentRepositoryInterface
     }
 
     /**
-     * @param \Blixt\Storage\Entities\Document $entity
+     * @param \Blixt\Storage\Entities\Entity $entity
      *
      * @return array
      */
-    protected function getAttributes(Document $entity)
+    protected function getAttributes(Entity $entity)
     {
         return [
             static::FIELD_SCHEMA_ID => $entity->getSchemaId(),

@@ -2,107 +2,52 @@
 
 namespace Blixt\Storage\Drivers\Memory\Repositories;
 
-use Blixt\Storage\Drivers\Memory\Storage;
+use Blixt\Storage\Entities\Entity;
 use Blixt\Storage\Entities\Word;
 use Blixt\Storage\Repositories\WordRepository as WordRepositoryInterface;
 use Illuminate\Support\Collection;
 
-class WordRepository implements WordRepositoryInterface
+class WordRepository extends AbstractRepository implements WordRepositoryInterface
 {
+    const ENTITY = Word::class;
     const TABLE = 'words';
     const FIELD_WORD = 'word';
-
-    /**
-     * @var \Blixt\Storage\Drivers\Memory\Storage
-     */
-    protected $storage;
-
-    /**
-     * WordRepository constructor.
-     *
-     * @param \Blixt\Storage\Drivers\Memory\Storage $storage
-     */
-    public function __construct(Storage $storage)
-    {
-        $this->storage = $storage;
-    }
 
     /**
      * @param string|mixed $word
      *
      * @return \Blixt\Storage\Entities\Word
+     * @throws \Blixt\Exceptions\StorageException
      */
     public function findByWord($word)
     {
-        $items = $this->storage->getWhere(static::TABLE, [
+        return $this->findEntityBy([
             static::FIELD_WORD => $word
         ]);
-
-        if (count($items) > 0) {
-            reset($items);
-
-            return $this->map($id = key($items), $items[$id]);
-        }
-
-        return null;
     }
 
     /**
      * @param \Illuminate\Support\Collection $words
      *
      * @return \Illuminate\Support\Collection
+     * @throws \Blixt\Exceptions\StorageException
      */
     public function getByWords(Collection $words)
     {
-        $items = $this->storage->getWhere(static::TABLE, [
+        return $this->getEntitiesBy([
             static::FIELD_WORD => $words->toArray()
         ]);
-
-        $results = new Collection();
-
-        foreach ($items as $key => $item) {
-            $results->put($key, $this->map($key, $item));
-        }
-
-        return $results;
     }
 
     /**
      * @param \Blixt\Storage\Entities\Word $word
      *
      * @return \Blixt\Storage\Entities\Word
+     * @throws \Blixt\Exceptions\StorageException
      */
     public function save(Word $word)
     {
-        return $word->exists() ? $this->update($word) : $this->create($word);
-    }
-
-    /**
-     * @param \Blixt\Storage\Entities\Word $word
-     *
-     * @return \Blixt\Storage\Entities\Word
-     */
-    protected function create(Word $word)
-    {
-        $attributes = $this->getAttributes($word);
-
-        $id = $this->storage->insert(static::TABLE, $attributes);
-
-        return $this->map($id, $attributes);
-    }
-
-    /**
-     * @param \Blixt\Storage\Entities\Word $word
-     *
-     * @return \Blixt\Storage\Entities\Word
-     */
-    protected function update(Word $word)
-    {
-        $attributes = $this->getAttributes($word);
-
-        $this->storage->update(static::TABLE, $word->getId(), $attributes);
-
-        return $word;
+        return $this->saveEntity($word);
     }
 
     /**
@@ -120,14 +65,14 @@ class WordRepository implements WordRepositoryInterface
     }
 
     /**
-     * @param \Blixt\Storage\Entities\Word $word
+     * @param \Blixt\Storage\Entities\Entity $entity
      *
      * @return array
      */
-    protected function getAttributes(Word $word)
+    protected function getAttributes(Entity $entity)
     {
         return [
-            static::FIELD_WORD => $word->getWord()
+            static::FIELD_WORD => $entity->getWord()
         ];
     }
 }

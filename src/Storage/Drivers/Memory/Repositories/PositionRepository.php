@@ -2,67 +2,26 @@
 
 namespace Blixt\Storage\Drivers\Memory\Repositories;
 
-use Blixt\Storage\Drivers\Memory\Storage;
+use Blixt\Storage\Entities\Entity;
 use Blixt\Storage\Entities\Position;
 use Blixt\Storage\Repositories\PositionRepository as PositionRepositoryInterface;
 
-class PositionRepository implements PositionRepositoryInterface
+class PositionRepository extends AbstractRepository implements PositionRepositoryInterface
 {
+    const ENTITY = Position::class;
     const TABLE = 'positions';
     const FIELD_OCCURRENCE_ID = 'occurrence_id';
     const FIELD_POSITION = 'position';
 
     /**
-     * @var \Blixt\Storage\Drivers\Memory\Storage
-     */
-    protected $storage;
-
-    /**
-     * PositionRepository constructor.
-     *
-     * @param \Blixt\Storage\Drivers\Memory\Storage $storage
-     */
-    public function __construct(Storage $storage)
-    {
-        $this->storage = $storage;
-    }
-
-    /**
      * @param \Blixt\Storage\Entities\Position $position
      *
      * @return \Blixt\Storage\Entities\Position
+     * @throws \Blixt\Exceptions\StorageException
      */
     public function save(Position $position)
     {
-        return $position->exists() ? $this->update($position) : $this->create($position);
-    }
-
-    /**
-     * @param \Blixt\Storage\Entities\Position $position
-     *
-     * @return \Blixt\Storage\Entities\Position
-     */
-    protected function create(Position $position)
-    {
-        $attributes = $this->getAttributes($position);
-
-        $id = $this->storage->insert(static::TABLE, $attributes);
-
-        return $this->map($id, $attributes);
-    }
-
-    /**
-     * @param \Blixt\Storage\Entities\Position $position
-     *
-     * @return \Blixt\Storage\Entities\Position
-     */
-    protected function update(Position $position)
-    {
-        $attributes = $this->getAttributes($position);
-
-        $this->storage->update(static::TABLE, $position->getId(), $attributes);
-
-        return $position;
+        return $this->saveEntity($position);
     }
 
     /**
@@ -81,15 +40,15 @@ class PositionRepository implements PositionRepositoryInterface
     }
 
     /**
-     * @param \Blixt\Storage\Entities\Position $position
+     * @param \Blixt\Storage\Entities\Entity $entity
      *
      * @return array
      */
-    protected function getAttributes(Position $position)
+    protected function getAttributes(Entity $entity)
     {
         return [
-            static::FIELD_OCCURRENCE_ID => $position->getOccurrenceId(),
-            static::FIELD_POSITION => $position->getPosition()
+            static::FIELD_OCCURRENCE_ID => $entity->getOccurrenceId(),
+            static::FIELD_POSITION => $entity->getPosition()
         ];
     }
 }

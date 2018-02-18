@@ -2,81 +2,34 @@
 
 namespace Blixt\Storage\Drivers\Memory\Repositories;
 
-use Blixt\Storage\Drivers\Memory\Storage;
+use Blixt\Storage\Entities\Entity;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Repositories\SchemaRepository as SchemaRepositoryInterface;
-use Illuminate\Support\Collection;
 
-class SchemaRepository implements SchemaRepositoryInterface
+class SchemaRepository extends AbstractRepository implements SchemaRepositoryInterface
 {
+    const ENTITY = Schema::class;
     const TABLE = 'schemas';
     const FIELD_NAME = 'name';
 
     /**
-     * @var \Blixt\Storage\Drivers\Memory\Storage
-     */
-    protected $storage;
-
-    /**
-     * SchemaRepository constructor.
-     *
-     * @param \Blixt\Storage\Drivers\Memory\Storage $storage
-     */
-    public function __construct(Storage $storage)
-    {
-        $this->storage = $storage;
-    }
-
-    /**
      * @return \Illuminate\Support\Collection
+     * @throws \Blixt\Exceptions\StorageException
      */
     public function all()
     {
-        $results = new Collection();
-
-        foreach ($this->storage->all(static::TABLE) as $key => $row) {
-            $results->put($key, $this->map($key, $row));
-        }
-
-        return $results;
+        return $this->allEntities();
     }
 
     /**
      * @param \Blixt\Storage\Entities\Schema $schema
      *
      * @return \Blixt\Storage\Entities\Schema
+     * @throws \Blixt\Exceptions\StorageException
      */
     public function save(Schema $schema)
     {
-        return $schema->exists() ? $this->update($schema) : $this->create($schema);
-    }
-
-    /**
-     * @param \Blixt\Storage\Entities\Schema $schema
-     *
-     * @return \Blixt\Storage\Entities\Schema
-     */
-    protected function create(Schema $schema)
-    {
-        $attributes = $this->getAttributes($schema);
-
-        $id = $this->storage->insert(static::TABLE, $attributes);
-
-        return $this->map($id, $attributes);
-    }
-
-    /**
-     * @param \Blixt\Storage\Entities\Schema $schema
-     *
-     * @return \Blixt\Storage\Entities\Schema
-     */
-    protected function update(Schema $schema)
-    {
-        $attributes = $this->getAttributes($schema);
-
-        $this->storage->update(static::TABLE, $schema->getId(), $attributes);
-
-        return $schema;
+        return $this->saveEntity($schema);
     }
 
     /**
@@ -94,14 +47,14 @@ class SchemaRepository implements SchemaRepositoryInterface
     }
 
     /**
-     * @param \Blixt\Storage\Entities\Schema $schema
+     * @param \Blixt\Storage\Entities\Entity $entity
      *
      * @return array
      */
-    protected function getAttributes(Schema $schema)
+    protected function getAttributes(Entity $entity)
     {
         return [
-            static::FIELD_NAME => $schema->getName()
+            static::FIELD_NAME => $entity->getName()
         ];
     }
 }

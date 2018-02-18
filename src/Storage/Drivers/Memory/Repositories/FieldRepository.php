@@ -2,68 +2,27 @@
 
 namespace Blixt\Storage\Drivers\Memory\Repositories;
 
-use Blixt\Storage\Drivers\Memory\Storage;
+use Blixt\Storage\Entities\Entity;
 use Blixt\Storage\Entities\Field;
 use Blixt\Storage\Repositories\FieldRepository as FieldRepositoryInterface;
 
-class FieldRepository implements FieldRepositoryInterface
+class FieldRepository extends AbstractRepository implements FieldRepositoryInterface
 {
+    const ENTITY = Field::class;
     const TABLE = 'fields';
     const FIELD_DOCUMENT_ID = 'document_id';
     const FIELD_COLUMN_ID = 'column_id';
     const FIELD_VALUE = 'value';
 
     /**
-     * @var \Blixt\Storage\Drivers\Memory\Storage
-     */
-    protected $storage;
-
-    /**
-     * FieldRepository constructor.
-     *
-     * @param \Blixt\Storage\Drivers\Memory\Storage $storage
-     */
-    public function __construct(Storage $storage)
-    {
-        $this->storage = $storage;
-    }
-
-    /**
      * @param \Blixt\Storage\Entities\Field $field
      *
      * @return \Blixt\Storage\Entities\Field
+     * @throws \Blixt\Exceptions\StorageException
      */
     public function save(Field $field)
     {
-        return $field->exists() ? $this->update($field) : $this->create($field);
-    }
-
-    /**
-     * @param \Blixt\Storage\Entities\Field $field
-     *
-     * @return \Blixt\Storage\Entities\Field
-     */
-    protected function create(Field $field)
-    {
-        $attributes = $this->getAttributes($field);
-
-        $id = $this->storage->insert(static::TABLE, $attributes);
-
-        return $this->map($id, $attributes);
-    }
-
-    /**
-     * @param \Blixt\Storage\Entities\Field $field
-     *
-     * @return \Blixt\Storage\Entities\Field
-     */
-    protected function update(Field $field)
-    {
-        $attributes = $this->getAttributes($field);
-
-        $this->storage->update(static::TABLE, $field->getId(), $attributes);
-
-        return $field;
+        return $this->saveEntity($field);
     }
 
     /**
@@ -83,16 +42,16 @@ class FieldRepository implements FieldRepositoryInterface
     }
 
     /**
-     * @param \Blixt\Storage\Entities\Field $field
+     * @param \Blixt\Storage\Entities\Entity $entity
      *
      * @return array
      */
-    protected function getAttributes(Field $field)
+    protected function getAttributes(Entity $entity)
     {
         return [
-            static::FIELD_DOCUMENT_ID => $field->getDocumentId(),
-            static::FIELD_COLUMN_ID => $field->getColumnId(),
-            static::FIELD_VALUE => $field->getValue()
+            static::FIELD_DOCUMENT_ID => $entity->getDocumentId(),
+            static::FIELD_COLUMN_ID => $entity->getColumnId(),
+            static::FIELD_VALUE => $entity->getValue()
         ];
     }
 }
