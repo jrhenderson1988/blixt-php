@@ -71,6 +71,34 @@ class Storage implements StorageInterface
     }
 
     /**
+     * Create the storage represented by the engine.
+     *
+     * @return bool
+     */
+    public function create()
+    {
+        foreach (self::$tables as $table) {
+            $this->data[$table] = [];
+            $this->keys[$table] = 1;
+        }
+
+        return true;
+    }
+
+    /**
+     * Destroy the storage represented by the engine.
+     *
+     * @return boolean
+     */
+    public function destroy()
+    {
+        $this->data = [];
+        $this->keys = [];
+
+        return true;
+    }
+
+    /**
      * Create a new entry in the data for the given table and return the new key.
      *
      * @param string $table
@@ -171,7 +199,7 @@ class Storage implements StorageInterface
     {
         $this->assertTableExists($table);
 
-        return ++$this->keys[$table];
+        return $this->keys[$table]++;
     }
 
     /**
@@ -184,34 +212,6 @@ class Storage implements StorageInterface
         if (! isset($this->data[$table], $this->keys[$table])) {
             throw new InvalidArgumentException("The table '{$table}' does not exist.");
         }
-    }
-
-    /**
-     * Create the storage represented by the engine.
-     *
-     * @return bool
-     */
-    public function create()
-    {
-        foreach (self::$tables as $table) {
-            $this->data[$table] = [];
-            $this->keys[$table] = 0;
-        }
-
-        return true;
-    }
-
-    /**
-     * Destroy the storage represented by the engine.
-     *
-     * @return boolean
-     */
-    public function destroy()
-    {
-        $this->data = [];
-        $this->keys = [];
-
-        return true;
     }
 
     /**
