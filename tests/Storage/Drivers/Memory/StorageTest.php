@@ -154,6 +154,7 @@ class StorageTest extends TestCase
         $this->storage->update('unknown-table-name', 1, ['name' => 'test']);
     }
 
+    /** @test */
     public function testUpdateChangesOnlyRecordSpecifiedByKey()
     {
         $table = 'schemas';
@@ -181,6 +182,7 @@ class StorageTest extends TestCase
         $this->assertEquals([1 => $first, 2 => $updatedSecond, 3 => $third], $data->getValue($this->storage)[$table]);
     }
 
+    /** @test */
     public function testFindReturnsRecordIdentifiedByKey()
     {
         $table = 'schemas';
@@ -198,6 +200,7 @@ class StorageTest extends TestCase
         $this->assertEquals($third, $this->storage->find($table, 3));
     }
 
+    /** @test */
     public function testGetWhereReturnsMultipleRecordsMatchingCondition()
     {
         $table = 'terms';
@@ -217,6 +220,7 @@ class StorageTest extends TestCase
         $this->assertTrue(in_array($third, $this->storage->getWhere($table, ['schema_id' => 2, 'word_id' => 1])));
     }
 
+    /** @test */
     public function testGetWherePreservesKeysInRecordSet()
     {
         $table = 'terms';
@@ -234,6 +238,7 @@ class StorageTest extends TestCase
         $this->assertEquals([3 => $third], $this->storage->getWhere($table, ['schema_id' => 2, 'word_id' => 1]));
     }
 
+    /** @test */
     public function testGetWhereReturnsEmptyRecordSetWhenNoConditionsMatch()
     {
         $table = 'terms';
@@ -252,6 +257,7 @@ class StorageTest extends TestCase
         $this->assertEmpty($this->storage->getWhere($table, ['schema_id' => 3, 'word_id' => 1]));
     }
 
+    /** @test */
     public function testAllReturnsEntireRecordSet()
     {
         $table = 'terms';
@@ -267,6 +273,7 @@ class StorageTest extends TestCase
         $this->assertEquals([1 => $first, 2 => $second, 3 => $third], $this->storage->all($table));
     }
 
+    /** @test */
     public function testNextKeyReturnsAutoincrementingIntegers()
     {
         $this->storage->create();
@@ -279,6 +286,7 @@ class StorageTest extends TestCase
         $this->assertEquals(3, $nextKey->invoke($this->storage, 'schemas'));
     }
 
+    /** @test */
     public function testNextKeyUsesSeparateKeyStoreForEachTable()
     {
         $this->storage->create();
@@ -301,6 +309,7 @@ class StorageTest extends TestCase
         $this->assertEquals(4, $nextKey->invoke($this->storage, 'schemas'));
     }
 
+    /** @test */
     public function testColumnsReturnsColumnRepository()
     {
         $this->storage->create();
@@ -309,6 +318,7 @@ class StorageTest extends TestCase
         $this->assertInstanceOf(ColumnRepository::class, $this->storage->columns());
     }
 
+    /** @test */
     public function testColumnsReturnsSameColumnRepositoryEachTime()
     {
         $this->storage->create();
@@ -322,6 +332,7 @@ class StorageTest extends TestCase
         $this->assertSame($second, $third);
     }
 
+    /** @test */
     public function testDocumentsReturnsDocumentRepository()
     {
         $this->storage->create();
@@ -330,6 +341,7 @@ class StorageTest extends TestCase
         $this->assertInstanceOf(DocumentRepository::class, $this->storage->documents());
     }
 
+    /** @test */
     public function testDocumentsReturnsSameDocumentRepositoryEachTime()
     {
         $this->storage->create();
@@ -343,6 +355,7 @@ class StorageTest extends TestCase
         $this->assertSame($second, $third);
     }
 
+    /** @test */
     public function testFieldsReturnsFieldsRepository()
     {
         $this->storage->create();
@@ -351,6 +364,7 @@ class StorageTest extends TestCase
         $this->assertInstanceOf(FieldRepository::class, $this->storage->fields());
     }
 
+    /** @test */
     public function testFieldsReturnsSameFieldRepositoryEachTime()
     {
         $this->storage->create();
@@ -364,6 +378,7 @@ class StorageTest extends TestCase
         $this->assertSame($second, $third);
     }
 
+    /** @test */
     public function testOccurrencesReturnsOccurrencesRepository()
     {
         $this->storage->create();
@@ -372,6 +387,7 @@ class StorageTest extends TestCase
         $this->assertInstanceOf(OccurrenceRepository::class, $this->storage->occurrences());
     }
 
+    /** @test */
     public function testOccurrencesReturnsSameOccurrenceRepositoryEachTime()
     {
         $this->storage->create();
@@ -385,6 +401,7 @@ class StorageTest extends TestCase
         $this->assertSame($second, $third);
     }
 
+    /** @test */
     public function testPositionsReturnsPositionsRepository()
     {
         $this->storage->create();
@@ -393,6 +410,7 @@ class StorageTest extends TestCase
         $this->assertInstanceOf(PositionRepository::class, $this->storage->positions());
     }
 
+    /** @test */
     public function testPositionsReturnsSamePositionRepositoryEachTime()
     {
         $this->storage->create();
@@ -406,6 +424,7 @@ class StorageTest extends TestCase
         $this->assertSame($second, $third);
     }
 
+    /** @test */
     public function testSchemasReturnsSchemasRepository()
     {
         $this->storage->create();
@@ -414,6 +433,7 @@ class StorageTest extends TestCase
         $this->assertInstanceOf(SchemaRepository::class, $this->storage->schemas());
     }
 
+    /** @test */
     public function testSchemasReturnsSameSchemaRepositoryEachTime()
     {
         $this->storage->create();
@@ -427,6 +447,7 @@ class StorageTest extends TestCase
         $this->assertSame($second, $third);
     }
 
+    /** @test */
     public function testTermsReturnsTermsRepository()
     {
         $this->storage->create();
@@ -435,6 +456,7 @@ class StorageTest extends TestCase
         $this->assertInstanceOf(TermRepository::class, $this->storage->terms());
     }
 
+    /** @test */
     public function testTermsReturnsSameTermRepositoryEachTime()
     {
         $this->storage->create();
@@ -448,6 +470,7 @@ class StorageTest extends TestCase
         $this->assertSame($second, $third);
     }
 
+    /** @test */
     public function testWordsReturnsWordsRepository()
     {
         $this->storage->create();
@@ -456,6 +479,7 @@ class StorageTest extends TestCase
         $this->assertInstanceOf(WordRepository::class, $this->storage->words());
     }
 
+    /** @test */
     public function testWordsReturnsSameWordRepositoryEachTime()
     {
         $this->storage->create();
