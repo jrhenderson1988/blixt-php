@@ -64,4 +64,30 @@ class Occurrence extends Entity
 
         return $this;
     }
+
+    /**
+     * Create a new occurrence from the set of attributes given.
+     *
+     * @param array|object $attributes
+     *
+     * @return \Blixt\Storage\Entities\Occurrence
+     */
+    public static function make($attributes)
+    {
+        $occurrence = new static();
+
+        foreach ((array) $attributes as $key => $value) {
+            if (in_array($key, ['id', 'setId'])) {
+                $occurrence->setId($value);
+            } elseif (in_array($key, ['field_id', 'fieldId', 'setFieldId'])) {
+                $occurrence->setFieldId($value);
+            } elseif (in_array($key, ['term_id', 'termId', 'setTermId'])) {
+                $occurrence->setTermId($value);
+            } elseif (in_array($key, ['frequency' ,'setFrequency'])) {
+                $occurrence->setFrequency($value);
+            }
+        }
+
+        return $occurrence;
+    }
 }

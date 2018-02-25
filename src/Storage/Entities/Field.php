@@ -64,4 +64,30 @@ class Field extends Entity
 
         return $this;
     }
+
+    /**
+     * Create a new field from the set of attributes given.
+     *
+     * @param array|object $attributes
+     *
+     * @return \Blixt\Storage\Entities\Field
+     */
+    public static function make($attributes)
+    {
+        $field = new static();
+
+        foreach ((array) $attributes as $key => $value) {
+            if (in_array($key, ['id', 'setId'])) {
+                $field->setId($value);
+            } elseif (in_array($key, ['document_id', 'documentId', 'setDocumentId'])) {
+                $field->setDocumentId($value);
+            } elseif (in_array($key, ['column_id', 'columnId', 'setColumnId'])) {
+                $field->setColumnId($value);
+            } elseif (in_array($key, ['value' ,'setValue'])) {
+                $field->setValue($value);
+            }
+        }
+
+        return $field;
+    }
 }

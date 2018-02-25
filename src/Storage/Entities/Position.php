@@ -61,4 +61,28 @@ class Position extends Entity
 
         return $this;
     }
+
+    /**
+     * Create a new position from the set of attributes given.
+     *
+     * @param array|object $attributes
+     *
+     * @return \Blixt\Storage\Entities\Position
+     */
+    public static function make($attributes)
+    {
+        $position = new static();
+
+        foreach ((array) $attributes as $key => $value) {
+            if (in_array($key, ['id', 'setId'])) {
+                $position->setId($value);
+            } elseif (in_array($key, ['occurrence_id', 'occurrenceId', 'setOccurrenceId'])) {
+                $position->setOccurrenceId($value);
+            } elseif (in_array($key, ['position', 'setPosition'])) {
+                $position->setPosition($value);
+            }
+        }
+
+        return $position;
+    }
 }

@@ -55,4 +55,26 @@ class Word extends Entity
 
         return $this;
     }
+
+    /**
+     * Create a new word from the set of attributes given.
+     *
+     * @param array|object $attributes
+     *
+     * @return \Blixt\Storage\Entities\Word
+     */
+    public static function make($attributes)
+    {
+        $word = new static();
+
+        foreach ((array) $attributes as $key => $value) {
+            if (in_array($key, ['id', 'setId'])) {
+                $word->setId($value);
+            } elseif (in_array($key, ['word', 'setWord'])) {
+                $word->setWord($value);
+            }
+        }
+
+        return $word;
+    }
 }

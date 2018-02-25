@@ -99,4 +99,26 @@ class Schema extends Entity
 
         return $this;
     }
+
+    /**
+     * Create a new schema from the set of attributes given.
+     *
+     * @param array|object $attributes
+     *
+     * @return \Blixt\Storage\Entities\Schema
+     */
+    public static function make($attributes)
+    {
+        $schema = new static();
+
+        foreach ((array) $attributes as $key => $value) {
+            if (in_array($key, ['id', 'setId'])) {
+                $schema->setId($value);
+            } elseif (in_array($key, ['name', 'setName'])) {
+                $schema->setName($value);
+            }
+        }
+
+        return $schema;
+    }
 }

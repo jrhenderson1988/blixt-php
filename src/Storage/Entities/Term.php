@@ -64,4 +64,30 @@ class Term extends Entity
 
         return $this;
     }
+
+    /**
+     * Create a new term from the set of attributes given.
+     *
+     * @param array|object $attributes
+     *
+     * @return \Blixt\Storage\Entities\Term
+     */
+    public static function make($attributes)
+    {
+        $term = new static();
+
+        foreach ((array) $attributes as $key => $value) {
+            if (in_array($key, ['id', 'setId'])) {
+                $term->setId($value);
+            } elseif (in_array($key, ['schema_id', 'schemaId', 'setSchemaId'])) {
+                $term->setSchemaId($value);
+            } elseif (in_array($key, ['word_id', 'wordId', 'setWordId'])) {
+                $term->setWordId($value);
+            } elseif (in_array($key, ['field_count', 'fieldCount', 'setFieldCount'])) {
+                $term->setFieldCount($value);
+            }
+        }
+
+        return $term;
+    }
 }
