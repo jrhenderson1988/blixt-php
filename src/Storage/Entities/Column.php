@@ -143,32 +143,20 @@ class Column extends Entity
 
         return $this;
     }
-
+    
     /**
-     * Create a new column from the set of attributes given.
+     * Mappings of the methods to sets of keys. That method will be used to set a property identified by one of the keys
+     * when using the make method to create an instance of the entity.
      *
-     * @param array|object $attributes
-     *
-     * @return \Blixt\Storage\Entities\Column
+     * @return array
      */
-    public static function make($attributes)
+    public static function getAttributeMappings()
     {
-        $column = new static();
-
-        foreach ((array) $attributes as $key => $value) {
-            if (in_array($key, ['id', 'setId'])) {
-                $column->setId($value);
-            } elseif (in_array($key, ['schema_id', 'schemaId', 'setSchemaId'])) {
-                $column->setSchemaId($value);
-            } elseif (in_array($key, ['name', 'setName'])) {
-                $column->setName($value);
-            } elseif (in_array($key, ['indexed', 'is_indexed', 'isIndexed', 'setIndexed'])) {
-                $column->setIndexed($value);
-            } elseif (in_array($key, ['stored', 'is_stored', 'isStored', 'setStored'])) {
-                $column->setStored($value);
-            }
-        }
-
-        return $column;
+        return array_merge(parent::getAttributeMappings(), [
+            'setSchemaId' => ['schema_id', 'schemaId', 'setSchemaId'],
+            'setName' => ['name', 'setName'],
+            'setIndexed' => ['indexed', 'is_indexed', 'isIndexed', 'setIndexed'],
+            'setStored' => ['stored', 'is_stored', 'isStored', 'setStored']
+        ]);
     }
 }

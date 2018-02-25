@@ -63,26 +63,16 @@ class Position extends Entity
     }
 
     /**
-     * Create a new position from the set of attributes given.
+     * Mappings of the methods to sets of keys. That method will be used to set a property identified by one of the keys
+     * when using the make method to create an instance of the entity.
      *
-     * @param array|object $attributes
-     *
-     * @return \Blixt\Storage\Entities\Position
+     * @return array
      */
-    public static function make($attributes)
+    public static function getAttributeMappings()
     {
-        $position = new static();
-
-        foreach ((array) $attributes as $key => $value) {
-            if (in_array($key, ['id', 'setId'])) {
-                $position->setId($value);
-            } elseif (in_array($key, ['occurrence_id', 'occurrenceId', 'setOccurrenceId'])) {
-                $position->setOccurrenceId($value);
-            } elseif (in_array($key, ['position', 'setPosition'])) {
-                $position->setPosition($value);
-            }
-        }
-
-        return $position;
+        return array_merge(parent::getAttributeMappings(), [
+            'setOccurrenceId' => ['occurrence_id', 'occurrenceId', 'setOccurrenceId'],
+            'setPosition' => ['position', 'setPosition']
+        ]);
     }
 }

@@ -65,4 +65,22 @@ class FieldTest extends TestCase
         $field = new Field(1, 2, 3);
         $this->assertNull($field->getValue());
     }
+
+    /** @test */
+    public function testMakeMethod()
+    {
+        $attributes = ['id' => 1, 'document_id' => 1, 'column_id' => 1, 'value' => 'test'];
+        $field = Field::make($attributes);
+        $this->assertSame(1, $field->getId());
+        $this->assertSame(1, $field->getDocumentId());
+        $this->assertSame(1, $field->getColumnId());
+        $this->assertSame('test', $field->getValue());
+
+        $attributes = ['value' => 'test'];
+        $field = Field::make($attributes);
+        $this->assertSame('test', $field->getValue());
+        $this->assertNull($field->getId());
+        $this->assertNull($field->getDocumentId());
+        $this->assertNull($field->getColumnId());
+    }
 }

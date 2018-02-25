@@ -64,4 +64,17 @@ class SchemaTest extends TestCase
         }
     }
 
+    /** @test */
+    public function testMakeMethod()
+    {
+        $attributes = ['id' => 1, 'name' => 'test'];
+        $schema = Schema::make($attributes);
+        $this->assertSame(1, $schema->getId());
+        $this->assertSame('test', $schema->getName());
+
+        $attributes = ['name' => 'test'];
+        $schema = Schema::make($attributes);
+        $this->assertSame('test', $schema->getName());
+        $this->assertNull($schema->getId());
+    }
 }

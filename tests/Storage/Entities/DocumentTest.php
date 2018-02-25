@@ -48,4 +48,19 @@ class DocumentTest extends TestCase
         $this->assertSame('2', $test->getKey());
     }
 
+    /** @test */
+    public function testMakeMethod()
+    {
+        $attributes = ['id' => 1, 'schema_id' => 1, 'key' => 'test'];
+        $document = Document::make($attributes);
+        $this->assertSame(1, $document->getId());
+        $this->assertSame(1, $document->getSchemaId());
+        $this->assertSame('test', $document->getKey());
+
+        $attributes = ['key' => 'test'];
+        $document = Document::make($attributes);
+        $this->assertSame('test', $document->getKey());
+        $this->assertNull($document->getId());
+        $this->assertNull($document->getSchemaId());
+    }
 }

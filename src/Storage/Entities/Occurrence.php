@@ -66,28 +66,17 @@ class Occurrence extends Entity
     }
 
     /**
-     * Create a new occurrence from the set of attributes given.
+     * Mappings of the methods to sets of keys. That method will be used to set a property identified by one of the keys
+     * when using the make method to create an instance of the entity.
      *
-     * @param array|object $attributes
-     *
-     * @return \Blixt\Storage\Entities\Occurrence
+     * @return array
      */
-    public static function make($attributes)
+    public static function getAttributeMappings()
     {
-        $occurrence = new static();
-
-        foreach ((array) $attributes as $key => $value) {
-            if (in_array($key, ['id', 'setId'])) {
-                $occurrence->setId($value);
-            } elseif (in_array($key, ['field_id', 'fieldId', 'setFieldId'])) {
-                $occurrence->setFieldId($value);
-            } elseif (in_array($key, ['term_id', 'termId', 'setTermId'])) {
-                $occurrence->setTermId($value);
-            } elseif (in_array($key, ['frequency' ,'setFrequency'])) {
-                $occurrence->setFrequency($value);
-            }
-        }
-
-        return $occurrence;
+        return array_merge(parent::getAttributeMappings(), [
+            'setFieldId' => ['field_id', 'fieldId', 'setFieldId'],
+            'setTermId' => ['term_id', 'termId', 'setTermId'],
+            'setFrequency' => ['frequency', 'setFrequency']
+        ]);
     }
 }

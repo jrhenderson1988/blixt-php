@@ -47,4 +47,19 @@ class PositionTest extends TestCase
         $this->assertSame(1, $test->getPosition());
     }
 
+    /** @test */
+    public function testMakeMethod()
+    {
+        $attributes = ['id' => 1, 'occurrence_id' => 1, 'position' => 1];
+        $position = Position::make($attributes);
+        $this->assertSame(1, $position->getId());
+        $this->assertSame(1, $position->getOccurrenceId());
+        $this->assertSame(1, $position->getPosition());
+
+        $attributes = ['position' => '1'];
+        $position = Position::make($attributes);
+        $this->assertSame(1, $position->getPosition());
+        $this->assertNull($position->getId());
+        $this->assertNull($position->getOccurrenceId());
+    }
 }

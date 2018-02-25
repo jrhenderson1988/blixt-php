@@ -66,28 +66,17 @@ class Field extends Entity
     }
 
     /**
-     * Create a new field from the set of attributes given.
+     * Mappings of the methods to sets of keys. That method will be used to set a property identified by one of the keys
+     * when using the make method to create an instance of the entity.
      *
-     * @param array|object $attributes
-     *
-     * @return \Blixt\Storage\Entities\Field
+     * @return array
      */
-    public static function make($attributes)
+    public static function getAttributeMappings()
     {
-        $field = new static();
-
-        foreach ((array) $attributes as $key => $value) {
-            if (in_array($key, ['id', 'setId'])) {
-                $field->setId($value);
-            } elseif (in_array($key, ['document_id', 'documentId', 'setDocumentId'])) {
-                $field->setDocumentId($value);
-            } elseif (in_array($key, ['column_id', 'columnId', 'setColumnId'])) {
-                $field->setColumnId($value);
-            } elseif (in_array($key, ['value' ,'setValue'])) {
-                $field->setValue($value);
-            }
-        }
-
-        return $field;
+        return array_merge(parent::getAttributeMappings(), [
+            'setDocumentId' => ['document_id', 'documentId', 'setDocumentId'],
+            'setColumnId' => ['column_id', 'columnId', 'setColumnId'],
+            'setValue' => ['value', 'setValue']
+        ]);
     }
 }

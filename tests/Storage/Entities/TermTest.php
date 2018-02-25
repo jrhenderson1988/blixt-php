@@ -54,4 +54,21 @@ class TermTest extends TestCase
         $this->assertSame(1000, $test->getFieldCount());
     }
 
+    /** @test */
+    public function testMakeMethod()
+    {
+        $attributes = ['id' => 1, 'schema_id' => 1, 'word_id' => 1, 'field_count' => 1];
+        $term = Term::make($attributes);
+        $this->assertSame(1, $term->getId());
+        $this->assertSame(1, $term->getSchemaId());
+        $this->assertSame(1, $term->getWordId());
+        $this->assertSame(1, $term->getFieldCount());
+
+        $attributes = ['field_count' => 2];
+        $term = Term::make($attributes);
+        $this->assertSame(2, $term->getFieldCount());
+        $this->assertNull($term->getId());
+        $this->assertNull($term->getSchemaId());
+        $this->assertNull($term->getWordId());
+    }
 }

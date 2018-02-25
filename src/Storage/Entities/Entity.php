@@ -62,4 +62,38 @@ abstract class Entity
     {
         return $this->getId() !== null;
     }
+
+    /**
+     * Make an instance of the static entity, given a set of attributes.
+     *
+     * @param array|object $attributes
+     *
+     * @return static
+     */
+    public static function make($attributes)
+    {
+        $word = new static();
+
+        foreach ((array) $attributes as $key => $value) {
+            foreach (static::getAttributeMappings() as $method => $mappings) {
+                if (is_array($mappings) && in_array($key, $mappings) || $key == $mappings) {
+                    $word->$method($value);
+                }
+            }
+        }
+
+        return $word;
+    }
+
+    /**
+     * The default set of attribute mappings, maps the fields 'id' and 'setId' to the setId() method.
+     *
+     * @return array
+     */
+    protected static function getAttributeMappings()
+    {
+        return [
+            'setId' => ['id', 'setId']
+        ];
+    }
 }

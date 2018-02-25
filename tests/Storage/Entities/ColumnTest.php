@@ -61,4 +61,23 @@ class ColumnTest extends TestCase
         $this->assertSame(true, $test->isStored());
     }
 
+    /** @test */
+    public function testMakeMethod()
+    {
+        $attributes = ['id' => 1, 'schema_id' => 1, 'name' => 'test', 'indexed' => 1, 'stored' => false];
+        $column = Column::make($attributes);
+        $this->assertSame(1, $column->getId());
+        $this->assertSame(1, $column->getSchemaId());
+        $this->assertSame('test', $column->getName());
+        $this->assertSame(true, $column->isIndexed());
+        $this->assertSame(false, $column->isStored());
+
+        $attributes = ['name' => 'test'];
+        $column = Column::make($attributes);
+        $this->assertSame('test', $column->getName());
+        $this->assertNull($column->getId());
+        $this->assertNull($column->getSchemaId());
+        $this->assertNull($column->isIndexed());
+        $this->assertNull($column->isStored());
+    }
 }

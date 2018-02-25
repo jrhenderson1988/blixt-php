@@ -57,24 +57,15 @@ class Word extends Entity
     }
 
     /**
-     * Create a new word from the set of attributes given.
+     * Mappings of the methods to sets of keys. That method will be used to set a property identified by one of the keys
+     * when using the make method to create an instance of the entity.
      *
-     * @param array|object $attributes
-     *
-     * @return \Blixt\Storage\Entities\Word
+     * @return array
      */
-    public static function make($attributes)
+    public static function getAttributeMappings()
     {
-        $word = new static();
-
-        foreach ((array) $attributes as $key => $value) {
-            if (in_array($key, ['id', 'setId'])) {
-                $word->setId($value);
-            } elseif (in_array($key, ['word', 'setWord'])) {
-                $word->setWord($value);
-            }
-        }
-
-        return $word;
+        return array_merge(parent::getAttributeMappings(), [
+            'word' => ['word', 'setWord']
+        ]);
     }
 }

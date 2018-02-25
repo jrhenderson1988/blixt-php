@@ -42,4 +42,17 @@ class WordTest extends TestCase
         $this->assertSame('1', $test->getWord());
     }
 
+    /** @test */
+    public function testMakeMethod()
+    {
+        $attributes = ['id' => 1, 'word' => 'test'];
+        $word = Word::make($attributes);
+        $this->assertSame(1, $word->getId());
+        $this->assertSame('test', $word->getWord());
+
+        $attributes = ['word' => 'testing'];
+        $word = Word::make($attributes);
+        $this->assertSame('testing', $word->getWord());
+        $this->assertNull($word->getId());
+    }
 }

@@ -54,4 +54,21 @@ class OccurrenceTest extends TestCase
         $this->assertSame(10, $test->getFrequency());
     }
 
+    /** @test */
+    public function testMakeMethod()
+    {
+        $attributes = ['id' => 1, 'term_id' => 1, 'field_id' => 1, 'frequency' => 1];
+        $occurrence = Occurrence::make($attributes);
+        $this->assertSame(1, $occurrence->getId());
+        $this->assertSame(1, $occurrence->getTermId());
+        $this->assertSame(1, $occurrence->getFieldId());
+        $this->assertSame(1, $occurrence->getFrequency());
+
+        $attributes = ['frequency' => '1'];
+        $occurrence = Occurrence::make($attributes);
+        $this->assertSame(1, $occurrence->getFrequency());
+        $this->assertNull($occurrence->getId());
+        $this->assertNull($occurrence->getTermId());
+        $this->assertNull($occurrence->getFieldId());
+    }
 }
