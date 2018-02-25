@@ -2,6 +2,8 @@
 
 namespace Blixt\Storage\Entities\Concerns;
 
+use Blixt\Storage\Entities\Column;
+
 trait BelongsToColumn
 {
     /**
@@ -22,7 +24,9 @@ trait BelongsToColumn
      */
     public function setColumnId($columnId)
     {
-        $this->columnId = $columnId !== null ? intval($columnId) : null;
+        $this->columnId = $columnId !== null
+            ? ($columnId instanceof Column ? $columnId->getId() : intval($columnId))
+            : null;
     }
 
     /**

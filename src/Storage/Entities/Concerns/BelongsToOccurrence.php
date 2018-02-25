@@ -2,6 +2,8 @@
 
 namespace Blixt\Storage\Entities\Concerns;
 
+use Blixt\Storage\Entities\Occurrence;
+
 trait BelongsToOccurrence
 {
     /**
@@ -22,7 +24,9 @@ trait BelongsToOccurrence
      */
     public function setOccurrenceId($occurrenceId)
     {
-        $this->occurrenceId = $occurrenceId !== null ? intval($occurrenceId) : null;
+        $this->occurrenceId = $occurrenceId !== null
+            ? ($occurrenceId instanceof Occurrence ? $occurrenceId->getId() : intval($occurrenceId))
+            : null;
     }
 
     /**

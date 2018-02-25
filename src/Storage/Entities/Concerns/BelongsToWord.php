@@ -2,6 +2,8 @@
 
 namespace Blixt\Storage\Entities\Concerns;
 
+use Blixt\Storage\Entities\Word;
+
 trait BelongsToWord
 {
     /**
@@ -22,7 +24,9 @@ trait BelongsToWord
      */
     public function setWordId($wordId)
     {
-        $this->wordId = $wordId !== null ? intval($wordId) : null;
+        $this->wordId = $wordId !== null
+            ? ($wordId instanceof Word ? $wordId->getId() : intval($wordId))
+            : null;
     }
 
     /**

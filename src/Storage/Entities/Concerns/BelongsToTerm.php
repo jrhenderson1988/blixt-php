@@ -2,6 +2,8 @@
 
 namespace Blixt\Storage\Entities\Concerns;
 
+use Blixt\Storage\Entities\Term;
+
 trait BelongsToTerm
 {
     /**
@@ -22,7 +24,9 @@ trait BelongsToTerm
      */
     public function setTermId($termId)
     {
-        $this->termId = $termId !== null ? intval($termId) : null;
+        $this->termId = $termId !== null
+            ? ($termId instanceof Term ? $termId->getId() : intval($termId))
+            : null;
     }
 
     /**

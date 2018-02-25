@@ -2,6 +2,8 @@
 
 namespace Blixt\Storage\Entities\Concerns;
 
+use Blixt\Storage\Entities\Document;
+
 trait BelongsToDocument
 {
     /**
@@ -22,7 +24,9 @@ trait BelongsToDocument
      */
     public function setDocumentId($documentId)
     {
-        $this->documentId = $documentId !== null ? intval($documentId) : null;
+        $this->documentId = $documentId !== null
+            ? ($documentId instanceof Document ? $documentId->getId() : intval($documentId))
+            : null;
     }
 
     /**

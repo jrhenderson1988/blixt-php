@@ -2,6 +2,8 @@
 
 namespace Blixt\Storage\Entities\Concerns;
 
+use Blixt\Storage\Entities\Schema;
+
 trait BelongsToSchema
 {
     /**
@@ -22,7 +24,9 @@ trait BelongsToSchema
      */
     public function setSchemaId($schemaId)
     {
-        $this->schemaId = $schemaId !== null ? intval($schemaId) : null;
+        $this->schemaId = $schemaId !== null
+            ? ($schemaId instanceof Schema ? $schemaId->getId() : intval($schemaId))
+            : null;
     }
 
     /**
