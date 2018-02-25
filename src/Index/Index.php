@@ -10,6 +10,7 @@ use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Document;
 use Blixt\Storage\Entities\Field;
 use Blixt\Storage\Entities\Occurrence;
+use Blixt\Storage\Entities\Position;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Entities\Term;
 use Blixt\Storage\Entities\Word;
@@ -111,7 +112,11 @@ class Index
      */
     protected function createDocument(Indexable $indexable)
     {
-        $document = $this->storage->documents()->create($this->schema, $indexable->getKey());
+        $document = $this->storage->documents()->save(
+            (new Document())
+                ->schemaId($this->schema->getId())
+                ->key($indexable->getKey())
+        );
 
         $this->schema->getColumns()->each(function (Column $column) use ($document, $indexable) {
             $this->createField(
@@ -135,10 +140,12 @@ class Index
      */
     protected function createField(Document $document, Column $column, $content)
     {
-        $field = $this->storage->fields()->create(
-            $document,
-            $column->getId(),
-            $column->isStored() ? $content : null
+
+        $field = $this->storage->fields()->save(
+            (new Field())
+                ->documentId($document->getId())
+                ->columnId($column->getId())
+                ->value($column->isStored() ? $content : null)
         );
 
         if ($column->isIndexed()) {
@@ -211,7 +218,9 @@ class Index
     {
         $word = $this->storage->words()->findByWord($stem);
 
-        return $word ?: $this->storage->words()->create($stem);
+        return $word ?: $this->storage->words()->save(
+            (new Word())->word($stem)
+        );
     }
 
     /**
@@ -225,7 +234,12 @@ class Index
     {
         $term = $this->storage->terms()->findBySchemaAndWord($this->schema, $word);
 
-        return $term ?: $this->storage->terms()->create($this->schema, $word, 0);
+        return $term ?: $this->storage->terms()->save(
+            (new Term())
+                ->wordId($word->getId())
+                ->schemaId($this->schema->getId())
+                ->fieldCount(0)
+        );
     }
 
 //    /**
@@ -295,7 +309,12 @@ class Index
      */
     protected function createOccurrence(Field $field, Term $term, $frequency)
     {
-        return $this->storage->occurrences()->create($field, $term, $frequency);
+        return $this->storage->occurrences()->save(
+            (new Occurrence())
+                ->fieldId($field->getId())
+                ->termId($term->getId())
+                ->frequency($frequency)
+        );
     }
 
     /**
@@ -306,7 +325,11 @@ class Index
      */
     protected function createPosition(Occurrence $occurrence, $position)
     {
-        return $this->storage->positions()->create($occurrence, $position);
+        return $this->storage->positions()->save(
+            (new Position())
+                ->occurrenceId($occurrence->getId())
+                ->position($position)
+        );
     }
 
 
