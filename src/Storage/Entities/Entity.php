@@ -36,6 +36,24 @@ abstract class Entity
     }
 
     /**
+     * Fluent getter/setter for id.
+     *
+     * @param int|null|mixed $id
+     *
+     * @return $this|int|null
+     */
+    public function id($id = null)
+    {
+        if (func_num_args() === 0) {
+            return $this->getId();
+        }
+
+        $this->setId($id);
+
+        return $this;
+    }
+
+    /**
      * Tell if this entity exists, that is, whether its ID property is not null.
      *
      * @return bool

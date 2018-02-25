@@ -2,12 +2,11 @@
 
 namespace Blixt\Storage\Entities;
 
+use Blixt\Storage\Entities\Concerns\BelongsToOccurrence;
+
 class Position extends Entity
 {
-    /**
-     * @var int|null
-     */
-    protected $occurrenceId;
+    use BelongsToOccurrence;
 
     /**
      * @var int|null
@@ -32,22 +31,6 @@ class Position extends Entity
     /**
      * @return int|null
      */
-    public function getOccurrenceId()
-    {
-        return $this->occurrenceId;
-    }
-
-    /**
-     * @param int|null|mixed $occurrenceId
-     */
-    public function setOccurrenceId($occurrenceId)
-    {
-        $this->occurrenceId = $occurrenceId !== null ? intval($occurrenceId) : null;
-    }
-
-    /**
-     * @return int|null
-     */
     public function getPosition()
     {
         return $this->position;
@@ -59,5 +42,23 @@ class Position extends Entity
     public function setPosition($position)
     {
         $this->position = $position !== null ? intval($position) : null;
+    }
+
+    /**
+     * Fluent getter/setter for positon.
+     *
+     * @param int|null|mixed $position
+     *
+     * @return $this|int|null
+     */
+    public function position($position = null)
+    {
+        if (func_num_args() === 0) {
+            return $this->getPosition();
+        }
+
+        $this->setPosition($position);
+
+        return $this;
     }
 }

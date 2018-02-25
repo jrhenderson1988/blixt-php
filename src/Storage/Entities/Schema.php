@@ -47,6 +47,24 @@ class Schema extends Entity
     }
 
     /**
+     * Fluent getter/setter for name.
+     *
+     * @param string|null|mixed $name
+     *
+     * @return $this|null|string
+     */
+    public function name($name = null)
+    {
+        if (func_num_args() === 0) {
+            return $this->getName();
+        }
+
+        $this->setName($name);
+
+        return $this;
+    }
+
+    /**
      * @param \Illuminate\Support\Collection $columns
      */
     public function setColumns(Collection $columns)
@@ -62,5 +80,23 @@ class Schema extends Entity
     public function getColumns()
     {
         return $this->columns;
+    }
+
+    /**
+     * Fluent getter/setter for columns.
+     *
+     * @param \Illuminate\Support\Collection|null $columns
+     *
+     * @return $this|\Illuminate\Support\Collection|null
+     */
+    public function column(Collection $columns = null)
+    {
+        if (func_num_args() === 0) {
+            return $this->getColumns();
+        }
+
+        $this->setColumns($columns);
+
+        return $this;
     }
 }

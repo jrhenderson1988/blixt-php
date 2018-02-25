@@ -37,4 +37,22 @@ class Word extends Entity
     {
         $this->word = $word !== null ? strval($word) : null;
     }
+
+    /**
+     * Fluent getter/setter for word.
+     *
+     * @param string|null|mixed $word
+     *
+     * @return $this|null|string
+     */
+    public function word($word = null)
+    {
+        if (func_num_args() === 0) {
+            return $this->getWord();
+        }
+
+        $this->setWord($word);
+
+        return $this;
+    }
 }

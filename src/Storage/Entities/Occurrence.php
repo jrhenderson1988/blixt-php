@@ -2,17 +2,12 @@
 
 namespace Blixt\Storage\Entities;
 
+use Blixt\Storage\Entities\Concerns\BelongsToField;
+use Blixt\Storage\Entities\Concerns\BelongsToTerm;
+
 class Occurrence extends Entity
 {
-    /**
-     * @var int|null
-     */
-    protected $fieldId;
-
-    /**
-     * @var int|null
-     */
-    protected $termId;
+    use BelongsToField, BelongsToTerm;
 
     /**
      * @var int|null
@@ -39,38 +34,6 @@ class Occurrence extends Entity
     /**
      * @return int|null
      */
-    public function getFieldId()
-    {
-        return $this->fieldId;
-    }
-
-    /**
-     * @param int|null|mixed $fieldId
-     */
-    public function setFieldId($fieldId)
-    {
-        $this->fieldId = $fieldId !== null ? intval($fieldId) : null;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getTermId()
-    {
-        return $this->termId;
-    }
-
-    /**
-     * @param int|null|mixed $termId
-     */
-    public function setTermId($termId)
-    {
-        $this->termId = $termId !== null ? intval($termId) : null;
-    }
-
-    /**
-     * @return int|null
-     */
     public function getFrequency()
     {
         return $this->frequency;
@@ -82,5 +45,23 @@ class Occurrence extends Entity
     public function setFrequency($frequency)
     {
         $this->frequency = $frequency !== null ? intval($frequency) : null;
+    }
+
+    /**
+     * Fluent getter/setter for frequency.
+     *
+     * @param int|null|mixed $frequency
+     *
+     * @return $this|int|null
+     */
+    public function frequency($frequency = null)
+    {
+        if (func_num_args() === 0) {
+            return $this->getFrequency();
+        }
+
+        $this->setFrequency($frequency);
+
+        return $this;
     }
 }

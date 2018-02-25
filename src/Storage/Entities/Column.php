@@ -2,12 +2,11 @@
 
 namespace Blixt\Storage\Entities;
 
+use Blixt\Storage\Entities\Concerns\BelongsToSchema;
+
 class Column extends Entity
 {
-    /**
-     * @var int|null
-     */
-    protected $schemaId;
+    use BelongsToSchema;
 
     /**
      * @var string|null
@@ -44,22 +43,6 @@ class Column extends Entity
     }
 
     /**
-     * @return int|null
-     */
-    public function getSchemaId()
-    {
-        return $this->schemaId;
-    }
-
-    /**
-     * @param int|null|mixed $schemaId
-     */
-    public function setSchemaId($schemaId)
-    {
-        $this->schemaId = $schemaId !== null ? intval($schemaId) : null;
-    }
-
-    /**
      * @return string|null
      */
     public function getName()
@@ -73,6 +56,24 @@ class Column extends Entity
     public function setName($name)
     {
         $this->name = $name !== null ? strval($name) : null;
+    }
+
+    /**
+     * Fluent getter/setter for name.
+     *
+     * @param string|null|mixed $name
+     *
+     * @return $this|null|string
+     */
+    public function name($name = null)
+    {
+        if (func_num_args() === 0) {
+            return $this->getName();
+        }
+
+        $this->setName($name);
+
+        return $this;
     }
 
     /**
@@ -92,6 +93,24 @@ class Column extends Entity
     }
 
     /**
+     * Fluent getter/setter for isIndexed.
+     *
+     * @param bool|null|mixed $indexed
+     *
+     * @return $this|bool|null
+     */
+    public function indexed($indexed = null)
+    {
+        if (func_num_args() === 0) {
+            return $this->isIndexed();
+        }
+
+        $this->setIndexed($indexed);
+
+        return $this;
+    }
+
+    /**
      * @return bool|null
      */
     public function isStored()
@@ -105,5 +124,51 @@ class Column extends Entity
     public function setStored($isStored)
     {
         $this->isStored = $isStored !== null ? !! $isStored : null;
+    }
+
+    /**
+     * Fluent getter/setter for isStored.
+     *
+     * @param bool|null|mixed $stored
+     *
+     * @return $this|bool|null
+     */
+    public function stored($stored = null)
+    {
+        if (func_num_args() === 0) {
+            return $this->isStored();
+        }
+
+        $this->setStored($stored);
+
+        return $this;
+    }
+
+    /**
+     * Create a new column from the set of attributes given.
+     *
+     * @param array|object $attributes
+     *
+     * @return \Blixt\Storage\Entities\Column
+     */
+    public static function make($attributes)
+    {
+        $column = new static();
+
+        foreach ((array) $attributes as $key => $value) {
+            if (in_array($key, ['id', 'setId'])) {
+                $column->setId($value);
+            } elseif (in_array($key, ['schema_id', 'schemaId', 'setSchemaId'])) {
+                $column->setSchemaId($value);
+            } elseif (in_array($key, ['name', 'setName'])) {
+                $column->setName($value);
+            } elseif (in_array($key, ['indexed', 'is_indexed', 'isIndexed', 'setIndexed'])) {
+                $column->setIndexed($value);
+            } elseif (in_array($key, ['stored', 'is_stored', 'isStored', 'setStored'])) {
+                $column->setStored($value);
+            }
+        }
+
+        return $column;
     }
 }

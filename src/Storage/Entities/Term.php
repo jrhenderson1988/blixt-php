@@ -2,17 +2,12 @@
 
 namespace Blixt\Storage\Entities;
 
+use Blixt\Storage\Entities\Concerns\BelongsToSchema;
+use Blixt\Storage\Entities\Concerns\BelongsToWord;
+
 class Term extends Entity
 {
-    /**
-     * @var int|null
-     */
-    protected $schemaId;
-
-    /**
-     * @var int|null
-     */
-    protected $wordId;
+    use BelongsToSchema, BelongsToWord;
 
     /**
      * @var int|null
@@ -39,38 +34,6 @@ class Term extends Entity
     /**
      * @return int|null|mixed
      */
-    public function getSchemaId()
-    {
-        return $this->schemaId;
-    }
-
-    /**
-     * @param int|null|mixed $schemaId
-     */
-    public function setSchemaId($schemaId)
-    {
-        $this->schemaId = $schemaId !== null ? intval($schemaId) : null;
-    }
-
-    /**
-     * @return int|null|mixed
-     */
-    public function getWordId()
-    {
-        return $this->wordId;
-    }
-
-    /**
-     * @param int|null|mixed $wordId
-     */
-    public function setWordId($wordId)
-    {
-        $this->wordId = $wordId !== null ? intval($wordId) : null;
-    }
-
-    /**
-     * @return int|null|mixed
-     */
     public function getFieldCount()
     {
         return $this->fieldCount;
@@ -82,5 +45,23 @@ class Term extends Entity
     public function setFieldCount($fieldCount)
     {
         $this->fieldCount = $fieldCount !== null ? intval($fieldCount) : null;
+    }
+
+    /**
+     * Fluent getter/setter for fieldCount.
+     *
+     * @param int|null|mixed $fieldCount
+     *
+     * @return $this|int|mixed|null
+     */
+    public function fieldCount($fieldCount = null)
+    {
+        if (func_num_args() === 0) {
+            return $this->getFieldCount();
+        }
+
+        $this->setFieldCount($fieldCount);
+
+        return $this;
     }
 }

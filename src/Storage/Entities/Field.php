@@ -2,17 +2,12 @@
 
 namespace Blixt\Storage\Entities;
 
+use Blixt\Storage\Entities\Concerns\BelongsToColumn;
+use Blixt\Storage\Entities\Concerns\BelongsToDocument;
+
 class Field extends Entity
 {
-    /**
-     * @var int|null
-     */
-    protected $documentId;
-
-    /**
-     * @var int|null
-     */
-    protected $columnId;
+    use BelongsToDocument, BelongsToColumn;
 
     /**
      * @var null|mixed
@@ -37,38 +32,6 @@ class Field extends Entity
     }
 
     /**
-     * @return int|null
-     */
-    public function getDocumentId()
-    {
-        return $this->documentId;
-    }
-
-    /**
-     * @param int|null|mixed $documentId
-     */
-    public function setDocumentId($documentId)
-    {
-        $this->documentId = $documentId !== null ? intval($documentId) : null;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getColumnId()
-    {
-        return $this->columnId;
-    }
-
-    /**
-     * @param int|null|mixed $columnId
-     */
-    public function setColumnId($columnId)
-    {
-        $this->columnId = $columnId !== null ? intval($columnId) : null;
-    }
-
-    /**
      * @return null|mixed
      */
     public function getValue()
@@ -82,5 +45,23 @@ class Field extends Entity
     public function setValue($value)
     {
         $this->value = $value !== '' && $value !== null ? $value : null;
+    }
+
+    /**
+     * Fluent getter/setter for value.
+     *
+     * @param null|mixed $value
+     *
+     * @return $this|mixed|null
+     */
+    public function value($value = null)
+    {
+        if (func_num_args() === 0) {
+            return $this->getValue();
+        }
+
+        $this->setValue($value);
+
+        return $this;
     }
 }

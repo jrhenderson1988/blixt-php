@@ -2,12 +2,11 @@
 
 namespace Blixt\Storage\Entities;
 
+use Blixt\Storage\Entities\Concerns\BelongsToSchema;
+
 class Document extends Entity
 {
-    /**
-     * @var int|null
-     */
-    protected $schemaId;
+    use BelongsToSchema;
 
     /**
      * @var null|mixed
@@ -30,22 +29,6 @@ class Document extends Entity
     }
 
     /**
-     * @return int|null|mixed
-     */
-    public function getSchemaId()
-    {
-        return $this->schemaId;
-    }
-
-    /**
-     * @param int|null|mixed $schemaId
-     */
-    public function setSchemaId($schemaId)
-    {
-        $this->schemaId = $schemaId !== null ? intval($schemaId) : null;
-    }
-
-    /**
      * @return null|mixed
      */
     public function getKey()
@@ -59,5 +42,47 @@ class Document extends Entity
     public function setKey($key)
     {
         $this->key = $key;
+    }
+
+    /**
+     * Fluent getter/setter for key.
+     *
+     * @param null|mixed $key
+     *
+     * @return $this|mixed|null
+     */
+    public function key($key = null)
+    {
+        if (func_num_args() === 0) {
+            return $this->getKey();
+        }
+
+        $this->setKey($key);
+
+        return $this;
+    }
+
+    /**
+     * Create a new document from the set of attributes given.
+     *
+     * @param array|object $attributes
+     *
+     * @return \Blixt\Storage\Entities\Document
+     */
+    public static function make($attributes)
+    {
+        $document = new static();
+
+        foreach ((array) $attributes as $key => $value) {
+            if (in_array($key, ['id', 'setId'])) {
+                $document->setId($value);
+            } elseif (in_array($key, ['schema_id', 'schemaId', 'setSchemaId'])) {
+                $document->setSchemaId($value);
+            } elseif (in_array($key, ['key', 'setKey'])) {
+                $document->setKey($value);
+            }
+        }
+
+        return $document;
     }
 }
