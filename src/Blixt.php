@@ -11,6 +11,7 @@ use Blixt\Index\Schema\Blueprint;
 use Blixt\Index\Schema\Definition;
 use Blixt\Stemming\EnglishStemmer;
 use Blixt\Stemming\Stemmer;
+use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Storage;
 use Blixt\Tokenization\DefaultTokenizer;
@@ -229,7 +230,11 @@ class Blixt
             );
         }
 
-        $schema = $this->getStorage()->schemas()->create($blueprint->getName());
+//        $schema = (new Schema())->name($blueprint->getName());var_dump($schema);die();
+        $schema = $this->getStorage()->schemas()->save(
+            (new Schema())->name($blueprint->getName())
+        );
+
         if (! $schema) {
             throw new StorageException(
                 "Could not create schema '{$blueprint->getName()}'."
@@ -237,11 +242,12 @@ class Blixt
         }
 
         $blueprint->getDefinitions()->each(function (Definition $column) use ($schema) {
-            $this->getStorage()->columns()->create(
-                $schema,
-                $column->getName(),
-                $column->isIndexed(),
-                $column->isStored()
+            $this->getStorage()->columns()->save(
+                (new Column())
+                    ->schemaId($schema->getId())
+                    ->name($column->getName())
+                    ->indexed($column->isIndexed())
+                    ->stored($column->isStored())
             );
         });
 

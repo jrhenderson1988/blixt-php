@@ -120,18 +120,15 @@ class BlixtTest extends TestCase
         $schema = new Schema(1, 'test');
         $column = new Column(1, 1, 'test', true, false);
 
-        $schemaRepo->shouldReceive('all')->twice()->andReturn(new Collection(), new Collection([$schema]));
-        $columnRepo->shouldReceive('all')->twice()->andReturn(new Collection(), new Collection([$column]));
-        $storage->shouldReceive('schemas')->andReturn($schemaRepo);
         $storage->shouldReceive('columns')->andReturn($columnRepo);
+        $columnRepo->shouldReceive('all')->twice()->andReturn(new Collection(), new Collection([$column]));
+        $columnRepo->shouldReceive('save')->andReturn($column);
+
+        $storage->shouldReceive('schemas')->andReturn($schemaRepo);
+        $schemaRepo->shouldReceive('all')->andReturn(new Collection(), new Collection([$schema]));
+        $schemaRepo->shouldReceive('save')->andReturn($schema);
 
         $blixt = new Blixt($storage);
-
-        $schemaRepo->shouldReceive('create')->withArgs(['test'])->andReturn($schema);
-        $columnRepo->shouldReceive('create')->withArgs([$schema, 'test', true, false])->andReturn($column);
-
-        $schemaRepo->shouldReceive('all')->andReturn(new Collection([$schema]));
-        $columnRepo->shouldReceive('all')->andReturn(new Collection([$column]));
 
         $index = $blixt->create('test', function (Blueprint $blueprint) {
             $blueprint->addDefinition('test', true, false);
@@ -183,24 +180,26 @@ class BlixtTest extends TestCase
     }
 
     /** @test */
-    public function testExceeptionIsThrownWhenStorageIsUnableToCreateSchema()
+    public function testExceptionIsThrownWhenStorageIsUnableToCreateSchema()
     {
         $storage = Mockery::mock(Storage::class);
         $schemaRepo = Mockery::mock(SchemaRepository::class);
         $columnRepo = Mockery::mock(ColumnRepository::class);
 
-        $schemaRepo->shouldReceive('all')->andReturn(new Collection());
-        $columnRepo->shouldReceive('all')->andReturn(new Collection());
+        $name = 'test';
+        $schema = (new Schema())->name($name);
         $storage->shouldReceive('schemas')->andReturn($schemaRepo);
         $storage->shouldReceive('columns')->andReturn($columnRepo);
-
-        $blixt = new Blixt($storage);
-
-        $schemaRepo->shouldReceive('create')->withArgs(['test'])->andReturn(null);
+        $schemaRepo->shouldReceive('all')->andReturn(new Collection());
+        $schemaRepo->shouldReceive('save')->with(Mockery::on(function ($arg) use ($schema) {
+            return $arg == $schema;
+        }))->andReturn(null);
+        $columnRepo->shouldReceive('all')->andReturn(new Collection());
 
         $this->expectException(StorageException::class);
 
-        $blixt->create('test', function (Blueprint $blueprint) {
+        $blixt = new Blixt($storage);
+        $blixt->create($name, function (Blueprint $blueprint) {
             $blueprint->addDefinition('test', true, false);
         });
     }
