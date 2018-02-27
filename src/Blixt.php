@@ -230,7 +230,6 @@ class Blixt
             );
         }
 
-//        $schema = (new Schema())->name($blueprint->getName());var_dump($schema);die();
         $schema = $this->getStorage()->schemas()->save(
             (new Schema())->name($blueprint->getName())
         );

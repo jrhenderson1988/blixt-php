@@ -22,15 +22,20 @@ class IndexTest extends TestCase
      */
     protected $index;
 
+    /**
+     * @var \Blixt\Storage\Drivers\Memory\Storage
+     */
+    protected $storage;
+
     public function setUp()
     {
-        $storage = new Storage();
+        $this->storage = new Storage();
         $stemmer = new EnglishStemmer();
         $tokenizer = new DefaultTokenizer();
 
-        Blixt::install($storage);
+        Blixt::install($this->storage);
 
-        $this->blixt = new Blixt($storage, $stemmer, $tokenizer);
+        $this->blixt = new Blixt($this->storage, $stemmer, $tokenizer);
         $this->index = $this->blixt->create('test', function (Blueprint $blueprint) {
             $blueprint->addDefinition('name', true, false);
             $blueprint->addDefinition('age', false, true);
@@ -39,12 +44,30 @@ class IndexTest extends TestCase
 
     public function testSomething()
     {
+        Blixt::install($storage = new Storage());
+
+        $blixt = new Blixt($storage, new EnglishStemmer(), new DefaultTokenizer());
+        $index = $blixt->create('test', function (Blueprint $blueprint) {
+            $blueprint->addDefinition('name', true, false);
+            $blueprint->addDefinition('age', false, true);
+        });
+
+        // Use reflection to make the data property visible
+        // Ensure that a schema has been created, with 2 columns matching the above
+
         $document = new Document(1, [
             'name' => 'Joe Bloggs',
             'age' => 29
         ]);
 
-        $this->index->add($document);
+        $index->add($document);
+
+        // Ensure that the document has been correctly added to the index in that:
+        // - a document record was added
+        // - two field records were added (name field should be indexed, but not stored and age should be stored but not indexed)
+        // - two word records should be present (joe, blogg) along with two term records representing each word in the schema
+        // - two occurrence records representing each word in the name field should be present
+        // - two position records, one for each term in the field should be present (joe - 0, blogg - 1)
     }
 
     public function testIndexingAlreadyExistingDocumentThrowsException() {}
