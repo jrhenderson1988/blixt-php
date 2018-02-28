@@ -90,7 +90,7 @@ class Index
      *
      * @throws \Blixt\Exceptions\InvalidDocumentException
      */
-    public function assertDocumentMatchesSchema(Indexable $document)
+    protected function assertDocumentMatchesSchema(Indexable $document)
     {
         $fields = $document->getFields();
 
@@ -140,7 +140,6 @@ class Index
      */
     protected function createField(Document $document, Column $column, $content)
     {
-
         $field = $this->storage->fields()->save(
             (new Field())
                 ->documentId($document->getId())
