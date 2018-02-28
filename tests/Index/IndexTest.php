@@ -5,7 +5,7 @@ namespace BlixtTests\Index;
 use Blixt\Blixt;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
-use Blixt\Index\Document\Document;
+use Blixt\Index\Indexable;
 use Blixt\Index\Index;
 use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Column;
@@ -45,7 +45,7 @@ class IndexTest extends TestCase
 
     public function testDocumentAlreadyExistsExceptionIsThrownFromAddMethodWhenDocumentExistsInSchema()
     {
-        $document = new Document(1);
+        $document = new Indexable(1);
 
         $documentRepo = m::mock(DocumentRepository::class);
         $this->storage->shouldReceive('documents')->once()->andReturn($documentRepo);
@@ -57,7 +57,7 @@ class IndexTest extends TestCase
 
     public function testInvalidDocumentExceptionIsThrownWhenDocumentOmitsRequiredField()
     {
-        $document = new Document(123);
+        $document = new Indexable(123);
         $document->setField('name', 'Joe Bloggs');
 
         $documentRepo = m::mock(DocumentRepository::class);

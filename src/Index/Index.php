@@ -5,7 +5,6 @@ namespace Blixt\Index;
 use Blixt\Blixt;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
-use Blixt\Index\Document\Document as Indexable;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Document;
 use Blixt\Storage\Entities\Field;
@@ -54,7 +53,7 @@ class Index
     }
 
     /**
-     * @param \Blixt\Index\Document\Document $indexable
+     * @param \Blixt\Index\Indexable $indexable
      *
      * @return bool
      * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
@@ -72,7 +71,7 @@ class Index
     /**
      * Assert that the document provided does not already exist in the index.
      *
-     * @param \Blixt\Index\Document\Document $indexable
+     * @param \Blixt\Index\Indexable $indexable
      *
      * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
      */
@@ -86,7 +85,7 @@ class Index
     }
 
     /**
-     * @param \Blixt\Index\Document\Document $document
+     * @param \Blixt\Index\Indexable $document
      *
      * @throws \Blixt\Exceptions\InvalidDocumentException
      */
@@ -106,7 +105,7 @@ class Index
     /**
      * Add a document to the index for the given indexable document.
      *
-     * @param \Blixt\Index\Document\Document $indexable
+     * @param \Blixt\Index\Indexable $indexable
      *
      * @return \Blixt\Storage\Entities\Document
      */

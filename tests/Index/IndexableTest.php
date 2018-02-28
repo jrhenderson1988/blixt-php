@@ -1,18 +1,18 @@
 <?php
 
-namespace BlixtTests\Index\Document;
+namespace BlixtTests\Index;
 
-use Blixt\Index\Document\Document;
+use Blixt\Index\Indexable;
 use BlixtTests\TestCase;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
-class DocumentTest extends TestCase
+class IndexableTest extends TestCase
 {
     /** @test */
     public function testDocumentConstructorSetsKey()
     {
-        $document = new Document(1);
+        $document = new Indexable(1);
         $this->assertEquals(1, $document->getKey());
     }
 
@@ -20,7 +20,7 @@ class DocumentTest extends TestCase
     public function testDocumentConstructorAcceptsNullArrayAndCollectionForFields()
     {
         foreach ([null, [], new Collection()] as $input) {
-            $document = new Document(1, $input);
+            $document = new Indexable(1, $input);
             $this->assertEquals(new Collection(), $document->getFields());
         }
     }
@@ -29,13 +29,13 @@ class DocumentTest extends TestCase
     public function testExceptionIsThrownWhenProvidingInvalidArgumentForFields()
     {
         $this->expectException(InvalidArgumentException::class);
-        new Document(1, 'test');
+        new Indexable(1, 'test');
     }
 
     /** @test */
     public function testGettingAndSettingKeyAndEnsureValuesAreCorrectlyCast()
     {
-        $document = new Document(1);
+        $document = new Indexable(1);
         $this->assertEquals(1, $document->getKey());
 
         $document->setKey(2);
@@ -51,7 +51,7 @@ class DocumentTest extends TestCase
     /** @test */
     public function testSettingAndGettingFieldsAndEnsureACollectionIsAlwaysReturned()
     {
-        $document = new Document(1);
+        $document = new Indexable(1);
 
         $document->setFields([]);
         $this->assertInstanceOf(Collection::class, $document->getFields());
@@ -73,7 +73,7 @@ class DocumentTest extends TestCase
     /** @test */
     public function testSetFieldOverwritesFieldOrAddsToExistingFields()
     {
-        $document = new Document(1, [
+        $document = new Indexable(1, [
             'a' => '1'
         ]);
         $this->assertEquals(new Collection(['a' => '1']), $document->getFields());
@@ -98,7 +98,7 @@ class DocumentTest extends TestCase
             4 => false
         ];
 
-        $document = new Document(1, $input);
+        $document = new Indexable(1, $input);
         $this->assertInstanceOf(Collection::class, $document->getFields());
         $this->assertEquals(array_keys($input), $document->getFields()->keys()->toArray());
 

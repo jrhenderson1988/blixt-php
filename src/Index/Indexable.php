@@ -1,11 +1,11 @@
 <?php
 
-namespace Blixt\Index\Document;
+namespace Blixt\Index;
 
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
-class Document
+class Indexable
 {
     /**
      * @var int
