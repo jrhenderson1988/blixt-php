@@ -9,9 +9,13 @@ use Blixt\Index\Indexable;
 use Blixt\Index\Index;
 use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Column;
+use Blixt\Storage\Entities\Document;
+use Blixt\Storage\Entities\Field;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Repositories\DocumentRepository;
+use Blixt\Storage\Repositories\FieldRepository;
 use Blixt\Storage\Storage;
+use Blixt\Tokenization\Token;
 use Blixt\Tokenization\Tokenizer;
 use BlixtTests\TestCase;
 use Illuminate\Support\Collection;
@@ -25,21 +29,25 @@ class IndexTest extends TestCase
     protected $blixt;
     protected $index;
     protected $schema;
+    protected $nameColumn;
+    protected $ageColumn;
 
     public function setUp()
     {
         $this->schema = new Schema(1, 'test');
-        $this->schema->setColumns(new Collection([
-            new Column(1, 1, 'name', true, false),
-            new Column(1, 1, 'age', false, true)
-        ]));
+        $this->nameColumn = new Column(1, 1, 'name', true, false);
+        $this->ageColumn = new Column(2, 1, 'age', false, true);
+        $this->schema->setColumns(new Collection([$this->nameColumn, $this->ageColumn]));
+
         $this->storage = m::mock(Storage::class);
         $this->stemmer = m::mock(Stemmer::class);
-        $this->tokenizer = m::mock(Stemmer::class);
+        $this->tokenizer = m::mock(Tokenizer::class);
         $this->blixt = m::mock(Blixt::class);
+
         $this->blixt->shouldReceive('getStorage')->once()->andReturn($this->storage);
         $this->blixt->shouldReceive('getStemmer')->once()->andReturn($this->stemmer);
         $this->blixt->shouldReceive('getTokenizer')->once()->andReturn($this->tokenizer);
+
         $this->index = new Index($this->blixt, $this->schema);
     }
 
@@ -70,7 +78,38 @@ class IndexTest extends TestCase
 
     public function testAddIndexesDocumentCorrectly()
     {
+        $indexable = new Indexable(123);
+        $indexable->setField('name', 'Joe Bloggs');
+        $indexable->setField('age', 30);
 
+        $inputDocument = new Document(null, $this->schema->getId(), $indexable->getKey());
+        $document = new Document(1, $this->schema->getId(), $indexable->getKey());
+
+        $inputNameField = new Field(null, 1, 1, null);  // Name should be indexed, but not stored.
+        $nameField = new Field(1, 1, 1, null);
+
+        $inputAgeField = new Field(null, 1, 2, 30);     // Age should be stored, but not indexed.
+        $ageField = new Field(2, 1, 2, 30);
+
+        $documentRepo = m::mock(DocumentRepository::class);
+        $this->storage->shouldReceive('documents')->andReturn($documentRepo);
+        $documentRepo->shouldReceive('findByKey')->withArgs([$indexable->getKey()])->andReturn(null);
+        $documentRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputDocument) {
+            return $inputDocument == $arg;
+        }))->andReturn($document);
+
+        $fieldsRepo = m::mock(FieldRepository::class);
+        $this->storage->shouldReceive('fields')->andReturn($fieldsRepo);
+        $fieldsRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputNameField) {
+            return $inputNameField == $arg;
+        }))->andReturn($nameField);
+        $fieldsRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputAgeField) {
+            return $inputAgeField == $arg;
+        }))->andReturn($ageField);
+
+        // TODO Continue with tokenization and stemming
+
+        $this->index->add($indexable);
     }
 
 //    public function testCreateMethodCreatesSchemaAndColumns()
