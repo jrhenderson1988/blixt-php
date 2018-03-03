@@ -180,16 +180,14 @@ class Index
 
         $positions->each(function ($positions, $stem) use ($field) {
             $term = $this->findOrCreateTerm(
-                $word = $this->findOrCreateWord($stem)
+                $word = $this->findOrCreateWord($stem), 1
             );
 
             $occurrence = $this->createOccurrence($field, $term, count($positions));
+
             foreach ($positions as $position) {
                 $this->createPosition($occurrence, $position);
             }
-
-            // TODO Update term field count, adding 1 to the current value, if term exists or setting 1 if it doesn't
-            // Add one to
         });
     }
 
@@ -210,21 +208,29 @@ class Index
     }
 
     /**
-     * Find or create a term for the given word and the schema represented by this index.
+     * Find or create a term for the given word and the schema represented by this index, adding the provided field
+     * count to any existing field count or using it as the field count for the new term.
      *
      * @param \Blixt\Storage\Entities\Word $word
+     * @param int                          $fieldCount
      *
      * @return \Blixt\Storage\Entities\Term
      */
-    protected function findOrCreateTerm(Word $word)
+    protected function findOrCreateTerm(Word $word, $fieldCount)
     {
-        $term = $this->storage->terms()->findBySchemaAndWord($this->schema, $word);
+        if ($term = $this->storage->terms()->findBySchemaAndWord($this->schema, $word)) {
+            $term->setFieldCount(
+                $term->getFieldCount() + $fieldCount
+            );
 
-        return $term ?: $this->storage->terms()->save(
+            return $this->storage->terms()->save($term);
+        }
+
+        return $this->storage->terms()->save(
             (new Term())
                 ->wordId($word->getId())
                 ->schemaId($this->schema->getId())
-                ->fieldCount(0)
+                ->fieldCount($fieldCount)
         );
     }
 

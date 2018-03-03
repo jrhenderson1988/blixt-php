@@ -21,6 +21,12 @@ use BlixtTests\TestCase;
 use Illuminate\Support\Collection;
 use Mockery as m;
 
+// TODO: Move testDocumentsAreCorrectlyIndexed into a memory driver based test
+// Test that fields marked as not stored are not stored
+// Test that fields marked as not indexed don't have occurrence and position records created
+// Test that fields marked as stored have a value in their field
+// Test that fields marked as indexed have position and occurrence records
+
 class IndexTest extends TestCase
 {
     protected $storage;
@@ -89,7 +95,6 @@ class IndexTest extends TestCase
         $dataProperty->setAccessible(true);
         $actual = $dataProperty->getValue($storage);
 
-//        var_dump($actual, $expected);die();
         $this->assertEquals($expected, $actual);
     }
 
@@ -120,6 +125,9 @@ class IndexTest extends TestCase
             'terms' => [
                 1 => ['schema_id' => 1, 'word_id' => 1, 'field_count' => 1],
                 2 => ['schema_id' => 1, 'word_id' => 2, 'field_count' => 1]
+            ],
+            'documents' => [
+                1 => ['schema_id' => 1, 'key' => 1]
             ],
             'fields' => [
                 1 => ['document_id' => 1, 'column_id' => 1, 'value' => null],
