@@ -131,7 +131,7 @@ class IndexTest extends TestCase
             ],
             'positions' => [
                 1 => ['occurrence_id' => 1, 'position' => 0],
-                1 => ['occurrence_id' => 2, 'position' => 1],
+                2 => ['occurrence_id' => 2, 'position' => 1],
             ]
         ];
 
