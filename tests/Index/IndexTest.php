@@ -89,7 +89,7 @@ class IndexTest extends TestCase
         $dataProperty->setAccessible(true);
         $actual = $dataProperty->getValue($storage);
 
-        var_dump($actual, $expected);die();
+//        var_dump($actual, $expected);die();
         $this->assertEquals($expected, $actual);
     }
 
@@ -105,7 +105,35 @@ class IndexTest extends TestCase
             'age' => 30
         ]);
 
-        $expectedPeopleJoeBloggs = [];
+        $expectedPeopleJoeBloggs = [
+            'schemas' => [
+                1 => ['name' => 'people']
+            ],
+            'columns' => [
+                1 => ['schema_id' => 1, 'name' => 'name', 'is_indexed' => true, 'is_stored' => false],
+                2 => ['schema_id' => 1, 'name' => 'age', 'is_indexed' => false, 'is_stored' => true],
+            ],
+            'words' => [
+                1 => ['word' => 'joe'],
+                2 => ['word' => 'bloggs']
+            ],
+            'terms' => [
+                1 => ['schema_id' => 1, 'word_id' => 1, 'field_count' => 1],
+                2 => ['schema_id' => 1, 'word_id' => 2, 'field_count' => 1]
+            ],
+            'fields' => [
+                1 => ['document_id' => 1, 'column_id' => 1, 'value' => null],
+                2 => ['document_id' => 1, 'column_id' => 2, 'value' => 30],
+            ],
+            'occurrences' => [
+                1 => ['field_id' => 1, 'term_id' => 1, 'frequency' => 1],
+                2 => ['field_id' => 1, 'term_id' => 2, 'frequency' => 1],
+            ],
+            'positions' => [
+                1 => ['occurrence_id' => 1, 'position' => 0],
+                1 => ['occurrence_id' => 2, 'position' => 1],
+            ]
+        ];
 
         return [
             [$people, $joeBloggs, $expectedPeopleJoeBloggs]
