@@ -52,7 +52,7 @@ class DefaultTokenizer implements Tokenizer
         $words = new Collection(explode(' ', $this->normalize($text)));
 
         return $words->filter(function ($word) {
-            return !empty(trim($word));
+            return ! empty(trim($word));
         });
     }
 }
