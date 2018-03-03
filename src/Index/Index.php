@@ -5,6 +5,7 @@ namespace Blixt\Index;
 use Blixt\Blixt;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
+use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Document;
 use Blixt\Storage\Entities\Field;
@@ -13,7 +14,9 @@ use Blixt\Storage\Entities\Position;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Entities\Term;
 use Blixt\Storage\Entities\Word;
+use Blixt\Storage\Storage;
 use Blixt\Tokenization\Token;
+use Blixt\Tokenization\Tokenizer;
 use Illuminate\Support\Collection;
 
 class Index
@@ -41,14 +44,16 @@ class Index
     /**
      * Index constructor.
      *
-     * @param \Blixt\Blixt                   $blixt
+     * @param \Blixt\Storage\Storage         $storage
+     * @param \Blixt\Tokenization\Tokenizer  $tokenizer
+     * @param \Blixt\Stemming\Stemmer        $stemmer
      * @param \Blixt\Storage\Entities\Schema $schema
      */
-    public function __construct(Blixt $blixt, Schema $schema)
+    public function __construct(Storage $storage, Tokenizer $tokenizer, Stemmer $stemmer, Schema $schema)
     {
-        $this->storage = $blixt->getStorage();
-        $this->tokenizer = $blixt->getTokenizer();
-        $this->stemmer = $blixt->getStemmer();
+        $this->storage = $storage;
+        $this->tokenizer = $tokenizer;
+        $this->stemmer = $stemmer;
         $this->schema = $schema;
     }
 
@@ -183,26 +188,9 @@ class Index
                 $this->createPosition($occurrence, $position);
             }
 
-            // TODO Update term count to reflect new occurrences.
+            // TODO Update term field count, adding 1 to the current value, if term exists or setting 1 if it doesn't
             // Add one to
         });
-
-//        $this->tokenizer->tokenize($field)->each(function (Token $token) {
-//            // - Tokenize and stem each word
-//            $stem = $this->stemmer->stem($token->getText());
-//
-//            // - Look up or create word records and get a collection of words
-//            $word = $this->findOrCreateWord($stem);
-//
-//            // - Look up or create term records for the schema/word and get a collection of terms
-//            $term = $this->findOrCreateTerm($word);
-//
-//            // - Create occurrence records for each term against the field, making sure to store document counts
-//            // - Create position records for each occurrence representing each terms position in the field
-//            // - Update term field counts to reflect new fields added
-//
-//
-//        });
     }
 
     /**
@@ -237,6 +225,38 @@ class Index
                 ->wordId($word->getId())
                 ->schemaId($this->schema->getId())
                 ->fieldCount(0)
+        );
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Field $field
+     * @param \Blixt\Storage\Entities\Term  $term
+     * @param int                           $frequency
+     *
+     * @return \Blixt\Storage\Entities\Occurrence
+     */
+    protected function createOccurrence(Field $field, Term $term, $frequency)
+    {
+        return $this->storage->occurrences()->save(
+            (new Occurrence())
+                ->fieldId($field->getId())
+                ->termId($term->getId())
+                ->frequency($frequency)
+        );
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Occurrence $occurrence
+     * @param int                                $position
+     *
+     * @return \Blixt\Storage\Entities\Position
+     */
+    protected function createPosition(Occurrence $occurrence, $position)
+    {
+        return $this->storage->positions()->save(
+            (new Position())
+                ->occurrenceId($occurrence->getId())
+                ->position($position)
         );
     }
 
@@ -297,49 +317,6 @@ class Index
 //        // Return the collection of terms that were either found or created.
 //        return $terms->values();
 //    }
-
-    /**
-     * @param \Blixt\Storage\Entities\Field $field
-     * @param \Blixt\Storage\Entities\Term  $term
-     * @param int                           $frequency
-     *
-     * @return \Blixt\Storage\Entities\Occurrence
-     */
-    protected function createOccurrence(Field $field, Term $term, $frequency)
-    {
-        return $this->storage->occurrences()->save(
-            (new Occurrence())
-                ->fieldId($field->getId())
-                ->termId($term->getId())
-                ->frequency($frequency)
-        );
-    }
-
-    /**
-     * @param \Blixt\Storage\Entities\Occurrence $occurrence
-     * @param int                                $position
-     *
-     * @return \Blixt\Storage\Entities\Position
-     */
-    protected function createPosition(Occurrence $occurrence, $position)
-    {
-        return $this->storage->positions()->save(
-            (new Position())
-                ->occurrenceId($occurrence->getId())
-                ->position($position)
-        );
-    }
-
-
-
-
-
-
-
-
-
-
-
 
 //    /**
 //     * @var \Blixt\Storage\Storage

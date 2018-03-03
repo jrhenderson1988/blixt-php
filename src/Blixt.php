@@ -262,6 +262,6 @@ class Blixt
      */
     protected function createIndexForSchema(Schema $schema)
     {
-        return new Index($this, $schema);
+        return new Index($this->storage, $this->tokenizer, $this->stemmer, $schema);
     }
 }
