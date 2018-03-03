@@ -5,10 +5,21 @@ namespace BlixtTests\Tokenization;
 use Blixt\Tokenization\DefaultTokenizer;
 use Blixt\Tokenization\Token;
 use BlixtTests\TestCase;
+use Faker\Factory;
 use Illuminate\Support\Collection;
 
 class DefaultTokenizerTest extends TestCase
 {
+    /**
+     * @var \Faker\Generator
+     */
+    protected $faker;
+
+    public function setUp()
+    {
+        $this->faker = Factory::create();
+    }
+
     /** @test  */
     public function testTokenizerReturnsCollectionOfTokens()
     {
