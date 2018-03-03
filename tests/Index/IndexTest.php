@@ -7,13 +7,13 @@ use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
 use Blixt\Index\Indexable;
 use Blixt\Index\Index;
+use Blixt\Index\Schema\Blueprint;
+use Blixt\Index\Schema\Definition;
 use Blixt\Stemming\Stemmer;
+use Blixt\Storage\Drivers\Memory\Storage as MemoryStorage;
 use Blixt\Storage\Entities\Column;
-use Blixt\Storage\Entities\Document;
-use Blixt\Storage\Entities\Field;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Repositories\DocumentRepository;
-use Blixt\Storage\Repositories\FieldRepository;
 use Blixt\Storage\Storage;
 use Blixt\Tokenization\Token;
 use Blixt\Tokenization\Tokenizer;
@@ -44,14 +44,10 @@ class IndexTest extends TestCase
         $this->tokenizer = m::mock(Tokenizer::class);
         $this->blixt = m::mock(Blixt::class);
 
-        $this->blixt->shouldReceive('getStorage')->once()->andReturn($this->storage);
-        $this->blixt->shouldReceive('getStemmer')->once()->andReturn($this->stemmer);
-        $this->blixt->shouldReceive('getTokenizer')->once()->andReturn($this->tokenizer);
-
-        $this->index = new Index($this->blixt, $this->schema);
+        $this->index = new Index($this->storage, $this->tokenizer, $this->stemmer, $this->schema);
     }
 
-    public function testDocumentAlreadyExistsExceptionIsThrownFromAddMethodWhenDocumentExistsInSchema()
+    public function testIndexingAlreadyExistingDocumentThrowsDocumentAlreadyExistsException()
     {
         $document = new Indexable(1);
 
@@ -63,7 +59,7 @@ class IndexTest extends TestCase
         $this->index->add($document);
     }
 
-    public function testInvalidDocumentExceptionIsThrownWhenDocumentOmitsRequiredField()
+    public function testIndexingDocumentWithMissingFieldsThrowsInvalidDocumentException()
     {
         $document = new Indexable(123);
         $document->setField('name', 'Joe Bloggs');
@@ -76,85 +72,116 @@ class IndexTest extends TestCase
         $this->index->add($document);
     }
 
-    public function testAddIndexesDocumentCorrectly()
+    /** @dataProvider documentsIndexedCorrectlyProvider */
+    public function testDocumentsAreCorrectlyIndexed($blueprint, $indexable, $expected)
     {
-        $indexable = new Indexable(123);
-        $indexable->setField('name', 'Joe Bloggs');
-        $indexable->setField('age', 30);
+        $storage = new MemoryStorage();
+        $storage->create();
+        $tokenizer = new DummyTokenizer();
+        $stemmer = new DummyStemmer();
 
-        $inputDocument = new Document(null, $this->schema->getId(), $indexable->getKey());
-        $document = new Document(1, $this->schema->getId(), $indexable->getKey());
+        $blixt = new Blixt($storage, $stemmer, $tokenizer);
+        $index = $blixt->create($blueprint);
+        $index->add($indexable);
 
-        $inputNameField = new Field(null, 1, 1, null);  // Name should be indexed, but not stored.
-        $nameField = new Field(1, 1, 1, null);
+        $reflection = new \ReflectionClass(MemoryStorage::class);
+        $dataProperty = $reflection->getProperty('data');
+        $dataProperty->setAccessible(true);
+        $actual = $dataProperty->getValue($storage);
 
-        $inputAgeField = new Field(null, 1, 2, 30);     // Age should be stored, but not indexed.
-        $ageField = new Field(2, 1, 2, 30);
-
-        $documentRepo = m::mock(DocumentRepository::class);
-        $this->storage->shouldReceive('documents')->andReturn($documentRepo);
-        $documentRepo->shouldReceive('findByKey')->withArgs([$indexable->getKey()])->andReturn(null);
-        $documentRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputDocument) {
-            return $inputDocument == $arg;
-        }))->andReturn($document);
-
-        $fieldsRepo = m::mock(FieldRepository::class);
-        $this->storage->shouldReceive('fields')->andReturn($fieldsRepo);
-        $fieldsRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputNameField) {
-            return $inputNameField == $arg;
-        }))->andReturn($nameField);
-        $fieldsRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputAgeField) {
-            return $inputAgeField == $arg;
-        }))->andReturn($ageField);
-
-        // TODO Continue with tokenization and stemming
-
-        $this->index->add($indexable);
+        var_dump($actual, $expected);die();
+        $this->assertEquals($expected, $actual);
     }
 
-//    public function testCreateMethodCreatesSchemaAndColumns()
-//    {
-//        Blixt::install($storage = new Storage());
-//
-//        $blixt = new Blixt($storage, new DummyStemmer(), new DummyTokenizer());
-//        $index = $blixt->create('test', function (Blueprint $blueprint) {
-//            $blueprint->addDefinition('name', true, false);
-//            $blueprint->addDefinition('age', false, true);
-//        });
-//
-//
-//    }
+    public function documentsIndexedCorrectlyProvider()
+    {
+        $people = new Blueprint('people', [
+            new Definition('name', true, false),
+            new Definition('age', false, true)
+        ]);
 
-//    public function testSomething()
-//    {
-//        Blixt::install($storage = new Storage());
-//
-//        $blixt = new Blixt($storage, new DummyStemmer(), new DummyTokenizer());
-//        $index = $blixt->create('test', function (Blueprint $blueprint) {
-//            $blueprint->addDefinition('name', true, false);
-//            $blueprint->addDefinition('age', false, true);
-//        });
-//
-//        // Use reflection to make the data property visible
-//        // Ensure that a schema has been created, with 2 columns matching the above
-//
-//        $document = new Document(1, [
-//            'name' => 'Joe Bloggs',
-//            'age' => 29
-//        ]);
-//
-//        $index->add($document);
-//
-//        // Ensure that the document has been correctly added to the index in that:
-//        // - a document record was added
-//        // - two field records were added (name field should be indexed, but not stored and age should be stored but not indexed)
-//        // - two word records should be present (joe, blogg) along with two term records representing each word in the schema
-//        // - two occurrence records representing each word in the name field should be present
-//        // - two position records, one for each term in the field should be present (joe - 0, blogg - 1)
-//    }
+        $joeBloggs = new Indexable(1, [
+            'name' => 'Joe Bloggs',
+            'age' => 30
+        ]);
 
-    public function testIndexingAlreadyExistingDocumentThrowsException() {}
-    public function testIndexingDocumentWithMissingFieldsThrowsException() {}
+        $expectedPeopleJoeBloggs = [];
+
+        return [
+            [$people, $joeBloggs, $expectedPeopleJoeBloggs]
+        ];
+    }
+
+//    public function testAddIndexesDocumentCorrectly()
+//    {
+//        $indexable = new Indexable(123);
+//        $indexable->setField('name', 'Joe Bloggs');
+//        $indexable->setField('age', 30);
+//
+//        $inputDocument = new Document(null, $this->schema->getId(), $indexable->getKey());
+//        $document = new Document(1, $this->schema->getId(), $indexable->getKey());
+//        $inputNameField = new Field(null, 1, 1, null);  // Name should be indexed, but not stored.
+//        $nameField = new Field(1, 1, 1, null);
+//        $inputAgeField = new Field(null, 1, 2, 30);     // Age should be stored, but not indexed.
+//        $ageField = new Field(2, 1, 2, 30);
+//
+//        $documentRepo = m::mock(DocumentRepository::class);
+//        $this->storage->shouldReceive('documents')->andReturn($documentRepo);
+//        $documentRepo->shouldReceive('findByKey')->withArgs([$indexable->getKey()])->andReturn(null);
+//        $documentRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputDocument) {
+//            return $inputDocument == $arg;
+//        }))->andReturn($document);
+//
+//        $fieldsRepo = m::mock(FieldRepository::class);
+//        $this->storage->shouldReceive('fields')->andReturn($fieldsRepo);
+//        $fieldsRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputNameField) {
+//            return $inputNameField == $arg;
+//        }))->andReturn($nameField);
+//        $fieldsRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputAgeField) {
+//            return $inputAgeField == $arg;
+//        }))->andReturn($ageField);
+//
+//        $joeToken = new Token('joe', 0);
+//        $bloggsToken = new Token('bloggs', 1);
+//        $tokens = new Collection([$joeToken, $bloggsToken]);
+//        $this->tokenizer->shouldReceive('tokenize')->with('Joe Bloggs')->andReturn($tokens);
+//        $this->stemmer->shouldReceive('stem')->with($joeToken->getText())->andReturn('joe');
+//        $this->stemmer->shouldReceive('stem')->with($bloggsToken->getText())->andReturn('blogg');
+//
+//        $inputJoeWord = new Word(null, 'joe');
+//        $joeWord = new Word(1, 'joe');
+//        $inputBloggWord = new Word(null, 'blogg');
+//        $bloggWord = new Word(1, 'blogg');
+//        $wordsRepo = m::mock(WordRepository::class);
+//        $this->storage->shouldReceive('words')->andReturn($wordsRepo);
+//        $wordsRepo->shouldReceive('findByWord')->with('joe')->andReturn(null);
+//        $wordsRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputJoeWord) {
+//            return $arg == $inputJoeWord;
+//        }))->andReturn($joeWord);
+//        $wordsRepo->shouldReceive('findByWord')->with('blogg')->andReturn(null);
+//        $wordsRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputBloggWord) {
+//            return $arg == $inputBloggWord;
+//        }))->andReturn($bloggWord);
+//
+//        $inputJoeTerm = new Term(null, $this->schema->getId(), $joeWord->getId(), 0);
+//        $joeTerm = new Term(1, $this->schema->getId(), $joeWord->getId(), 0);
+//        $inputBloggTerm = new Term(null, $this->schema->getId(), $bloggWord->getId(), 0);
+//        $bloggTerm = new Term(1, $this->schema->getId(), $bloggWord->getId(), 0);
+//        $termRepo = m::mock(TermRepository::class);
+//        $this->storage->shouldReceive('terms')->andReturn($termRepo);
+//        $termRepo->shouldReceive('findBySchemaAndWord')->with($this->schema, $joeWord)->andReturn(null);
+//        $termRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputJoeTerm) {
+//            return $arg == $inputJoeTerm;
+//        }))->andReturn($joeTerm);
+//        $termRepo->shouldReceive('findBySchemaAndWord')->with($this->schema, $bloggWord)->andReturn(null);
+//        $termRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputBloggTerm) {
+//            return $arg == $inputBloggTerm;
+//        }))->andReturn($bloggTerm);
+//
+//
+//
+//        $this->index->add($indexable);
+//    }
 }
 
 class DummyStemmer implements Stemmer
@@ -169,6 +196,13 @@ class DummyTokenizer implements Tokenizer
 {
     public function tokenize($text)
     {
-        return explode(' ', mb_strtolower(trim($text)));
+        $tokens = new Collection();
+
+        $i = 0;
+        foreach (explode(' ', mb_strtolower(trim($text))) as $word) {
+            $tokens->push(new Token($word, $i++));
+        }
+
+        return $tokens;
     }
 }

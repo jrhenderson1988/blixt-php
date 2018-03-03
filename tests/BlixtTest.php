@@ -10,6 +10,7 @@ use Blixt\Exceptions\StorageException;
 use Blixt\Index\Index;
 use Blixt\Index\Schema\Blueprint;
 use Blixt\Stemming\Stemmer;
+use Blixt\Storage\Drivers\Memory\Storage as MemoryStorage;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Repositories\ColumnRepository;
@@ -21,30 +22,11 @@ use Mockery;
 
 class BlixtTest extends TestCase
 {
-
-    /** @test  */
-    public function testBlixtInstallCreatesSchemasWhenTheyDoNotExist()
-    {
-        // Ensure create is called when exists return false.
-        $storage = Mockery::mock(Storage::class);
-        $storage->shouldReceive('exists')->andReturn(false);
-        $storage->shouldReceive('create')->andReturn(true);
-        $this->assertTrue(Blixt::install($storage));
-    }
-
-    /** @test  */
-    public function testBlixtInstallDoesNotCreatesSchemasWhenTheyExist()
-    {
-        $storage = Mockery::mock(Storage::class);
-        $storage->shouldReceive('exists')->andReturn(true);
-        $storage->shouldNotReceive('create');
-        $this->assertTrue(Blixt::install($storage));
-    }
-
     /** @test */
     public function testCreatingBlixtObjectWithoutProvidingStemmerAndTokenizerCreatesSensibleDefaults()
     {
-        Blixt::install($storage = new \Blixt\Storage\Drivers\Memory\Storage());
+        $storage = new MemoryStorage();
+        $storage->create();
 
         $blixt = new Blixt($storage);
         $this->assertInstanceOf(Stemmer::class, $blixt->getStemmer());
