@@ -2,7 +2,6 @@
 
 namespace Blixt\Index;
 
-use Blixt\Blixt;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
 use Blixt\Stemming\Stemmer;

@@ -35,26 +35,33 @@ class IndexTest extends TestCase
     protected $blixt;
     protected $index;
     protected $schema;
-    protected $nameColumn;
-    protected $ageColumn;
 
-    public function setUp()
+    public function createMockedIndexWithSchema(Schema $schema)
     {
-        $this->schema = new Schema(1, 'test');
-        $this->nameColumn = new Column(1, 1, 'name', true, false);
-        $this->ageColumn = new Column(2, 1, 'age', false, true);
-        $this->schema->setColumns(new Collection([$this->nameColumn, $this->ageColumn]));
-
         $this->storage = m::mock(Storage::class);
         $this->stemmer = m::mock(Stemmer::class);
         $this->tokenizer = m::mock(Tokenizer::class);
         $this->blixt = m::mock(Blixt::class);
+        $this->schema = $schema;
 
-        $this->index = new Index($this->storage, $this->tokenizer, $this->stemmer, $this->schema);
+        return $this->index = new Index($this->storage, $this->tokenizer, $this->stemmer, $this->schema);
+    }
+
+    public function createMockedIndexWithPeopleSchemaWithNameAndAgeColumns()
+    {
+        $schema = new Schema(1, 'people');
+        $schema->setColumns(new Collection([
+            new Column(1, 1, 'name', true, false),
+            new Column(2, 1, 'age', false, true)
+        ]));
+
+        return $this->createMockedIndexWithSchema($schema);
     }
 
     public function testIndexingAlreadyExistingDocumentThrowsDocumentAlreadyExistsException()
     {
+        $this->createMockedIndexWithPeopleSchemaWithNameAndAgeColumns();
+
         $document = new Indexable(1);
 
         $documentRepo = m::mock(DocumentRepository::class);
@@ -67,6 +74,8 @@ class IndexTest extends TestCase
 
     public function testIndexingDocumentWithMissingFieldsThrowsInvalidDocumentException()
     {
+        $this->createMockedIndexWithPeopleSchemaWithNameAndAgeColumns();
+
         $document = new Indexable(123);
         $document->setField('name', 'Joe Bloggs');
 
