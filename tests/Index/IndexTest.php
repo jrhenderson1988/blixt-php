@@ -58,6 +58,7 @@ class IndexTest extends TestCase
         return $this->createMockedIndexWithSchema($schema);
     }
 
+    /** @test */
     public function testIndexingAlreadyExistingDocumentThrowsDocumentAlreadyExistsException()
     {
         $this->createMockedIndexWithPeopleSchemaWithNameAndAgeColumns();
@@ -72,6 +73,7 @@ class IndexTest extends TestCase
         $this->index->add($document);
     }
 
+    /** @test */
     public function testIndexingDocumentWithMissingFieldsThrowsInvalidDocumentException()
     {
         $this->createMockedIndexWithPeopleSchemaWithNameAndAgeColumns();
@@ -87,7 +89,15 @@ class IndexTest extends TestCase
         $this->index->add($document);
     }
 
-    /** @dataProvider documentsIndexedCorrectlyProvider */
+    public function testExtraFieldsAreSilentlyIgnoredWhenIndexingDocument()
+    {
+        // TODO
+    }
+
+    /**
+     * @dataProvider documentsIndexedCorrectlyProvider
+     * @test
+     */
     public function testDocumentsAreCorrectlyIndexed($blueprint, $indexables, $expected)
     {
         $storage = new MemoryStorage();
@@ -113,17 +123,17 @@ class IndexTest extends TestCase
 
     public function documentsIndexedCorrectlyProvider()
     {
-        $people = new Blueprint('people', [
+        $peopleBlueprint = new Blueprint('people', [
             new Definition('name', true, false),
             new Definition('age', false, true)
         ]);
 
-        $joeBloggs = new Indexable(1, [
+        $joeBloggsIndexable = new Indexable(1, [
             'name' => 'Joe Bloggs',
             'age' => 30
         ]);
 
-        $janeDoe = new Indexable(2, [
+        $janeDoeIndexable = new Indexable(2, [
             'name' => 'Jane Doe',
             'age' => 28
         ]);
@@ -151,8 +161,8 @@ class IndexTest extends TestCase
         ];
 
         return [
-            'people schema, joe bloggs' => [$people, [$joeBloggs], $expectedPeopleJoeBloggs],
-            'people schema, joe bloggs and jane doe' => [$people, [$joeBloggs, $janeDoe], $expectedPeopleJoeBloggsJaneDoe],
+            'people schema, joe bloggs' => [$peopleBlueprint, [$joeBloggsIndexable], $expectedPeopleJoeBloggs],
+            'people schema, joe bloggs and jane doe' => [$peopleBlueprint, [$joeBloggsIndexable, $janeDoeIndexable], $expectedPeopleJoeBloggsJaneDoe],
         ];
     }
 
