@@ -4,6 +4,7 @@ namespace Blixt\Index;
 
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
+use Blixt\Index\Search\Query;
 use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Document;
@@ -70,6 +71,14 @@ class Index
         $this->createDocument($indexable);
 
         return true;
+    }
+
+    /**
+     * @param \Blixt\Index\Search\Query $query
+     */
+    public function search(Query $query)
+    {
+
     }
 
     /**
@@ -179,7 +188,7 @@ class Index
 
         $positions->each(function ($positions, $stem) use ($field) {
             $term = $this->findOrCreateTerm(
-                $word = $this->findOrCreateWord($stem), 1
+                $word = $this->findOrCreateWord($stem)
             );
 
             $occurrence = $this->createOccurrence($field, $term, count($positions));
@@ -215,7 +224,7 @@ class Index
      *
      * @return \Blixt\Storage\Entities\Term
      */
-    protected function findOrCreateTerm(Word $word, $fieldCount)
+    protected function findOrCreateTerm(Word $word, $fieldCount = 1)
     {
         if ($term = $this->storage->terms()->findBySchemaAndWord($this->schema, $word)) {
             $term->setFieldCount(
