@@ -2,7 +2,7 @@
 
 namespace BlixtTests\Index;
 
-use Blixt\Index\Indexable;
+use Blixt\Document\Indexable;
 use BlixtTests\TestCase;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;

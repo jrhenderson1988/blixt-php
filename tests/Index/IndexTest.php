@@ -3,9 +3,9 @@
 namespace BlixtTests\Index;
 
 use Blixt\Blixt;
+use Blixt\Document\Indexable;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
-use Blixt\Index\Indexable;
 use Blixt\Index\Index;
 use Blixt\Index\Blueprint\Blueprint;
 use Blixt\Index\Blueprint\Definition;

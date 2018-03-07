@@ -1,6 +1,6 @@
 <?php
 
-namespace Blixt\Index;
+namespace Blixt\Document;
 
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
