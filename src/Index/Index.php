@@ -4,7 +4,7 @@ namespace Blixt\Index;
 
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
-use Blixt\Index\Search\Query;
+use Blixt\Search\Query\Query;
 use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Document;
@@ -42,6 +42,16 @@ class Index
     protected $stemmer;
 
     /**
+     * @var \Blixt\Index\IndexReader
+     */
+    protected $reader;
+
+    /**
+     * @var \Blixt\Index\IndexWriter
+     */
+    protected $writer;
+
+    /**
      * Index constructor.
      *
      * @param \Blixt\Storage\Storage         $storage
@@ -74,11 +84,49 @@ class Index
     }
 
     /**
-     * @param \Blixt\Index\Search\Query $query
+     * @param \Blixt\Search\Query\Query $query
      */
     public function search(Query $query)
     {
+        // TODO
+    }
 
+    /**
+     * Get (and create if necessary) the index reader.
+     *
+     * @return \Blixt\Index\IndexReader
+     */
+    public function getReader()
+    {
+        if (! $this->reader) {
+            $this->reader = new IndexReader(
+                $this->storage,
+                $this->tokenizer,
+                $this->stemmer,
+                $this->schema
+            );
+        }
+
+        return $this->reader;
+    }
+
+    /**
+     * Get (and create if necessary) the index writer.
+     *
+     * @return \Blixt\Index\IndexWriter
+     */
+    public function getWriter()
+    {
+        if (! $this->writer) {
+            $this->writer = new IndexWriter(
+                $this->storage,
+                $this->tokenizer,
+                $this->stemmer,
+                $this->schema
+            );
+        }
+
+        return $this->writer;
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace Blixt\Index\Search;
+namespace Blixt\Search\Query;
 
 use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Schema;
