@@ -2,8 +2,8 @@
 
 namespace BlixtTests\Index\Schema;
 
-use Blixt\Index\Schema\Blueprint;
-use Blixt\Index\Schema\Definition;
+use Blixt\Index\Blueprint\Blueprint;
+use Blixt\Index\Blueprint\Definition;
 use BlixtTests\TestCase;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;

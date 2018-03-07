@@ -7,8 +7,8 @@ use Blixt\Exceptions\IndexDoesNotExistException;
 use Blixt\Exceptions\InvalidBlueprintException;
 use Blixt\Exceptions\StorageException;
 use Blixt\Index\Index;
-use Blixt\Index\Schema\Blueprint;
-use Blixt\Index\Schema\Definition;
+use Blixt\Index\Blueprint\Blueprint;
+use Blixt\Index\Blueprint\Definition;
 use Blixt\Stemming\EnglishStemmer;
 use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Column;
@@ -139,8 +139,8 @@ class Blixt
     /**
      * Create an Index object using the Schema created by the Blueprint.
      *
-     * @param \Blixt\Index\Schema\Blueprint|string|mixed $blueprint
-     * @param \Closure|callable|null                     $closure
+     * @param \Blixt\Index\Blueprint\Blueprint|string|mixed $blueprint
+     * @param \Closure|callable|null                        $closure
      *
      * @return \Blixt\Index\Index
      * @throws \Blixt\Exceptions\IndexAlreadyExistsException
@@ -195,10 +195,10 @@ class Blixt
      * Blueprint, create a new one assuming it is a name. If a callable is provided, call it and pass in the (new or
      * provided) Blueprint object, which allows the developer to dynamically specify a column definition.
      *
-     * @param \Blixt\Index\Schema\Blueprint|string|mixed $blueprint
-     * @param \Closure|callable|null                     $callable
+     * @param \Blixt\Index\Blueprint\Blueprint|string|mixed $blueprint
+     * @param \Closure|callable|null                        $callable
      *
-     * @return \Blixt\Index\Schema\Blueprint
+     * @return \Blixt\Index\Blueprint\Blueprint
      */
     protected function buildBlueprint($blueprint, $callable)
     {
@@ -216,7 +216,7 @@ class Blixt
     /**
      * Create a Schema for the given Blueprint.
      *
-     * @param \Blixt\Index\Schema\Blueprint $blueprint
+     * @param \Blixt\Index\Blueprint\Blueprint $blueprint
      *
      * @return \Blixt\Storage\Entities\Schema
      * @throws \Blixt\Exceptions\InvalidBlueprintException

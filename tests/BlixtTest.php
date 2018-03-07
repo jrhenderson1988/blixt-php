@@ -8,7 +8,7 @@ use Blixt\Exceptions\IndexDoesNotExistException;
 use Blixt\Exceptions\InvalidBlueprintException;
 use Blixt\Exceptions\StorageException;
 use Blixt\Index\Index;
-use Blixt\Index\Schema\Blueprint;
+use Blixt\Index\Blueprint\Blueprint;
 use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Drivers\Memory\Storage as MemoryStorage;
 use Blixt\Storage\Entities\Column;

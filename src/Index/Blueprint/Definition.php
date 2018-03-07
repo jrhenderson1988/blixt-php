@@ -1,6 +1,6 @@
 <?php
 
-namespace Blixt\Index\Schema;
+namespace Blixt\Index\Blueprint;
 
 class Definition
 {

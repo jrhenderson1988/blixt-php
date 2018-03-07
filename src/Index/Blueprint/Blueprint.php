@@ -1,6 +1,6 @@
 <?php
 
-namespace Blixt\Index\Schema;
+namespace Blixt\Index\Blueprint;
 
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
@@ -74,9 +74,9 @@ class Blueprint
     /**
      * Add a definition to the schema blueprint.
      *
-     * @param \Blixt\Index\Schema\Definition|string $name
-     * @param bool                                  $isIndexed
-     * @param bool                                  $isStored
+     * @param \Blixt\Index\Blueprint\Definition|string $name
+     * @param bool                                     $isIndexed
+     * @param bool                                     $isStored
      */
     public function addDefinition($name, $isIndexed = true, $isStored = false)
     {
@@ -100,11 +100,11 @@ class Blueprint
     /**
      * Create a definition from the given data. If the first parameter is already a definiton, it is returned as is.
      *
-     * @param \Blixt\Index\Schema\Definition|string $name
-     * @param bool                                  $isIndexed
-     * @param bool                                  $isStored
+     * @param \Blixt\Index\Blueprint\Definition|string $name
+     * @param bool                                     $isIndexed
+     * @param bool                                     $isStored
      *
-     * @return \Blixt\Index\Schema\Definition
+     * @return \Blixt\Index\Blueprint\Definition
      */
     protected function createDefinition($name, $isIndexed = true, $isStored = false)
     {

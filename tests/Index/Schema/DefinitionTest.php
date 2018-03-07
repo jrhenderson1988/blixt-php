@@ -2,7 +2,7 @@
 
 namespace BlixtTests\Index\Schema;
 
-use Blixt\Index\Schema\Definition;
+use Blixt\Index\Blueprint\Definition;
 use BlixtTests\TestCase;
 
 class DefinitionTest extends TestCase
