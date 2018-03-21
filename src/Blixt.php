@@ -9,11 +9,9 @@ use Blixt\Exceptions\StorageException;
 use Blixt\Index\Index;
 use Blixt\Index\Blueprint\Blueprint;
 use Blixt\Index\Blueprint\Definition;
-use Blixt\Stemming\EnglishStemmer;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Storage;
-use Blixt\Tokenization\DefaultTokenizer;
 use Blixt\Tokenization\Tokenizer;
 
 class Blixt
@@ -70,16 +68,6 @@ class Blixt
     public function getStorage()
     {
         return $this->storage;
-    }
-
-    /**
-     * Get the stemmer.
-     *
-     * @return \Blixt\Stemming\Stemmer
-     */
-    public function getStemmer()
-    {
-        return $this->stemmer;
     }
 
     /**
