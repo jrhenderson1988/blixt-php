@@ -2,10 +2,26 @@
 
 namespace Blixt\Tokenization;
 
+use Blixt\Stemming\Stemmer;
 use Illuminate\Support\Collection;
 
 class DefaultTokenizer implements Tokenizer
 {
+    /**
+     * @var \Blixt\Stemming\Stemmer
+     */
+    protected $stemmer;
+
+    /**
+     * DefaultTokenizer constructor.
+     *
+     * @param \Blixt\Stemming\Stemmer $stemmer
+     */
+    public function __construct(Stemmer $stemmer)
+    {
+        $this->stemmer = $stemmer;
+    }
+
     /**
      * Tokenize the given string of text into a token collection.
      *
@@ -20,7 +36,7 @@ class DefaultTokenizer implements Tokenizer
         $i = 0;
         $this->split($text)->each(function ($word) use (&$tokens, &$i) {
             $tokens->push(
-                new Token($word, $i++)
+                new Token($this->stemmer->stem($word), $i++)
             );
         });
 

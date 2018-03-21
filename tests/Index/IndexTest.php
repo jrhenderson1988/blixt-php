@@ -30,7 +30,6 @@ use Mockery as m;
 class IndexTest extends TestCase
 {
     protected $storage;
-    protected $stemmer;
     protected $tokenizer;
     protected $blixt;
     protected $index;
@@ -39,12 +38,11 @@ class IndexTest extends TestCase
     public function createMockedIndexWithSchema(Schema $schema)
     {
         $this->storage = m::mock(Storage::class);
-        $this->stemmer = m::mock(Stemmer::class);
         $this->tokenizer = m::mock(Tokenizer::class);
         $this->blixt = m::mock(Blixt::class);
         $this->schema = $schema;
 
-        return $this->index = new Index($this->storage, $this->tokenizer, $this->stemmer, $this->schema);
+        return $this->index = new Index($this->schema, $this->storage, $this->tokenizer);
     }
 
     public function createMockedIndexWithPeopleSchemaWithNameAndAgeColumns()
@@ -102,10 +100,9 @@ class IndexTest extends TestCase
     {
         $storage = new MemoryStorage();
         $storage->create();
-        $tokenizer = new DummyTokenizer();
-        $stemmer = new DummyStemmer();
+        $tokenizer = new DummyTokenizer(new DummyStemmer());
 
-        $blixt = new Blixt($storage, $stemmer, $tokenizer);
+        $blixt = new Blixt($storage, $tokenizer);
         $index = $blixt->create($blueprint);
 
         $indexables = is_array($indexables) ? $indexables : [$indexables];
@@ -248,13 +245,20 @@ class DummyStemmer implements Stemmer
 
 class DummyTokenizer implements Tokenizer
 {
+    protected $stemmer;
+
+    public function __construct(Stemmer $stemmer)
+    {
+        $this->stemmer = $stemmer;
+    }
+
     public function tokenize($text)
     {
         $tokens = new Collection();
 
         $i = 0;
         foreach (explode(' ', mb_strtolower(trim($text))) as $word) {
-            $tokens->push(new Token($word, $i++));
+            $tokens->push(new Token($this->stemmer->stem($word), $i++));
         }
 
         return $tokens;

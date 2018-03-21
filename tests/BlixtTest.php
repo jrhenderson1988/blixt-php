@@ -23,20 +23,10 @@ use Mockery;
 class BlixtTest extends TestCase
 {
     /** @test */
-    public function testCreatingBlixtObjectWithoutProvidingStemmerAndTokenizerCreatesSensibleDefaults()
-    {
-        $storage = new MemoryStorage();
-        $storage->create();
-
-        $blixt = new Blixt($storage);
-        $this->assertInstanceOf(Stemmer::class, $blixt->getStemmer());
-        $this->assertInstanceOf(Tokenizer::class, $blixt->getTokenizer());
-    }
-
-    /** @test */
     public function testCreatingBlixtObjectLoadsSchemas()
     {
         $storage = Mockery::mock(Storage::class);
+        $tokenizer = Mockery::mock(Tokenizer::class);
         $schemaRepo = Mockery::mock(SchemaRepository::class);
         $columnRepo = Mockery::mock(ColumnRepository::class);
 
@@ -46,13 +36,14 @@ class BlixtTest extends TestCase
         $storage->shouldReceive('schemas')->andReturn($schemaRepo);
         $storage->shouldReceive('columns')->andReturn($columnRepo);
 
-        new Blixt($storage);
+        new Blixt($storage, $tokenizer);
     }
 
     /** @test */
     public function testOpeningNonExistentSchemaThrowsException()
     {
         $storage = Mockery::mock(Storage::class);
+        $tokenizer = Mockery::mock(Tokenizer::class);
         $schemaRepo = Mockery::mock(SchemaRepository::class);
         $columnRepo = Mockery::mock(ColumnRepository::class);
 
@@ -62,7 +53,7 @@ class BlixtTest extends TestCase
         $storage->shouldReceive('schemas')->andReturn($schemaRepo);
         $storage->shouldReceive('columns')->andReturn($columnRepo);
 
-        $blixt = new Blixt($storage);
+        $blixt = new Blixt($storage, $tokenizer);
 
         $this->expectException(IndexDoesNotExistException::class);
         $blixt->open('test');
@@ -72,6 +63,7 @@ class BlixtTest extends TestCase
     public function testOpeningExistingSchemaReturnsIndex()
     {
         $storage = Mockery::mock(Storage::class);
+        $tokenizer = Mockery::mock(Tokenizer::class);
         $schemaRepo = Mockery::mock(SchemaRepository::class);
         $columnRepo = Mockery::mock(ColumnRepository::class);
 
@@ -83,7 +75,7 @@ class BlixtTest extends TestCase
         $storage->shouldReceive('schemas')->andReturn($schemaRepo);
         $storage->shouldReceive('columns')->andReturn($columnRepo);
 
-        $blixt = new Blixt($storage);
+        $blixt = new Blixt($storage, $tokenizer);
         $indexByName = $blixt->open('test');
         $indexById = $blixt->open(1);
 
@@ -96,6 +88,7 @@ class BlixtTest extends TestCase
     public function testCreatingSchemaReturnsIndex()
     {
         $storage = Mockery::mock(Storage::class);
+        $tokenizer = Mockery::mock(Tokenizer::class);
         $schemaRepo = Mockery::mock(SchemaRepository::class);
         $columnRepo = Mockery::mock(ColumnRepository::class);
 
@@ -110,7 +103,7 @@ class BlixtTest extends TestCase
         $schemaRepo->shouldReceive('all')->andReturn(new Collection(), new Collection([$schema]));
         $schemaRepo->shouldReceive('save')->andReturn($schema);
 
-        $blixt = new Blixt($storage);
+        $blixt = new Blixt($storage, $tokenizer);
 
         $index = $blixt->create('test', function (Blueprint $blueprint) {
             $blueprint->addDefinition('test', true, false);
@@ -123,6 +116,7 @@ class BlixtTest extends TestCase
     public function testCreatingSchemaThatAlreadyExistsThrowsException()
     {
         $storage = Mockery::mock(Storage::class);
+        $tokenizer = Mockery::mock(Tokenizer::class);
         $schemaRepo = Mockery::mock(SchemaRepository::class);
         $columnRepo = Mockery::mock(ColumnRepository::class);
 
@@ -136,7 +130,7 @@ class BlixtTest extends TestCase
 
         $this->expectException(IndexAlreadyExistsException::class);
 
-        $blixt = new Blixt($storage);
+        $blixt = new Blixt($storage, $tokenizer);
         $blixt->create('test', function (Blueprint $blueprint) {
             $blueprint->addDefinition('test', true, false);
         });
@@ -146,6 +140,7 @@ class BlixtTest extends TestCase
     public function testCreatingSchemaWithoutDefiningColumnsThrowsException()
     {
         $storage = Mockery::mock(Storage::class);
+        $tokenizer = Mockery::mock(Tokenizer::class);
         $schemaRepo = Mockery::mock(SchemaRepository::class);
         $columnRepo = Mockery::mock(ColumnRepository::class);
 
@@ -154,7 +149,7 @@ class BlixtTest extends TestCase
         $storage->shouldReceive('schemas')->andReturn($schemaRepo);
         $storage->shouldReceive('columns')->andReturn($columnRepo);
 
-        $blixt = new Blixt($storage);
+        $blixt = new Blixt($storage, $tokenizer);
 
         $this->expectException(InvalidBlueprintException::class);
 
@@ -165,6 +160,7 @@ class BlixtTest extends TestCase
     public function testExceptionIsThrownWhenStorageIsUnableToCreateSchema()
     {
         $storage = Mockery::mock(Storage::class);
+        $tokenizer = Mockery::mock(Tokenizer::class);
         $schemaRepo = Mockery::mock(SchemaRepository::class);
         $columnRepo = Mockery::mock(ColumnRepository::class);
 
@@ -180,7 +176,7 @@ class BlixtTest extends TestCase
 
         $this->expectException(StorageException::class);
 
-        $blixt = new Blixt($storage);
+        $blixt = new Blixt($storage, $tokenizer);
         $blixt->create($name, function (Blueprint $blueprint) {
             $blueprint->addDefinition('test', true, false);
         });

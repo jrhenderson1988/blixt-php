@@ -6,7 +6,6 @@ use Blixt\Document\Indexable;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
 use Blixt\Search\Query\Query;
-use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Document;
 use Blixt\Storage\Entities\Field;
@@ -38,23 +37,16 @@ class Index
     protected $tokenizer;
 
     /**
-     * @var \Blixt\Stemming\Stemmer
-     */
-    protected $stemmer;
-
-    /**
      * Index constructor.
      *
+     * @param \Blixt\Storage\Entities\Schema $schema
      * @param \Blixt\Storage\Storage         $storage
      * @param \Blixt\Tokenization\Tokenizer  $tokenizer
-     * @param \Blixt\Stemming\Stemmer        $stemmer
-     * @param \Blixt\Storage\Entities\Schema $schema
      */
-    public function __construct(Storage $storage, Tokenizer $tokenizer, Stemmer $stemmer, Schema $schema)
+    public function __construct(Schema $schema, Storage $storage, Tokenizer $tokenizer)
     {
         $this->storage = $storage;
         $this->tokenizer = $tokenizer;
-        $this->stemmer = $stemmer;
         $this->schema = $schema;
     }
 
@@ -180,10 +172,10 @@ class Index
         $positions = new Collection();
 
         $this->tokenizer->tokenize($content)->each(function (Token $token) use (&$positions) {
-            $stem = $this->stemmer->stem($token->getText());
+            $text = $token->getText();
 
             $positions->put(
-                $stem, array_merge($positions->get($stem, []), [$token->getPosition()])
+                $text, array_merge($positions->get($text, []), [$token->getPosition()])
             );
         });
 

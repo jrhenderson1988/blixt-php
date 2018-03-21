@@ -10,7 +10,6 @@ use Blixt\Index\Index;
 use Blixt\Index\Blueprint\Blueprint;
 use Blixt\Index\Blueprint\Definition;
 use Blixt\Stemming\EnglishStemmer;
-use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Storage;
@@ -23,11 +22,6 @@ class Blixt
      * @var \Blixt\Storage\Storage
      */
     protected $storage;
-
-    /**
-     * @var \Blixt\Stemming\Stemmer
-     */
-    protected $stemmer;
 
     /**
      * @var \Blixt\Tokenization\Tokenizer
@@ -59,15 +53,13 @@ class Blixt
     /**
      * Blixt constructor.
      *
-     * @param \Blixt\Storage\Storage             $storage
-     * @param \Blixt\Stemming\Stemmer|null       $stemmer
-     * @param \Blixt\Tokenization\Tokenizer|null $tokenizer
+     * @param \Blixt\Storage\Storage        $storage
+     * @param \Blixt\Tokenization\Tokenizer $tokenizer
      */
-    public function __construct(Storage $storage, Stemmer $stemmer = null, Tokenizer $tokenizer = null)
+    public function __construct(Storage $storage, Tokenizer $tokenizer)
     {
         $this->storage = $storage;
-        $this->stemmer = $stemmer instanceof Stemmer ? $stemmer : new EnglishStemmer();
-        $this->tokenizer = $tokenizer instanceof Tokenizer ? $tokenizer : new DefaultTokenizer();
+        $this->tokenizer = $tokenizer;
 
         $this->reloadSchemas();
     }
@@ -262,6 +254,6 @@ class Blixt
      */
     protected function createIndexForSchema(Schema $schema)
     {
-        return new Index($this->storage, $this->tokenizer, $this->stemmer, $schema);
+        return new Index($schema, $this->storage, $this->tokenizer);
     }
 }
