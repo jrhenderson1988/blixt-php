@@ -7,9 +7,11 @@ use Blixt\Storage\Entities\Schema;
 interface SchemaRepository
 {
     /**
-     * @return \Illuminate\Support\Collection
+     * @param string $name
+     *
+     * @return \Blixt\Storage\Entities\Schema|null
      */
-    public function all();
+    public function findByName($name);
 
     /**
      * @param \Blixt\Storage\Entities\Schema $schema

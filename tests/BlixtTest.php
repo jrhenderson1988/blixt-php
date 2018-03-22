@@ -18,34 +18,50 @@ use Blixt\Storage\Repositories\SchemaRepository;
 use Blixt\Storage\Storage;
 use Blixt\Tokenization\Tokenizer;
 use Illuminate\Support\Collection;
-use Mockery;
+use Mockery as m;
 
 class BlixtTest extends TestCase
 {
-    /** @test */
-    public function testCreatingBlixtObjectLoadsSchemas()
+    /**
+     * @test
+     */
+    public function testInstallDoesNotCreateStorageWhenItAlreadyExists()
     {
-        $storage = Mockery::mock(Storage::class);
-        $tokenizer = Mockery::mock(Tokenizer::class);
-        $schemaRepo = Mockery::mock(SchemaRepository::class);
-        $columnRepo = Mockery::mock(ColumnRepository::class);
+        $storage = m::mock(Storage::class);
+        $tokenizer = m::mock(Tokenizer::class);
 
-        $schemaRepo->shouldReceive('all')->andReturn(new Collection());
-        $columnRepo->shouldReceive('all')->andReturn(new Collection());
+        $storage->shouldReceive('exists')->andReturn(true);
+        $storage->shouldNotReceive('create');
 
-        $storage->shouldReceive('schemas')->andReturn($schemaRepo);
-        $storage->shouldReceive('columns')->andReturn($columnRepo);
-
-        new Blixt($storage, $tokenizer);
+        $blixt = new Blixt($storage, $tokenizer);
+        $blixt->install();
     }
 
-    /** @test */
+    /**
+     * @test
+     */
+    public function testInstallCreatesStorageWhenItDoesNotAlreadyExist()
+    {
+        $storage = m::mock(Storage::class);
+        $tokenizer = m::mock(Tokenizer::class);
+
+        $storage->shouldReceive('exists')->andReturn(false);
+        $storage->shouldReceive('create')->andReturn(true);
+
+        $blixt = new Blixt($storage, $tokenizer);
+
+        $this->assertTrue($blixt->install());
+    }
+
+    /**
+     * @test
+     */
     public function testOpeningNonExistentSchemaThrowsException()
     {
-        $storage = Mockery::mock(Storage::class);
-        $tokenizer = Mockery::mock(Tokenizer::class);
-        $schemaRepo = Mockery::mock(SchemaRepository::class);
-        $columnRepo = Mockery::mock(ColumnRepository::class);
+        $storage = m::mock(Storage::class);
+        $tokenizer = m::mock(Tokenizer::class);
+        $schemaRepo = m::mock(SchemaRepository::class);
+        $columnRepo = m::mock(ColumnRepository::class);
 
         $schemaRepo->shouldReceive('all')->andReturn(new Collection());
         $columnRepo->shouldReceive('all')->andReturn(new Collection());
@@ -62,10 +78,10 @@ class BlixtTest extends TestCase
     /** @test */
     public function testOpeningExistingSchemaReturnsIndex()
     {
-        $storage = Mockery::mock(Storage::class);
-        $tokenizer = Mockery::mock(Tokenizer::class);
-        $schemaRepo = Mockery::mock(SchemaRepository::class);
-        $columnRepo = Mockery::mock(ColumnRepository::class);
+        $storage = m::mock(Storage::class);
+        $tokenizer = m::mock(Tokenizer::class);
+        $schemaRepo = m::mock(SchemaRepository::class);
+        $columnRepo = m::mock(ColumnRepository::class);
 
         $columnRepo->shouldReceive('all')->andReturn(new Collection());
         $schemaRepo->shouldReceive('all')->andReturn(new Collection([
@@ -87,10 +103,10 @@ class BlixtTest extends TestCase
     /** @test */
     public function testCreatingSchemaReturnsIndex()
     {
-        $storage = Mockery::mock(Storage::class);
-        $tokenizer = Mockery::mock(Tokenizer::class);
-        $schemaRepo = Mockery::mock(SchemaRepository::class);
-        $columnRepo = Mockery::mock(ColumnRepository::class);
+        $storage = m::mock(Storage::class);
+        $tokenizer = m::mock(Tokenizer::class);
+        $schemaRepo = m::mock(SchemaRepository::class);
+        $columnRepo = m::mock(ColumnRepository::class);
 
         $schema = new Schema(1, 'test');
         $column = new Column(1, 1, 'test', true, false);
@@ -115,10 +131,10 @@ class BlixtTest extends TestCase
     /** @test */
     public function testCreatingSchemaThatAlreadyExistsThrowsException()
     {
-        $storage = Mockery::mock(Storage::class);
-        $tokenizer = Mockery::mock(Tokenizer::class);
-        $schemaRepo = Mockery::mock(SchemaRepository::class);
-        $columnRepo = Mockery::mock(ColumnRepository::class);
+        $storage = m::mock(Storage::class);
+        $tokenizer = m::mock(Tokenizer::class);
+        $schemaRepo = m::mock(SchemaRepository::class);
+        $columnRepo = m::mock(ColumnRepository::class);
 
         $schema = new Schema(1, 'test');
         $column = new Column(1, 1, 'test', true, false);
@@ -139,10 +155,10 @@ class BlixtTest extends TestCase
     /** @test */
     public function testCreatingSchemaWithoutDefiningColumnsThrowsException()
     {
-        $storage = Mockery::mock(Storage::class);
-        $tokenizer = Mockery::mock(Tokenizer::class);
-        $schemaRepo = Mockery::mock(SchemaRepository::class);
-        $columnRepo = Mockery::mock(ColumnRepository::class);
+        $storage = m::mock(Storage::class);
+        $tokenizer = m::mock(Tokenizer::class);
+        $schemaRepo = m::mock(SchemaRepository::class);
+        $columnRepo = m::mock(ColumnRepository::class);
 
         $schemaRepo->shouldReceive('all')->andReturn(new Collection());
         $columnRepo->shouldReceive('all')->andReturn(new Collection());
@@ -159,17 +175,17 @@ class BlixtTest extends TestCase
     /** @test */
     public function testExceptionIsThrownWhenStorageIsUnableToCreateSchema()
     {
-        $storage = Mockery::mock(Storage::class);
-        $tokenizer = Mockery::mock(Tokenizer::class);
-        $schemaRepo = Mockery::mock(SchemaRepository::class);
-        $columnRepo = Mockery::mock(ColumnRepository::class);
+        $storage = m::mock(Storage::class);
+        $tokenizer = m::mock(Tokenizer::class);
+        $schemaRepo = m::mock(SchemaRepository::class);
+        $columnRepo = m::mock(ColumnRepository::class);
 
         $name = 'test';
         $schema = (new Schema())->name($name);
         $storage->shouldReceive('schemas')->andReturn($schemaRepo);
         $storage->shouldReceive('columns')->andReturn($columnRepo);
         $schemaRepo->shouldReceive('all')->andReturn(new Collection());
-        $schemaRepo->shouldReceive('save')->with(Mockery::on(function ($arg) use ($schema) {
+        $schemaRepo->shouldReceive('save')->with(m::on(function ($arg) use ($schema) {
             return $arg == $schema;
         }))->andReturn(null);
         $columnRepo->shouldReceive('all')->andReturn(new Collection());

@@ -13,12 +13,16 @@ class SchemaRepository extends AbstractRepository implements SchemaRepositoryInt
     const FIELD_NAME = 'name';
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @param string $name
+     *
+     * @return \Blixt\Storage\Entities\Schema|null
      * @throws \Blixt\Exceptions\StorageException
      */
-    public function all()
+    public function findByName($name)
     {
-        return $this->allEntities();
+        return $this->findEntityBy([
+            static::FIELD_NAME => $name
+        ]);
     }
 
     /**
