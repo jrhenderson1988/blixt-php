@@ -28,22 +28,4 @@ trait BelongsToField
             ? ($fieldId instanceof Field ? $fieldId->getId() : intval($fieldId))
             : null;
     }
-
-    /**
-     * Fluent getter/setter for fieldId.
-     *
-     * @param int|null|mixed $fieldId
-     *
-     * @return $this|int|null
-     */
-    public function fieldId($fieldId = null)
-    {
-        if (func_num_args() === 0) {
-            return $this->getFieldId();
-        }
-
-        $this->setFieldId($fieldId);
-
-        return $this;
-    }
 }

@@ -37,35 +37,4 @@ class Word extends Entity
     {
         $this->word = $word !== null ? strval($word) : null;
     }
-
-    /**
-     * Fluent getter/setter for word.
-     *
-     * @param string|null|mixed $word
-     *
-     * @return $this|null|string
-     */
-    public function word($word = null)
-    {
-        if (func_num_args() === 0) {
-            return $this->getWord();
-        }
-
-        $this->setWord($word);
-
-        return $this;
-    }
-
-    /**
-     * Mappings of the methods to sets of keys. That method will be used to set a property identified by one of the keys
-     * when using the make method to create an instance of the entity.
-     *
-     * @return array
-     */
-    public static function getAttributeMappings()
-    {
-        return array_merge(parent::getAttributeMappings(), [
-            'word' => ['word', 'setWord']
-        ]);
-    }
 }

@@ -46,37 +46,4 @@ class Occurrence extends Entity
     {
         $this->frequency = $frequency !== null ? intval($frequency) : null;
     }
-
-    /**
-     * Fluent getter/setter for frequency.
-     *
-     * @param int|null|mixed $frequency
-     *
-     * @return $this|int|null
-     */
-    public function frequency($frequency = null)
-    {
-        if (func_num_args() === 0) {
-            return $this->getFrequency();
-        }
-
-        $this->setFrequency($frequency);
-
-        return $this;
-    }
-
-    /**
-     * Mappings of the methods to sets of keys. That method will be used to set a property identified by one of the keys
-     * when using the make method to create an instance of the entity.
-     *
-     * @return array
-     */
-    public static function getAttributeMappings()
-    {
-        return array_merge(parent::getAttributeMappings(), [
-            'setFieldId' => ['field_id', 'fieldId', 'setFieldId'],
-            'setTermId' => ['term_id', 'termId', 'setTermId'],
-            'setFrequency' => ['frequency', 'setFrequency']
-        ]);
-    }
 }

@@ -43,36 +43,4 @@ class Document extends Entity
     {
         $this->key = $key;
     }
-
-    /**
-     * Fluent getter/setter for key.
-     *
-     * @param null|mixed $key
-     *
-     * @return $this|mixed|null
-     */
-    public function key($key = null)
-    {
-        if (func_num_args() === 0) {
-            return $this->getKey();
-        }
-
-        $this->setKey($key);
-
-        return $this;
-    }
-
-    /**
-     * Mappings of the methods to sets of keys. That method will be used to set a property identified by one of the keys
-     * when using the make method to create an instance of the entity.
-     *
-     * @return array
-     */
-    public static function getAttributeMappings()
-    {
-        return array_merge(parent::getAttributeMappings(), [
-            'setSchemaId' => ['schema_id', 'schemaId', 'setSchemaId'],
-            'setKey' => ['key', 'setKey']
-        ]);
-    }
 }

@@ -28,22 +28,4 @@ trait BelongsToSchema
             ? ($schemaId instanceof Schema ? $schemaId->getId() : intval($schemaId))
             : null;
     }
-
-    /**
-     * Fluent getter/setter for schemaId.
-     *
-     * @param int|null|mixed $schemaId
-     *
-     * @return $this|int|null
-     */
-    public function schemaId($schemaId = null)
-    {
-        if (func_num_args() === 0) {
-            return $this->getSchemaId();
-        }
-
-        $this->setSchemaId($schemaId);
-
-        return $this;
-    }
 }

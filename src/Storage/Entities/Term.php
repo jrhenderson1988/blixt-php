@@ -46,37 +46,4 @@ class Term extends Entity
     {
         $this->fieldCount = $fieldCount !== null ? intval($fieldCount) : null;
     }
-
-    /**
-     * Fluent getter/setter for fieldCount.
-     *
-     * @param int|null|mixed $fieldCount
-     *
-     * @return $this|int|mixed|null
-     */
-    public function fieldCount($fieldCount = null)
-    {
-        if (func_num_args() === 0) {
-            return $this->getFieldCount();
-        }
-
-        $this->setFieldCount($fieldCount);
-
-        return $this;
-    }
-
-    /**
-     * Mappings of the methods to sets of keys. That method will be used to set a property identified by one of the keys
-     * when using the make method to create an instance of the entity.
-     *
-     * @return array
-     */
-    public static function getAttributeMappings()
-    {
-        return array_merge(parent::getAttributeMappings(), [
-            'setSchemaId' => ['schema_id', 'schemaId', 'setSchemaId'],
-            'setWordId' => ['word_id', 'wordId', 'setWordId'],
-            'setFieldCount' => ['field_count', 'fieldCount', 'setFieldCount']
-        ]);
-    }
 }

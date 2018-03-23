@@ -28,22 +28,4 @@ trait BelongsToDocument
             ? ($documentId instanceof Document ? $documentId->getId() : intval($documentId))
             : null;
     }
-
-    /**
-     * Fluent getter/setter for documentId.
-     *
-     * @param null $documentId
-     *
-     * @return $this|int|null
-     */
-    public function documentId($documentId = null)
-    {
-        if (func_num_args() === 0) {
-            return $this->getDocumentId();
-        }
-
-        $this->setDocumentId($documentId);
-
-        return $this;
-    }
 }
