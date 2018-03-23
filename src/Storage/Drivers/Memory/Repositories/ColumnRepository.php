@@ -4,7 +4,9 @@ namespace Blixt\Storage\Drivers\Memory\Repositories;
 
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Entity;
+use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Repositories\ColumnRepository as ColumnRepositoryInterface;
+use Illuminate\Support\Collection;
 
 class ColumnRepository extends AbstractRepository implements ColumnRepositoryInterface
 {
@@ -16,12 +18,16 @@ class ColumnRepository extends AbstractRepository implements ColumnRepositoryInt
     const FIELD_IS_STORED = 'is_stored';
 
     /**
+     * @param \Blixt\Storage\Entities\Schema $schema
+     *
      * @return \Illuminate\Support\Collection
      * @throws \Blixt\Exceptions\StorageException
      */
-    public function all()
+    public function getBySchema(Schema $schema): Collection
     {
-        return $this->allEntities();
+        return $this->getEntitiesBy([
+            static::FIELD_SCHEMA_ID => $schema->getId()
+        ]);
     }
 
     /**
@@ -30,7 +36,7 @@ class ColumnRepository extends AbstractRepository implements ColumnRepositoryInt
      * @return \Blixt\Storage\Entities\Column
      * @throws \Blixt\Exceptions\StorageException
      */
-    public function save(Column $column)
+    public function save(Column $column): Column
     {
         return $this->saveEntity($column);
     }
