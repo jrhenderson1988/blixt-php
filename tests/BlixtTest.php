@@ -4,13 +4,12 @@ namespace BlixtTests;
 
 use Blixt\Blixt;
 use Blixt\Exceptions\IndexAlreadyExistsException;
-use Blixt\Exceptions\IndexDoesNotExistException;
+use Blixt\Exceptions\SchemaDoesNotExistException;
 use Blixt\Exceptions\InvalidBlueprintException;
 use Blixt\Exceptions\StorageException;
+use Blixt\Index\Blueprint\Definition;
 use Blixt\Index\Index;
 use Blixt\Index\Blueprint\Blueprint;
-use Blixt\Stemming\Stemmer;
-use Blixt\Storage\Drivers\Memory\Storage as MemoryStorage;
 use Blixt\Storage\Entities\Column;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Repositories\ColumnRepository;
@@ -22,19 +21,56 @@ use Mockery as m;
 
 class BlixtTest extends TestCase
 {
+    protected $blixt;
+    protected $storage;
+    protected $tokenizer;
+    protected $schemaRepo;
+    protected $columnRepo;
+
+    public function setUp()
+    {
+        $this->schemaRepo = m::mock(SchemaRepository::class);
+        $this->columnRepo = m::mock(ColumnRepository::class);
+
+        $this->blixt = new Blixt(
+            $this->storage = m::mock(Storage::class),
+            $this->tokenizer = m::mock(Tokenizer::class)
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function testItCanBeInstantiated()
+    {
+        $this->assertInstanceOf(Blixt::class, $this->blixt);
+    }
+
+    /**
+     * @test
+     */
+    public function testGetStorageReturnsStorage()
+    {
+        $this->assertSame($this->storage, $this->blixt->getStorage());
+    }
+
+    /**
+     * @test
+     */
+    public function testGetStorageReturnsTokenizer()
+    {
+        $this->assertSame($this->tokenizer, $this->blixt->getTokenizer());
+    }
+
     /**
      * @test
      */
     public function testInstallDoesNotCreateStorageWhenItAlreadyExists()
     {
-        $storage = m::mock(Storage::class);
-        $tokenizer = m::mock(Tokenizer::class);
+        $this->storage->shouldReceive('exists')->andReturn(true);
+        $this->storage->shouldNotReceive('create');
 
-        $storage->shouldReceive('exists')->andReturn(true);
-        $storage->shouldNotReceive('create');
-
-        $blixt = new Blixt($storage, $tokenizer);
-        $blixt->install();
+        $this->assertTrue($this->blixt->install());
     }
 
     /**
@@ -42,159 +78,123 @@ class BlixtTest extends TestCase
      */
     public function testInstallCreatesStorageWhenItDoesNotAlreadyExist()
     {
-        $storage = m::mock(Storage::class);
-        $tokenizer = m::mock(Tokenizer::class);
+        $this->storage->shouldReceive('exists')->andReturn(false);
+        $this->storage->shouldReceive('create')->andReturn(true);
 
-        $storage->shouldReceive('exists')->andReturn(false);
-        $storage->shouldReceive('create')->andReturn(true);
-
-        $blixt = new Blixt($storage, $tokenizer);
-
-        $this->assertTrue($blixt->install());
+        $this->assertTrue($this->blixt->install());
     }
 
     /**
      * @test
      */
-    public function testOpeningNonExistentSchemaThrowsException()
-    {
-        $storage = m::mock(Storage::class);
-        $tokenizer = m::mock(Tokenizer::class);
-        $schemaRepo = m::mock(SchemaRepository::class);
-        $columnRepo = m::mock(ColumnRepository::class);
-
-        $schemaRepo->shouldReceive('all')->andReturn(new Collection());
-        $columnRepo->shouldReceive('all')->andReturn(new Collection());
-
-        $storage->shouldReceive('schemas')->andReturn($schemaRepo);
-        $storage->shouldReceive('columns')->andReturn($columnRepo);
-
-        $blixt = new Blixt($storage, $tokenizer);
-
-        $this->expectException(IndexDoesNotExistException::class);
-        $blixt->open('test');
-    }
-
-    /** @test */
     public function testOpeningExistingSchemaReturnsIndex()
     {
-        $storage = m::mock(Storage::class);
-        $tokenizer = m::mock(Tokenizer::class);
-        $schemaRepo = m::mock(SchemaRepository::class);
-        $columnRepo = m::mock(ColumnRepository::class);
+        $schema = new Schema(1, 'test');
 
-        $columnRepo->shouldReceive('all')->andReturn(new Collection());
-        $schemaRepo->shouldReceive('all')->andReturn(new Collection([
-            new Schema(1, 'test')
-        ]));
+        $this->schemaRepo->shouldReceive('findByName')->withArgs(['test'])->andReturn($schema);
+        $this->storage->shouldReceive('schemas')->andReturn($this->schemaRepo);
 
-        $storage->shouldReceive('schemas')->andReturn($schemaRepo);
-        $storage->shouldReceive('columns')->andReturn($columnRepo);
-
-        $blixt = new Blixt($storage, $tokenizer);
-        $indexByName = $blixt->open('test');
-        $indexById = $blixt->open(1);
-
-        $this->assertInstanceOf(Index::class, $indexByName);
-        $this->assertInstanceOf(Index::class, $indexById);
-        $this->assertEquals($indexByName, $indexById);
+        $index = $this->blixt->open('test');
+        $this->assertInstanceOf(Index::class, $index);
+        $this->assertSame($this->getInaccessibleProperty($index, 'schema'), $schema);
     }
 
-    /** @test */
-    public function testCreatingSchemaReturnsIndex()
+    public function testOpeningNonExistentSchemaThrowsException()
     {
-        $storage = m::mock(Storage::class);
-        $tokenizer = m::mock(Tokenizer::class);
-        $schemaRepo = m::mock(SchemaRepository::class);
-        $columnRepo = m::mock(ColumnRepository::class);
+        $this->storage->shouldReceive('schemas')->andReturn($this->schemaRepo);
+        $this->schemaRepo->shouldReceive('findByName')->withArgs(['test'])->andReturn(null);
 
-        $schema = new Schema(1, 'test');
-        $column = new Column(1, 1, 'test', true, false);
+        $this->expectException(SchemaDoesNotExistException::class);
+        $this->blixt->open('test');
+    }
 
-        $storage->shouldReceive('columns')->andReturn($columnRepo);
-        $columnRepo->shouldReceive('all')->twice()->andReturn(new Collection(), new Collection([$column]));
-        $columnRepo->shouldReceive('save')->andReturn($column);
+    /**
+     * @test
+     */
+    public function testOpeningNonExistentSchemaWithClosureReturnsIndex()
+    {
+        $this->storage->shouldReceive('schemas')->andReturn($this->schemaRepo);
+        $this->schemaRepo->shouldReceive('findByName')->withArgs(['test'])->andReturn(null);
+        $this->schemaRepo->shouldReceive('save')->with(m::on(function ($arg) {
+            return $arg == new Schema(null, 'test');
+        }))->andReturn($schema = new Schema(1, 'test'));
 
-        $storage->shouldReceive('schemas')->andReturn($schemaRepo);
-        $schemaRepo->shouldReceive('all')->andReturn(new Collection(), new Collection([$schema]));
-        $schemaRepo->shouldReceive('save')->andReturn($schema);
+        $this->storage->shouldReceive('columns')->andReturn($this->columnRepo);
+        $this->columnRepo->shouldReceive('save')->with(m::on(function ($arg) use ($schema) {
+            return $arg == new Column(null, $schema->getId(), 'test_field', true, false);
+        }))->andReturn($column = new Column(1, $schema->getId(), 'test_field', true, false));
 
-        $blixt = new Blixt($storage, $tokenizer);
-
-        $index = $blixt->create('test', function (Blueprint $blueprint) {
-            $blueprint->addDefinition('test', true, false);
+        $index = $this->blixt->open('test', function (Blueprint $blueprint) {
+            $blueprint->addDefinition('test_field', true, false);
         });
 
         $this->assertInstanceOf(Index::class, $index);
+        $this->assertSame($this->getInaccessibleProperty($index, 'schema'), $schema);
     }
 
-    /** @test */
+    /**
+     * @test
+     */
+    public function testCreatingSchemaReturnsIndex()
+    {
+        $this->storage->shouldReceive('schemas')->andReturn($this->schemaRepo);
+        $this->schemaRepo->shouldReceive('findByName')->withArgs(['test'])->andReturn(null);
+        $this->schemaRepo->shouldReceive('save')->with(m::on(function ($arg) {
+            return $arg == new Schema(null, 'test');
+        }))->andReturn($schema = new Schema(1, 'test'));
+
+        $this->storage->shouldReceive('columns')->andReturn($this->columnRepo);
+        $this->columnRepo->shouldReceive('save')->with(m::on(function ($arg) use ($schema) {
+            return $arg == new Column(null, $schema->getId(), 'test_field', true, false);
+        }))->andReturn($column = new Column(1, $schema->getId(), 'test_field', true, false));
+
+        $index = $this->blixt->create(new Blueprint('test', new Collection([
+            new Definition('test_field', true, false)
+        ])));
+
+        $this->assertInstanceOf(Index::class, $index);
+        $this->assertSame($this->getInaccessibleProperty($index, 'schema'), $schema);
+    }
+
+    /**
+     * @test
+     */
     public function testCreatingSchemaThatAlreadyExistsThrowsException()
     {
-        $storage = m::mock(Storage::class);
-        $tokenizer = m::mock(Tokenizer::class);
-        $schemaRepo = m::mock(SchemaRepository::class);
-        $columnRepo = m::mock(ColumnRepository::class);
-
         $schema = new Schema(1, 'test');
-        $column = new Column(1, 1, 'test', true, false);
-
-        $schemaRepo->shouldReceive('all')->andReturn(new Collection([$schema]));
-        $columnRepo->shouldReceive('all')->andReturn(new Collection([$column]));
-        $storage->shouldReceive('schemas')->andReturn($schemaRepo);
-        $storage->shouldReceive('columns')->andReturn($columnRepo);
+        $this->storage->shouldReceive('schemas')->andReturn($this->schemaRepo);
+        $this->schemaRepo->shouldReceive('findByName')->andReturn($schema);
 
         $this->expectException(IndexAlreadyExistsException::class);
-
-        $blixt = new Blixt($storage, $tokenizer);
-        $blixt->create('test', function (Blueprint $blueprint) {
-            $blueprint->addDefinition('test', true, false);
-        });
+        $this->blixt->create(new Blueprint('test', new Collection([
+            new Definition('test_field', true, false)
+        ])));
     }
 
-    /** @test */
-    public function testCreatingSchemaWithoutDefiningColumnsThrowsException()
+    /**
+     * @test
+     */
+    public function testCreatingSchemaWithoutColumnDefinitionsThrowsException()
     {
-        $storage = m::mock(Storage::class);
-        $tokenizer = m::mock(Tokenizer::class);
-        $schemaRepo = m::mock(SchemaRepository::class);
-        $columnRepo = m::mock(ColumnRepository::class);
-
-        $schemaRepo->shouldReceive('all')->andReturn(new Collection());
-        $columnRepo->shouldReceive('all')->andReturn(new Collection());
-        $storage->shouldReceive('schemas')->andReturn($schemaRepo);
-        $storage->shouldReceive('columns')->andReturn($columnRepo);
-
-        $blixt = new Blixt($storage, $tokenizer);
+        $this->storage->shouldReceive('schemas')->andReturn($this->schemaRepo);
+        $this->schemaRepo->shouldReceive('findByName')->andReturn(null);
 
         $this->expectException(InvalidBlueprintException::class);
-
-        $blixt->create('test');
+        $this->blixt->create(new Blueprint('test'));
     }
 
     /** @test */
     public function testExceptionIsThrownWhenStorageIsUnableToCreateSchema()
     {
-        $storage = m::mock(Storage::class);
-        $tokenizer = m::mock(Tokenizer::class);
-        $schemaRepo = m::mock(SchemaRepository::class);
-        $columnRepo = m::mock(ColumnRepository::class);
-
-        $name = 'test';
-        $schema = (new Schema())->name($name);
-        $storage->shouldReceive('schemas')->andReturn($schemaRepo);
-        $storage->shouldReceive('columns')->andReturn($columnRepo);
-        $schemaRepo->shouldReceive('all')->andReturn(new Collection());
-        $schemaRepo->shouldReceive('save')->with(m::on(function ($arg) use ($schema) {
-            return $arg == $schema;
+        $this->storage->shouldReceive('schemas')->andReturn($this->schemaRepo);
+        $this->schemaRepo->shouldReceive('findByName')->andReturn(null);
+        $this->schemaRepo->shouldReceive('save')->with(m::on(function ($arg) {
+            return $arg == new Schema(null, 'test');
         }))->andReturn(null);
-        $columnRepo->shouldReceive('all')->andReturn(new Collection());
 
         $this->expectException(StorageException::class);
-
-        $blixt = new Blixt($storage, $tokenizer);
-        $blixt->create($name, function (Blueprint $blueprint) {
-            $blueprint->addDefinition('test', true, false);
-        });
+        $this->blixt->create(new Blueprint('test', new Collection([
+            new Definition('test_field', true, false)
+        ])));
     }
 }

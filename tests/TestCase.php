@@ -2,13 +2,23 @@
 
 namespace BlixtTests;
 
-use Mockery;
-use PHPUnit_Framework_TestCase;
+use Mockery as m;
+use PHPUnit\Framework\TestCase as BaseTestCase;
+use ReflectionClass;
 
-class TestCase extends PHPUnit_Framework_TestCase
+class TestCase extends BaseTestCase
 {
     public function tearDown()
     {
-        Mockery::close();
+        m::close();
+    }
+
+    public function getInaccessibleProperty($object, $name)
+    {
+        $reflection = new ReflectionClass($object);
+        $property = $reflection->getProperty($name);
+        $property->setAccessible(true);
+
+        return $property->getValue($object);
     }
 }

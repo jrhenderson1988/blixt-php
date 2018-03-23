@@ -3,7 +3,7 @@
 namespace Blixt;
 
 use Blixt\Exceptions\IndexAlreadyExistsException;
-use Blixt\Exceptions\IndexDoesNotExistException;
+use Blixt\Exceptions\SchemaDoesNotExistException;
 use Blixt\Exceptions\InvalidBlueprintException;
 use Blixt\Exceptions\StorageException;
 use Blixt\Index\Index;
@@ -85,7 +85,7 @@ class Blixt
      * @param \Closure $closure
      *
      * @return \Blixt\Index\Index
-     * @throws \Blixt\Exceptions\IndexDoesNotExistException
+     * @throws \Blixt\Exceptions\SchemaDoesNotExistException
      * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\StorageException
      */
@@ -103,7 +103,7 @@ class Blixt
             return $this->createIndexForSchema($schema);
         }
 
-        throw new IndexDoesNotExistException("The requested schema does not exist.");
+        throw new SchemaDoesNotExistException("The requested schema does not exist.");
     }
 
     /**

@@ -3,7 +3,6 @@
 namespace Blixt\Document;
 
 use Illuminate\Support\Collection;
-use InvalidArgumentException;
 
 class Indexable
 {
@@ -20,10 +19,10 @@ class Indexable
     /**
      * Document constructor.
      *
-     * @param int|mixed $key
-     * @param \Illuminate\Support\Collection|array|null $fields
+     * @param int                            $key
+     * @param \Illuminate\Support\Collection $fields
      */
-    public function __construct($key, $fields = null)
+    public function __construct(int $key, Collection $fields = null)
     {
         $this->setKey($key);
         $this->setFields(! is_null($fields) ? $fields : new Collection());
@@ -32,19 +31,19 @@ class Indexable
     /**
      * Set the key for the document.
      *
-     * @param int|mixed $key
+     * @param int $key
      */
-    public function setKey($key)
+    public function setKey(int $key)
     {
-        $this->key = intval($key);
+        $this->key = $key;
     }
 
     /**
      * Get the key for the document.
      *
-     * @return mixed
+     * @return int
      */
-    public function getKey()
+    public function getKey(): int
     {
         return $this->key;
     }
@@ -56,7 +55,7 @@ class Indexable
      *
      * @return mixed|null
      */
-    public function getField($key)
+    public function getField(string $key)
     {
         return $this->fields->get($key);
     }
@@ -67,7 +66,7 @@ class Indexable
      * @param string|mixed $key
      * @param mixed        $value
      */
-    public function setField($key, $value)
+    public function setField(string $key, $value): void
     {
         $this->fields->put($key, $value);
     }
@@ -77,19 +76,9 @@ class Indexable
      *
      * @param \Illuminate\Support\Collection|array $fields
      */
-    public function setFields($fields)
+    public function setFields(Collection $fields): void
     {
-        if (! $fields instanceof Collection && ! is_array($fields)) {
-            throw new InvalidArgumentException(
-                'Fields must be a collection of an array.'
-            );
-        }
-
-        $this->fields = new Collection();
-
-        (new Collection($fields))->each(function ($item, $key) {
-            $this->setField($key, $item);
-        });
+        $this->fields = $fields;
     }
 
     /**
@@ -97,7 +86,7 @@ class Indexable
      *
      * @return \Illuminate\Support\Collection
      */
-    public function getFields()
+    public function getFields(): Collection
     {
         return $this->fields;
     }
