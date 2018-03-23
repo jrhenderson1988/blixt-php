@@ -48,6 +48,18 @@ class Index
         $this->storage = $storage;
         $this->tokenizer = $tokenizer;
         $this->schema = $schema;
+
+        $this->loadColumns();
+    }
+
+    /**
+     * Load the new columns into the schema.
+     */
+    protected function loadColumns(): void
+    {
+        $this->schema->setColumns(
+            $this->storage->columns()->getBySchema($this->schema)
+        );
     }
 
     /**
@@ -57,7 +69,7 @@ class Index
      * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
      * @throws \Blixt\Exceptions\InvalidDocumentException
      */
-    public function add(Indexable $indexable)
+    public function add(Indexable $indexable): bool
     {
         $this->assertDocumentDoesNotExist($indexable);
         $this->assertDocumentMatchesSchema($indexable);
