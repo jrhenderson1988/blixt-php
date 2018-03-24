@@ -11,5 +11,5 @@ interface Stemmer
      *
      * @return string
      */
-    public function stem($word);
+    public function stem(string $word): string;
 }

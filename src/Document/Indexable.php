@@ -17,12 +17,12 @@ class Indexable
     protected $fields;
 
     /**
-     * Document constructor.
+     * Indexable constructor.
      *
-     * @param int                            $key
-     * @param \Illuminate\Support\Collection $fields
+     * @param int                                 $key
+     * @param \Illuminate\Support\Collection|null $fields
      */
-    public function __construct(int $key, Collection $fields = null)
+    public function __construct(int $key, ?Collection $fields = null)
     {
         $this->setKey($key);
         $this->setFields(! is_null($fields) ? $fields : new Collection());
@@ -33,7 +33,7 @@ class Indexable
      *
      * @param int $key
      */
-    public function setKey(int $key)
+    public function setKey(int $key): void
     {
         $this->key = $key;
     }
@@ -53,7 +53,7 @@ class Indexable
      *
      * @param string $key
      *
-     * @return mixed|null
+     * @return mixed
      */
     public function getField(string $key)
     {

@@ -3,7 +3,6 @@
 namespace Blixt\Index\Blueprint;
 
 use Illuminate\Support\Collection;
-use InvalidArgumentException;
 
 class Blueprint
 {
@@ -18,12 +17,12 @@ class Blueprint
     protected $definitions;
 
     /**
-     * Schema constructor.
+     * Blueprint constructor.
      *
-     * @param string|mixed                         $name
-     * @param \Illuminate\Support\Collection|array $definitions
+     * @param string                              $name
+     * @param \Illuminate\Support\Collection|null $definitions
      */
-    public function __construct($name, $definitions = null)
+    public function __construct(string $name, ?Collection $definitions = null)
     {
         $this->setName($name);
         $this->setDefinitions(! is_null($definitions) ? $definitions : new Collection());
@@ -32,11 +31,11 @@ class Blueprint
     /**
      * Set the name of the blueprint.
      *
-     * @param string|mixed $name
+     * @param string $name
      */
-    public function setName($name)
+    public function setName(string $name): void
     {
-        $this->name = strval($name);
+        $this->name = $name;
     }
 
     /**
@@ -44,7 +43,7 @@ class Blueprint
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -53,37 +52,39 @@ class Blueprint
      * Set the definitions to the given array or collection.
      *
      * @param \Illuminate\Support\Collection|array $definitions
-     *
-     * @throws \InvalidArgumentException
      */
-    public function setDefinitions($definitions)
+    public function setDefinitions(Collection $definitions): void
     {
-        if (! $definitions instanceof Collection && ! is_array($definitions)) {
-            throw new InvalidArgumentException(
-                "The definitions provided must be an array or a collection."
-            );
-        }
-
         $this->definitions = new Collection();
 
-        (new Collection($definitions))->each(function ($definition) {
+        $definitions->each(function ($definition) {
             $this->addDefinition($definition);
         });
     }
 
     /**
-     * Add a definition to the schema blueprint.
+     * Add a definition to the blueprint.
      *
-     * @param \Blixt\Index\Blueprint\Definition|string $name
-     * @param bool                                     $isIndexed
-     * @param bool                                     $isStored
+     * @param \Blixt\Index\Blueprint\Definition $definition
      */
-    public function addDefinition($name, $isIndexed = true, $isStored = false)
+    public function addDefinition(Definition $definition): void
     {
-        $definition = $this->createDefinition($name, $isIndexed, $isStored);
-
         $this->definitions->put(
             $definition->getName(), $definition
+        );
+    }
+
+    /**
+     * Create a definition from the given information and add it to the blueprint.
+     *
+     * @param string $name
+     * @param bool   $isIndexed
+     * @param bool   $isStored
+     */
+    public function createDefinition(string $name, bool $isIndexed = true, bool $isStored = false): void
+    {
+        $this->addDefinition(
+            new Definition($name, $isIndexed, $isStored)
         );
     }
 
@@ -92,32 +93,8 @@ class Blueprint
      *
      * @return \Illuminate\Support\Collection
      */
-    public function getDefinitions()
+    public function getDefinitions(): Collection
     {
         return $this->definitions;
-    }
-
-    /**
-     * Create a definition from the given data. If the first parameter is already a definiton, it is returned as is.
-     *
-     * @param \Blixt\Index\Blueprint\Definition|string $name
-     * @param bool                                     $isIndexed
-     * @param bool                                     $isStored
-     *
-     * @return \Blixt\Index\Blueprint\Definition
-     */
-    protected function createDefinition($name, $isIndexed = true, $isStored = false)
-    {
-        if ($name instanceof Definition) {
-            return $name;
-        }
-
-        if (! is_string($name) || empty($name)) {
-            throw new InvalidArgumentException(
-                'Invalid definition name, expected non-empty string.'
-            );
-        }
-
-        return new Definition($name, $isIndexed, $isStored);
     }
 }

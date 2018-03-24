@@ -2,6 +2,8 @@
 
 namespace Blixt\Tokenization;
 
+use Illuminate\Support\Collection;
+
 interface Tokenizer
 {
     /**
@@ -11,5 +13,5 @@ interface Tokenizer
      *
      * @return \Illuminate\Support\Collection
      */
-    public function tokenize($text);
+    public function tokenize(string $text): Collection;
 }

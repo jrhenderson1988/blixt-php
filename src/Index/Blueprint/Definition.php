@@ -22,21 +22,21 @@ class Definition
     /**
      * Definition constructor.
      *
-     * @param string|mixed $name
-     * @param bool|mixed   $indexed
-     * @param bool|mixed   $stored
+     * @param string $name
+     * @param bool   $indexed
+     * @param bool   $stored
      */
-    public function __construct($name, $indexed = true, $stored = false)
+    public function __construct(string $name, bool $indexed = true, bool $stored = false)
     {
-        $this->name = strval($name);
-        $this->indexed = !! $indexed;
-        $this->stored = !! $stored;
+        $this->name = $name;
+        $this->indexed = $indexed;
+        $this->stored = $stored;
     }
 
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -44,7 +44,7 @@ class Definition
     /**
      * @return bool
      */
-    public function isIndexed()
+    public function isIndexed(): bool
     {
         return $this->indexed;
     }
@@ -52,7 +52,7 @@ class Definition
     /**
      * @return bool
      */
-    public function isStored()
+    public function isStored(): bool
     {
         return $this->stored;
     }

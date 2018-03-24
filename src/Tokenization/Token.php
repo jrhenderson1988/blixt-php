@@ -20,7 +20,7 @@ class Token
      * @param string $text
      * @param int    $position
      */
-    public function __construct($text, $position = 0)
+    public function __construct(string $text, int $position = 0)
     {
         $this->setText($text);
         $this->setPosition($position);
@@ -31,9 +31,9 @@ class Token
      *
      * @return string
      */
-    public function getText()
+    public function getText(): string
     {
-        return strval($this->text);
+        return $this->text;
     }
 
     /**
@@ -41,9 +41,9 @@ class Token
      *
      * @param string $text
      */
-    public function setText($text)
+    public function setText(string $text): void
     {
-        $this->text = strval($text);
+        $this->text = $text;
     }
 
     /**
@@ -51,9 +51,9 @@ class Token
      *
      * @return int
      */
-    public function getPosition()
+    public function getPosition(): int
     {
-        return intval($this->position);
+        return $this->position;
     }
 
     /**
@@ -61,8 +61,8 @@ class Token
      *
      * @param int $position
      */
-    public function setPosition($position)
+    public function setPosition(int $position): void
     {
-        $this->position = intval($position);
+        $this->position = $position;
     }
 }

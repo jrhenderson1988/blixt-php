@@ -29,7 +29,7 @@ class DefaultTokenizer implements Tokenizer
      *
      * @return \Illuminate\Support\Collection
      */
-    public function tokenize($text)
+    public function tokenize(string $text): Collection
     {
         $tokens = new Collection();
 
@@ -51,7 +51,7 @@ class DefaultTokenizer implements Tokenizer
      *
      * @return string
      */
-    protected function normalize($text)
+    protected function normalize(string $text): string
     {
         return preg_replace('/[^\\p{L}\\p{N}\\s]/', '', mb_strtolower(trim($text)));
     }
@@ -63,7 +63,7 @@ class DefaultTokenizer implements Tokenizer
      *
      * @return \Illuminate\Support\Collection
      */
-    protected function split($text)
+    protected function split(string $text): Collection
     {
         $words = new Collection(explode(' ', $this->normalize($text)));
 

@@ -37,7 +37,7 @@ class EnglishStemmer implements Stemmer
      *
      * @return string
      */
-    public function stem($word)
+    public function stem(string $word): string
     {
         if (mb_strlen($word) <= 2) {
             return $word;
@@ -62,7 +62,7 @@ class EnglishStemmer implements Stemmer
      *
      * @return string
      */
-    protected function step1a($word)
+    protected function step1a(string $word): string
     {
         if (mb_substr($word, -1) == 's') {
             foreach (['sses' => 'ss', 'ies' => 'i', 'ss' => 'ss', 's' => ''] as $search => $replace) {
@@ -81,9 +81,9 @@ class EnglishStemmer implements Stemmer
      *
      * @param string $word
      *
-     * @return bool|string
+     * @return string
      */
-    protected function step1b($word)
+    protected function step1b(string $word): string
     {
         if (mb_substr($word, -2, 1) != 'e' || !$this->replace($word, 'eed', 'ee', 0)) {
             if ((preg_match("#" . self::VOWEL . "+#", mb_substr($word, 0, -3)) && $this->replace($word, 'ing', ''))
@@ -118,7 +118,7 @@ class EnglishStemmer implements Stemmer
      *
      * @return string
      */
-    protected function step1c($word)
+    protected function step1c(string $word): string
     {
         if (mb_substr($word, -1) == 'y' && preg_match("#" . self::VOWEL . "+#", mb_substr($word, 0, -1))) {
             $this->replace($word, 'y', 'i');
@@ -134,7 +134,7 @@ class EnglishStemmer implements Stemmer
      *
      * @return string
      */
-    protected function step2($word)
+    protected function step2(string $word): string
     {
         switch (mb_substr($word, -2, 1)) {
             case 'a':
@@ -194,7 +194,7 @@ class EnglishStemmer implements Stemmer
      *
      * @return string
      */
-    protected function step3($word)
+    protected function step3(string $word): string
     {
         switch (mb_substr($word, -2, 1)) {
             case 'a':
@@ -234,7 +234,7 @@ class EnglishStemmer implements Stemmer
      *
      * @return string
      */
-    protected function step4($word)
+    protected function step4(string $word): string
     {
         switch (mb_substr($word, -2, 1)) {
             case 'a':
@@ -307,7 +307,7 @@ class EnglishStemmer implements Stemmer
      *
      * @return string
      */
-    protected function step5a($word)
+    protected function step5a(string $word): string
     {
         if (mb_substr($word, -1) == 'e') {
             if ($this->m(mb_substr($word, 0, -1)) > 1) {
@@ -330,7 +330,7 @@ class EnglishStemmer implements Stemmer
      *
      * @return string
      */
-    protected function step5b($word)
+    protected function step5b(string $word): string
     {
         if ($this->m($word) > 1 && $this->doubleConsonant($word) && mb_substr($word, -1) == 'l') {
             $word = mb_substr($word, 0, -1);
@@ -343,14 +343,14 @@ class EnglishStemmer implements Stemmer
      * Replaces the first string with the second, at the end of the string. If fourth arg is given, then the preceding
      * string must match that m count at least.
      *
-     * @param  string $string
-     * @param  string $check
-     * @param  string $replacement
-     * @param  int    $m
+     * @param  string   $string
+     * @param  string   $check
+     * @param  string   $replacement
+     * @param  int|null $m
      *
      * @return bool
      */
-    protected function replace(&$string, $check, $replacement, $m = null)
+    protected function replace(string &$string, string $check, string $replacement, ?int $m = null): bool
     {
         $len = 0 - mb_strlen($check);
 
@@ -381,7 +381,7 @@ class EnglishStemmer implements Stemmer
      *
      * @return int
      */
-    protected function m($string)
+    protected function m(string $string): int
     {
         $string = preg_replace("#^" . self::CONSONANT . "+#", '', $string);
 
@@ -401,7 +401,7 @@ class EnglishStemmer implements Stemmer
      *
      * @return bool
      */
-    protected function doubleConsonant($string)
+    protected function doubleConsonant(string $string): bool
     {
         return preg_match("#" . self::CONSONANT . "{2}$#", $string, $matches) && $matches[0][0] == $matches[0][1];
     }
@@ -413,7 +413,7 @@ class EnglishStemmer implements Stemmer
      *
      * @return bool
      */
-    protected function cvc($string)
+    protected function cvc(string $string): bool
     {
         return preg_match("#(" . self::CONSONANT . self::VOWEL . self::CONSONANT . ")$#", $string, $matches)
             && mb_strlen($matches[1]) == 3
