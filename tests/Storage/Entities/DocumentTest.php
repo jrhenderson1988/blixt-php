@@ -7,60 +7,54 @@ use BlixtTests\TestCase;
 
 class DocumentTest extends TestCase
 {
-    /** @test */
+    /**
+     * @test
+     */
     public function testConstructor()
     {
         $test = new Document(1, 2, 3);
-
         $this->assertEquals(1, $test->getId());
         $this->assertEquals(2, $test->getSchemaId());
         $this->assertEquals(3, $test->getKey());
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testGettersAndSettersGetAndSetCorrectValues()
     {
         $test = new Document(1, 2, 3);
-
         $test->setId(3);
         $this->assertEquals(3, $test->getId());
-
         $test->setSchemaId(1);
         $this->assertEquals(1, $test->getSchemaId());
-
         $test->setKey(2);
         $this->assertEquals(2, $test->getKey());
     }
 
-    /** @test */
-    public function testSettersCastToCorrectTypes()
+    /**
+     * @test
+     */
+    public function testCreateConstructsDocumentCorrectlyWithNullId()
     {
-        $test = new Document(1, 2, 3);
-
-        $test->setId('3');
-        $this->assertSame(3, $test->getId());
-
-        $test->setSchemaId(1.4);
-        $this->assertSame(1, $test->getSchemaId());
-
-        // Key doesn't cast
-        $test->setKey('2');
-        $this->assertSame('2', $test->getKey());
+        $document = Document::create(1, 2);
+        $constructed = new Document(null, 1, 2);
+        $this->assertEquals($constructed, $document);
+        $this->assertNull($document->getId());
+        $this->assertEquals(1, $document->getSchemaId());
+        $this->assertEquals(2, $document->getKey());
     }
 
-    /** @test */
-    public function testMakeMethod()
+    /**
+     * @test
+     */
+    public function testMakeConstructsDocumentCorrectly()
     {
-        $attributes = ['id' => 1, 'schema_id' => 1, 'key' => 'test'];
-        $document = Document::make($attributes);
-        $this->assertSame(1, $document->getId());
-        $this->assertSame(1, $document->getSchemaId());
-        $this->assertSame('test', $document->getKey());
-
-        $attributes = ['key' => 'test'];
-        $document = Document::make($attributes);
-        $this->assertSame('test', $document->getKey());
-        $this->assertNull($document->getId());
-        $this->assertNull($document->getSchemaId());
+        $document = Document::make(1, 2, 3);
+        $constructed = new Document(1, 2, 3);
+        $this->assertEquals($constructed, $document);
+        $this->assertEquals(1, $document->getId());
+        $this->assertEquals(2, $document->getSchemaId());
+        $this->assertEquals(3, $document->getKey());
     }
 }

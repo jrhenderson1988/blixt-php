@@ -7,52 +7,49 @@ use BlixtTests\TestCase;
 
 class WordTest extends TestCase
 {
-    /** @test */
-    public function testConstructor()
+    /**
+     * @test
+     */
+    public function testConstructorSetsCorrectFields()
     {
         $test = new Word(1, 'test');
-
         $this->assertEquals(1, $test->getId());
         $this->assertEquals('test', $test->getWord());
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testGettersAndSettersGetAndSetCorrectValues()
     {
         $test = new Word(1, 'test');
-
         $test->setId(2);
         $this->assertEquals(2, $test->getId());
-
         $test->setWord('testing');
         $this->assertEquals('testing', $test->getWord());
     }
 
-    /** @test */
-    public function testSettersCastToCorrectTypes()
+    /**
+     * @test
+     */
+    public function testCreateConstructsWordCorrectlyWithNullId()
     {
-        $test = new Word(1, 'test');
-
-        $test->setId('34');
-        $this->assertSame(34, $test->getId());
-
-        $test->setWord(1);
-        $this->assertSame('1', $test->getWord());
-        $test->setWord(true);
-        $this->assertSame('1', $test->getWord());
+        $word = Word::create('test');
+        $constructed = new Word(null, 'test');
+        $this->assertEquals($constructed, $word);
+        $this->assertNull($word->getId());
+        $this->assertEquals('test', $word->getWord());
     }
 
-    /** @test */
-    public function testMakeMethod()
+    /**
+     * @test
+     */
+    public function testMakeConstructsWordCorrectly()
     {
-        $attributes = ['id' => 1, 'word' => 'test'];
-        $word = Word::make($attributes);
-        $this->assertSame(1, $word->getId());
-        $this->assertSame('test', $word->getWord());
-
-        $attributes = ['word' => 'testing'];
-        $word = Word::make($attributes);
-        $this->assertSame('testing', $word->getWord());
-        $this->assertNull($word->getId());
+        $word = Word::make(1, 'test');
+        $constructed = new Word(1, 'test');
+        $this->assertEquals($word, $constructed);
+        $this->assertEquals(1, $word->getId());
+        $this->assertEquals('test', $word->getWord());
     }
 }

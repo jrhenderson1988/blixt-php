@@ -7,59 +7,54 @@ use BlixtTests\TestCase;
 
 class PositionTest extends TestCase
 {
-    /** @test */
+    /**
+     * @test
+     */
     public function testConstructor()
     {
         $test = new Position(1, 2, 3);
-
         $this->assertEquals(1, $test->getId());
         $this->assertEquals(2, $test->getOccurrenceId());
         $this->assertEquals(3, $test->getPosition());
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testGettersAndSettersGetAndSetCorrectValues()
     {
         $test = new Position(1, 2, 3);
-
         $test->setId(3);
         $this->assertEquals(3, $test->getId());
-
         $test->setOccurrenceId(1);
         $this->assertEquals(1, $test->getOccurrenceId());
-
         $test->setPosition(2);
         $this->assertEquals(2, $test->getPosition());
     }
 
-    /** @test */
-    public function testSettersCastToCorrectTypes()
+    /**
+     * @test
+     */
+    public function testCreateConstructsPositionCorrectlyWithNullId()
     {
-        $test = new Position(1, 2, 3);
-
-        $test->setId('3');
-        $this->assertSame(3, $test->getId());
-
-        $test->setOccurrenceId(2.4);
-        $this->assertSame(2, $test->getOccurrenceId());
-
-        $test->setPosition(true);
-        $this->assertSame(1, $test->getPosition());
+        $position = Position::create(1, 2);
+        $constructed = new Position(null, 1, 2);
+        $this->assertEquals($constructed, $position);
+        $this->assertNull($position->getId());
+        $this->assertEquals(1, $position->getOccurrenceId());
+        $this->assertEquals(2, $position->getPosition());
     }
 
-    /** @test */
-    public function testMakeMethod()
+    /**
+     * @test
+     */
+    public function testMakeConstructsPositionCorrectly()
     {
-        $attributes = ['id' => 1, 'occurrence_id' => 1, 'position' => 1];
-        $position = Position::make($attributes);
-        $this->assertSame(1, $position->getId());
-        $this->assertSame(1, $position->getOccurrenceId());
-        $this->assertSame(1, $position->getPosition());
-
-        $attributes = ['position' => '1'];
-        $position = Position::make($attributes);
-        $this->assertSame(1, $position->getPosition());
-        $this->assertNull($position->getId());
-        $this->assertNull($position->getOccurrenceId());
+        $position = Position::make(1, 2, 3);
+        $constructed = new Position(1, 2, 3);
+        $this->assertEquals($constructed, $position);
+        $this->assertEquals(1, $position->getId());
+        $this->assertEquals(2, $position->getOccurrenceId());
+        $this->assertEquals(3, $position->getPosition());
     }
 }

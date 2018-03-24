@@ -237,7 +237,7 @@ class IndexTest extends TestCase
 
 class DummyStemmer implements Stemmer
 {
-    public function stem($word)
+    public function stem(string $word): string
     {
         return $word;
     }
@@ -252,7 +252,7 @@ class DummyTokenizer implements Tokenizer
         $this->stemmer = $stemmer;
     }
 
-    public function tokenize($text)
+    public function tokenize(string $text): Collection
     {
         $tokens = new Collection();
 

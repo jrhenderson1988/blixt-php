@@ -53,13 +53,15 @@ class Index
     }
 
     /**
-     * Load the new columns into the schema.
+     * Load the schema's columns if they've not yet been loaded.
      */
     protected function loadColumns(): void
     {
-        $this->schema->setColumns(
-            $this->storage->columns()->getBySchema($this->schema)
-        );
+        if ($this->schema->getColumns()->isEmpty()) {
+            $this->schema->setColumns(
+                $this->storage->columns()->getBySchema($this->schema)
+            );
+        }
     }
 
     /**

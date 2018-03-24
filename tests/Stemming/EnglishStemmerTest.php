@@ -7,22 +7,31 @@ use BlixtTests\TestCase;
 
 class EnglishStemmerTest extends TestCase
 {
-    /** @test  */
-    public function testStemmingWords()
+    public function getStemmer()
     {
-        $words = [
-            'writing' => 'write',
-            'and' => 'and',
-            'running' => 'run',
-            'tests' => 'test',
-            'is' => 'is',
-            'incredibly' => 'incred',
-            'boring' => 'bore'
-        ];
+        return new EnglishStemmer();
+    }
 
-        $stemmer = new EnglishStemmer();
-        foreach ($words as $word => $expected) {
-            $this->assertEquals($expected, $stemmer->stem($word));
-        }
+    /**
+     * @test
+     * @dataProvider getWordsData
+     */
+    public function testStemmingWords($input, $expected)
+    {
+        $stemmer = $this->getStemmer();
+        $this->assertEquals($expected, $stemmer->stem($input));
+    }
+
+    public function getWordsData()
+    {
+        return [
+            ['writing', 'write'],
+            ['and', 'and'],
+            ['running', 'run'],
+            ['tests', 'test'],
+            ['is', 'is'],
+            ['incredibly', 'incred'],
+            ['boring', 'bore']
+        ];
     }
 }

@@ -14,6 +14,7 @@ use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Storage;
 use Blixt\Tokenization\Tokenizer;
 use Closure;
+use Illuminate\Support\Collection;
 
 class Blixt
 {
@@ -173,23 +174,18 @@ class Blixt
             throw new InvalidBlueprintException("At least one column must be defined to create a new index.");
         }
 
-        $schema = $this->getStorage()->schemas()->save(
-            (new Schema())->name($blueprint->getName())
-        );
-
-        if (! $schema) {
+        if (! $schema = $this->getStorage()->schemas()->save(Schema::create($blueprint->getName()))) {
             throw new StorageException("Could not create schema '{$blueprint->getName()}'.");
         }
 
-        $blueprint->getDefinitions()->each(function (Definition $column) use ($schema) {
-            $this->getStorage()->columns()->save(
-                (new Column())
-                    ->schemaId($schema->getId())
-                    ->name($column->getName())
-                    ->indexed($column->isIndexed())
-                    ->stored($column->isStored())
-            );
+        $columns = new Collection([]);
+        $blueprint->getDefinitions()->each(function (Definition $column) use ($schema, &$columns) {
+            $columns->push($this->getStorage()->columns()->save(
+                Column::create($schema->getId(), $column->getName(), $column->isIndexed(), $column->isStored())
+            ));
         });
+
+        $schema->setColumns($columns);
 
         return $schema;
     }

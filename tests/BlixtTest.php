@@ -92,13 +92,20 @@ class BlixtTest extends TestCase
         $schema = new Schema(1, 'test');
 
         $this->schemaRepo->shouldReceive('findByName')->withArgs(['test'])->andReturn($schema);
+        $this->columnRepo->shouldReceive('getBySchema')->with(m::on(function ($arg) use ($schema) {
+            return $arg == $schema;
+        }))->andReturn(new Collection());
         $this->storage->shouldReceive('schemas')->andReturn($this->schemaRepo);
+        $this->storage->shouldReceive('columns')->andReturn($this->columnRepo);
 
         $index = $this->blixt->open('test');
         $this->assertInstanceOf(Index::class, $index);
         $this->assertSame($this->getInaccessibleProperty($index, 'schema'), $schema);
     }
 
+    /**
+     * @test
+     */
     public function testOpeningNonExistentSchemaThrowsException()
     {
         $this->storage->shouldReceive('schemas')->andReturn($this->schemaRepo);
@@ -116,16 +123,16 @@ class BlixtTest extends TestCase
         $this->storage->shouldReceive('schemas')->andReturn($this->schemaRepo);
         $this->schemaRepo->shouldReceive('findByName')->withArgs(['test'])->andReturn(null);
         $this->schemaRepo->shouldReceive('save')->with(m::on(function ($arg) {
-            return $arg == new Schema(null, 'test');
-        }))->andReturn($schema = new Schema(1, 'test'));
+            return $arg == Schema::create('test');
+        }))->andReturn($schema = Schema::make(1, 'test'));
 
         $this->storage->shouldReceive('columns')->andReturn($this->columnRepo);
         $this->columnRepo->shouldReceive('save')->with(m::on(function ($arg) use ($schema) {
-            return $arg == new Column(null, $schema->getId(), 'test_field', true, false);
-        }))->andReturn($column = new Column(1, $schema->getId(), 'test_field', true, false));
+            return $arg == Column::create($schema->getId(), 'test_field', true, false);
+        }))->andReturn($column = Column::make(1, $schema->getId(), 'test_field', true, false));
 
         $index = $this->blixt->open('test', function (Blueprint $blueprint) {
-            $blueprint->addDefinition('test_field', true, false);
+            $blueprint->createDefinition('test_field', true, false);
         });
 
         $this->assertInstanceOf(Index::class, $index);
@@ -140,13 +147,13 @@ class BlixtTest extends TestCase
         $this->storage->shouldReceive('schemas')->andReturn($this->schemaRepo);
         $this->schemaRepo->shouldReceive('findByName')->withArgs(['test'])->andReturn(null);
         $this->schemaRepo->shouldReceive('save')->with(m::on(function ($arg) {
-            return $arg == new Schema(null, 'test');
-        }))->andReturn($schema = new Schema(1, 'test'));
+            return $arg == Schema::create('test');
+        }))->andReturn($schema = Schema::make(1, 'test'));
 
         $this->storage->shouldReceive('columns')->andReturn($this->columnRepo);
         $this->columnRepo->shouldReceive('save')->with(m::on(function ($arg) use ($schema) {
-            return $arg == new Column(null, $schema->getId(), 'test_field', true, false);
-        }))->andReturn($column = new Column(1, $schema->getId(), 'test_field', true, false));
+            return $arg == Column::create($schema->getId(), 'test_field', true, false);
+        }))->andReturn($column = Column::make(1, $schema->getId(), 'test_field', true, false));
 
         $index = $this->blixt->create(new Blueprint('test', new Collection([
             new Definition('test_field', true, false)
@@ -189,7 +196,7 @@ class BlixtTest extends TestCase
         $this->storage->shouldReceive('schemas')->andReturn($this->schemaRepo);
         $this->schemaRepo->shouldReceive('findByName')->andReturn(null);
         $this->schemaRepo->shouldReceive('save')->with(m::on(function ($arg) {
-            return $arg == new Schema(null, 'test');
+            return $arg == Schema::create('test');
         }))->andReturn(null);
 
         $this->expectException(StorageException::class);

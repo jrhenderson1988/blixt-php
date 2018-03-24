@@ -6,95 +6,107 @@ use Blixt\Index\Blueprint\Blueprint;
 use Blixt\Index\Blueprint\Definition;
 use BlixtTests\TestCase;
 use Illuminate\Support\Collection;
-use InvalidArgumentException;
 
 class BlueprintTest extends TestCase
 {
-    /** @test */
-    public function testBlueprintConstructorSetsName()
+    /**
+     * @test
+     */
+    public function testItCanBeInstantiated()
+    {
+        $blueprint = new Blueprint('test');
+        $this->assertInstanceOf(Blueprint::class, $blueprint);
+    }
+
+    /**
+     * @test
+     */
+    public function testBlueprintConstructorSetsNameAndEmptyCollection()
     {
         $blueprint = new Blueprint('test');
         $this->assertEquals('test', $blueprint->getName());
+        $this->assertInstanceOf(Collection::class, $blueprint->getDefinitions());
+        $this->assertEquals(0, $blueprint->getDefinitions()->count());
     }
 
-    /** @test */
-    public function testBlueprintConstructorAcceptsNullArrayAndCollectionForDefinitions()
+    /**
+     * @test
+     */
+    public function testBlueprintConstructorSetsDefinitionsFromCollection()
     {
-        foreach ([null, [], new Collection()] as $input) {
-            $blueprint = new Blueprint('test', $input);
-            $this->assertEquals(new Collection(), $blueprint->getDefinitions());
-        }
+        $collection = new Collection([$definition = new Definition('test', true, false)]);
+        $blueprint = new Blueprint('test', $collection);
+        $this->assertInstanceOf(Collection::class, $blueprint->getDefinitions());
+        $this->assertTrue($blueprint->getDefinitions()->contains($definition));
+        $this->assertEquals($blueprint->getDefinitions()->get('test'), $definition);
     }
 
-    /** @test */
-    public function testExceptionIsThrownWhenProvidingInvalidArgumentForDefinitions()
-    {
-        $this->expectException(InvalidArgumentException::class);
-        new Blueprint('test', 'test');
-    }
-
-    /** @test */
-    public function testGettingAndSettingNameAndEnsureValuesAreCorrectlyCast()
-    {
-        $blueprint = new Blueprint(1);
-        $this->assertEquals('1', $blueprint->getName());
-
-        $blueprint->setName(2.34);
-        $this->assertEquals('2.34', $blueprint->getName());
-
-        $blueprint->setName(true);
-        $this->assertSame('1', $blueprint->getName());
-    }
-
-    /** @test */
-    public function testSettingAndGettingDefinitionsAndEnsureACollectionIsAlwaysReturned()
+    /**
+     * @test
+     */
+    public function testSettingAndGettingNameWorksSetsAndGetsTheNameValueCorrectly()
     {
         $blueprint = new Blueprint('test');
-
-        $blueprint->setDefinitions([]);
-        $this->assertInstanceOf(Collection::class, $blueprint->getDefinitions());
-        $this->assertEquals(new Collection(), $blueprint->getDefinitions());
-
-        $blueprint->setDefinitions(new Collection());
-        $this->assertInstanceOf(Collection::class, $blueprint->getDefinitions());
-
-        $definition = new Definition('test', true, true);
-
-        $blueprint->setDefinitions([$definition]);
-        $this->assertInstanceOf(Collection::class, $blueprint->getDefinitions());
-
-        $blueprint->setDefinitions(new Collection([$definition]));
-        $this->assertInstanceOf(Collection::class, $blueprint->getDefinitions());
+        $this->assertEquals('test', $blueprint->getName());
+        $blueprint->setName('test1');
+        $this->assertEquals('test1', $blueprint->getName());
     }
 
-    /** @test */
+    /**
+     * @test
+     */
+    public function testSettingDefinitionsCreatesCollectionKeyedByDefinitionNames()
+    {
+        $blueprint = new Blueprint('test');
+        $definitions = new Collection([$definition1 = new Definition('test1', true, false), $definition2 = new Definition('test2', false, true)]);
+        $blueprint->setDefinitions($definitions);
+        $this->assertInstanceOf(Collection::class, $blueprint->getDefinitions());
+        $this->assertEquals($definitions->count(), $blueprint->getDefinitions()->count());
+        $this->assertTrue($blueprint->getDefinitions()->contains($definition1));
+        $this->assertEquals($definition1, $blueprint->getDefinitions()->get($definition1->getName()));
+        $this->assertTrue($blueprint->getDefinitions()->contains($definition2));
+        $this->assertEquals($definition2, $blueprint->getDefinitions()->get($definition2->getName()));
+    }
+
+    /**
+     * @test
+     */
+    public function testCreatingDefinitionsAddsToCollectionAndKeysByName()
+    {
+        $blueprint = new Blueprint('test');
+        $blueprint->createDefinition('test', true, false);
+        $this->assertInstanceOf(Collection::class, $blueprint->getDefinitions());
+        $this->assertEquals(1, $blueprint->getDefinitions()->count());
+        $this->assertEquals('test', $blueprint->getDefinitions()->keys()->first());
+    }
+
+    /**
+     * @test
+     */
+    public function testAddingDefinitionsAddsToCollectionAndKeysByName()
+    {
+        $blueprint = new Blueprint('test');
+        $blueprint->addDefinition($definition = new Definition('test', true, false));
+        $this->assertInstanceOf(Collection::class, $blueprint->getDefinitions());
+        $this->assertEquals(1, $blueprint->getDefinitions()->count());
+        $this->assertEquals('test', $blueprint->getDefinitions()->keys()->first());
+        $this->assertEquals($definition, $blueprint->getDefinitions()->first());
+    }
+
+    /**
+     * @test
+     */
     public function testDefinitionsAreAlwaysKeyedByTheirNames()
     {
-        $blueprint = new Blueprint('test', [
+        $blueprint = new Blueprint('test', new Collection([
             new Definition('test1', false, false),
             new Definition('test2', false, true),
             new Definition('test3', true, false),
             new Definition('test4', true, true)
-        ]);
+        ]));
 
         $blueprint->getDefinitions()->each(function (Definition $definition, $key) {
             $this->assertEquals($key, $definition->getName());
         });
-    }
-
-    /** @test */
-    public function testAddingDefinitionsAcceptsEitherDefinitionInstanceOrParametersToCreateDefinitionInstance()
-    {
-        $blueprint = new Blueprint('test');
-
-        $definition = new Definition('test', true, false);
-        $blueprint->addDefinition($definition);
-        $this->assertEquals(new Collection([$definition->getName() => $definition]), $blueprint->getDefinitions());
-
-        $blueprint->setDefinitions([]);
-        $this->assertEquals(new Collection(), $blueprint->getDefinitions());
-
-        $blueprint->addDefinition($definition->getName(), $definition->isIndexed(), $definition->isStored());
-        $this->assertEquals(new Collection([$definition->getName() => $definition]), $blueprint->getDefinitions());
     }
 }

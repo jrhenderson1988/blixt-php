@@ -2,7 +2,6 @@
 
 namespace BlixtTests\Storage\Drivers\Memory;
 
-use Blixt\Exceptions\StorageException;
 use Blixt\Storage\Drivers\Memory\Repositories\ColumnRepository;
 use Blixt\Storage\Drivers\Memory\Repositories\DocumentRepository;
 use Blixt\Storage\Drivers\Memory\Repositories\FieldRepository;
@@ -32,71 +31,68 @@ class StorageTest extends TestCase
      */
     protected $storage;
 
-    /** @test */
     public function setUp()
     {
         $this->storage = new Storage();
     }
 
-    /** @test */
+    /**
+     * @test
+     */
+    public function testItCanBeInstantiated()
+    {
+        $this->assertInstanceOf(Storage::class, $this->storage);
+    }
+
+    /**
+     * @test
+     */
     public function testExistsReturnsFalseInitially()
     {
         $this->assertFalse($this->storage->exists());
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testCreateCreatesTablesAndKeyReferencesAndExistsReturnsTrue()
     {
         $this->assertFalse($this->storage->exists());
-
         $this->storage->create();
-
-        $reflection = new ReflectionClass($this->storage);
-        $tables = $reflection->getProperty('tables');
-        $data = $reflection->getProperty('data');
-        $keys = $reflection->getProperty('keys');
-        $tables->setAccessible(true);
-        $data->setAccessible(true);
-        $keys->setAccessible(true);
-
-        $this->assertTrue(is_array($tables->getValue($this->storage)));
-        $this->assertTrue(is_array($data->getValue($this->storage)));
-        $this->assertTrue(is_array($keys->getValue($this->storage)));
-
-        foreach ($tables->getValue($this->storage) as $name) {
-            $this->assertArrayHasKey($name, $data->getValue($this->storage));
-            $this->assertTrue(is_array($data->getValue($this->storage)[$name]));
-
-            $this->assertArrayHasKey($name, $keys->getValue($this->storage));
-            $this->assertEquals(1, $keys->getValue($this->storage)[$name]);
+        $this->assertTrue(is_array($tables = $this->getInaccessibleProperty($this->storage, 'tables')));
+        $this->assertTrue(is_array($data = $this->getInaccessibleProperty($this->storage, 'data')));
+        $this->assertTrue(is_array($keys = $this->getInaccessibleProperty($this->storage, 'keys')));
+        foreach ($tables as $name) {
+            $this->assertArrayHasKey($name, $data);
+            $this->assertTrue(is_array($data[$name]));
+            $this->assertArrayHasKey($name, $keys);
+            $this->assertEquals(1, $keys[$name]);
         }
-
         $this->assertTrue($this->storage->exists());
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testDestroyRemovesTablesAndKeyReferencesAndExistsReturnsFalse()
     {
         $this->storage->create();
-
-        $reflection = new ReflectionClass($this->storage);
-        $data = $reflection->getProperty('data');
-        $keys = $reflection->getProperty('keys');
-        $data->setAccessible(true);
-        $keys->setAccessible(true);
-
-        $this->assertNotEmpty($data->getValue($this->storage));
-        $this->assertNotEmpty($keys->getValue($this->storage));
+        $data = $this->getInaccessibleProperty($this->storage, 'data');
+        $keys = $this->getInaccessibleProperty($this->storage, 'keys');
+        $this->assertNotEmpty($data);
+        $this->assertNotEmpty($keys);
         $this->assertTrue($this->storage->exists());
-
         $this->storage->destroy();
-
-        $this->assertEmpty($data->getValue($this->storage));
-        $this->assertEmpty($keys->getValue($this->storage));
+        $data = $this->getInaccessibleProperty($this->storage, 'data');
+        $keys = $this->getInaccessibleProperty($this->storage, 'keys');
+        $this->assertEmpty($data);
+        $this->assertEmpty($keys);
         $this->assertFalse($this->storage->exists());
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testInsertThrowsExceptionWhenExistsIsFalse()
     {
         $this->assertFalse($this->storage->exists());
@@ -104,115 +100,87 @@ class StorageTest extends TestCase
         $this->storage->insert('schemas', ['name' => 'test']);
     }
 
-    /** @test  */
+    /**
+     * @test
+     */
     public function testInsertThrowsExceptionWithUnknownTableName()
     {
         $this->storage->create();
         $this->assertTrue($this->storage->exists());
-
         $this->expectException(InvalidArgumentException::class);
         $this->storage->insert('unknown-table-name', ['name' => 'test']);
     }
 
-    /** @test */
-    public function testInsertCreatesRecordInCorrectTableWithUniqueAutoincrementingKey()
+    /**
+     * @test
+     */
+    public function testInsertCreatesRecordInCorrectTableWithUniqueAutoIncrementingKey()
     {
-        $reflection = new ReflectionClass($this->storage);
-        $data = $reflection->getProperty('data');
-        $keys = $reflection->getProperty('keys');
-        $data->setAccessible(true);
-        $keys->setAccessible(true);
-
         $this->storage->create();
-
-        $this->assertEquals(1, $keys->getValue($this->storage)['schemas']);
-        $this->assertEquals([], $data->getValue($this->storage)['schemas']);
-
+        $this->assertEquals(1, $this->getInaccessibleProperty($this->storage, 'keys')['schemas']);
+        $this->assertEquals([], $this->getInaccessibleProperty($this->storage, 'data')['schemas']);
         $this->storage->insert('schemas', ['name' => 'test1']);
-        $this->assertEquals([1 => ['name' => 'test1']], $data->getValue($this->storage)['schemas']);
-        $this->assertEquals(2, $keys->getValue($this->storage)['schemas']);
-
+        $this->assertEquals([1 => ['name' => 'test1']], $this->getInaccessibleProperty($this->storage, 'data')['schemas']);
+        $this->assertEquals(2, $this->getInaccessibleProperty($this->storage, 'keys')['schemas']);
         $this->storage->insert('schemas', ['name' => 'test2']);
-        $this->assertEquals([1 => ['name' => 'test1'], 2 => ['name' => 'test2']], $data->getValue($this->storage)['schemas']);
-        $this->assertEquals(3, $keys->getValue($this->storage)['schemas']);
-
-        $this->assertEquals(1, $keys->getValue($this->storage)['words']);
-        $this->assertEquals([], $data->getValue($this->storage)['words']);
-
+        $this->assertEquals([1 => ['name' => 'test1'], 2 => ['name' => 'test2']], $this->getInaccessibleProperty($this->storage, 'data')['schemas']);
+        $this->assertEquals(3, $this->getInaccessibleProperty($this->storage, 'keys')['schemas']);
+        $this->assertEquals(1, $this->getInaccessibleProperty($this->storage, 'keys')['words']);
+        $this->assertEquals([], $this->getInaccessibleProperty($this->storage, 'data')['words']);
         $this->storage->insert('words', ['word' => 'test1']);
-        $this->assertEquals([1 => ['word' => 'test1']], $data->getValue($this->storage)['words']);
-        $this->assertEquals(2, $keys->getValue($this->storage)['words']);
+        $this->assertEquals([1 => ['word' => 'test1']], $this->getInaccessibleProperty($this->storage, 'data')['words']);
+        $this->assertEquals(2, $this->getInaccessibleProperty($this->storage, 'keys')['words']);
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testUpdateThrowsExceptionWithUnknownTableName()
     {
         $this->storage->create();
         $this->assertTrue($this->storage->exists());
-
         $this->expectException(InvalidArgumentException::class);
         $this->storage->update('unknown-table-name', 1, ['name' => 'test']);
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testUpdateChangesOnlyRecordSpecifiedByKey()
     {
-        $table = 'schemas';
-        $first = ['name' => 'test1'];
-        $second = ['name' => 'test2'];
-        $third = ['name' => 'test3'];
-
         $this->storage->create();
-        $this->storage->insert($table, $first);
-        $this->storage->insert($table, $second);
-        $this->storage->insert($table, $third);
-
-        $reflection = new ReflectionClass($this->storage);
-        $data = $reflection->getProperty('data');
-        $keys = $reflection->getProperty('keys');
-        $data->setAccessible(true);
-        $keys->setAccessible(true);
-
-        $this->assertEquals([1 => $first, 2 => $second, 3 => $third], $data->getValue($this->storage)[$table]);
-
-        $updatedSecond = ['name' => 'updated'];
-        $this->storage->update($table, 2, $updatedSecond);
-
-        $this->assertEquals($updatedSecond, $data->getValue($this->storage)[$table][2]);
-        $this->assertEquals([1 => $first, 2 => $updatedSecond, 3 => $third], $data->getValue($this->storage)[$table]);
+        $this->storage->insert($table = 'schemas', $first = ['name' => 'test1']);
+        $this->storage->insert($table, $second = ['name' => 'test2']);
+        $this->storage->insert($table, $third = ['name' => 'test3']);
+        $this->assertEquals([1 => $first, 2 => $second, 3 => $third], $this->getInaccessibleProperty($this->storage, 'data')[$table]);
+        $this->storage->update($table, 2, $updatedSecond = ['name' => 'updated']);
+        $this->assertEquals($updatedSecond, $this->getInaccessibleProperty($this->storage, 'data')[$table][2]);
+        $this->assertEquals([1 => $first, 2 => $updatedSecond, 3 => $third], $this->getInaccessibleProperty($this->storage, 'data')[$table]);
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testFindReturnsRecordIdentifiedByKey()
     {
-        $table = 'schemas';
-        $first = ['name' => 'test1'];
-        $second = ['name' => 'test2'];
-        $third = ['name' => 'test3'];
-
         $this->storage->create();
-        $this->storage->insert($table, $first);
-        $this->storage->insert($table, $second);
-        $this->storage->insert($table, $third);
-
+        $this->storage->insert($table = 'schemas', $first = ['name' => 'test1']);
+        $this->storage->insert($table, $second = ['name' => 'test2']);
+        $this->storage->insert($table, $third = ['name' => 'test3']);
         $this->assertEquals($first, $this->storage->find($table, 1));
         $this->assertEquals($second, $this->storage->find($table, 2));
         $this->assertEquals($third, $this->storage->find($table, 3));
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testGetWhereReturnsMultipleRecordsMatchingCondition()
     {
-        $table = 'terms';
-        $first = ['schema_id' => 1, 'word_id' => 1];
-        $second = ['schema_id' => 1, 'word_id' => 2];
-        $third = ['schema_id' => 2, 'word_id' => 1];
-
         $this->storage->create();
-        $this->storage->insert($table, $first);
-        $this->storage->insert($table, $second);
-        $this->storage->insert($table, $third);
-
+        $this->storage->insert($table = 'terms', $first = ['schema_id' => 1, 'word_id' => 1]);
+        $this->storage->insert($table, $second = ['schema_id' => 1, 'word_id' => 2]);
+        $this->storage->insert($table, $third = ['schema_id' => 2, 'word_id' => 1]);
         $this->assertTrue(in_array($first, $this->storage->getWhere($table, ['schema_id' => 1])));
         $this->assertTrue(in_array($second, $this->storage->getWhere($table, ['schema_id' => 1])));
         $this->assertTrue(in_array($first, $this->storage->getWhere($table, ['word_id' => 1])));
@@ -220,274 +188,267 @@ class StorageTest extends TestCase
         $this->assertTrue(in_array($third, $this->storage->getWhere($table, ['schema_id' => 2, 'word_id' => 1])));
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testGetWherePreservesKeysInRecordSet()
     {
-        $table = 'terms';
-        $first = ['schema_id' => 1, 'word_id' => 1];
-        $second = ['schema_id' => 1, 'word_id' => 2];
-        $third = ['schema_id' => 2, 'word_id' => 1];
-
         $this->storage->create();
-        $this->storage->insert($table, $first);
-        $this->storage->insert($table, $second);
-        $this->storage->insert($table, $third);
-
+        $this->storage->insert($table = 'terms', $first = ['schema_id' => 1, 'word_id' => 1]);
+        $this->storage->insert($table, $second = ['schema_id' => 1, 'word_id' => 2]);
+        $this->storage->insert($table, $third = ['schema_id' => 2, 'word_id' => 1]);
         $this->assertEquals([1 => $first, 2 => $second], $this->storage->getWhere($table, ['schema_id' => 1]));
         $this->assertEquals([1 => $first, 3 => $third], $this->storage->getWhere($table, ['word_id' => 1]));
         $this->assertEquals([3 => $third], $this->storage->getWhere($table, ['schema_id' => 2, 'word_id' => 1]));
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testGetWhereReturnsEmptyRecordSetWhenNoConditionsMatch()
     {
-        $table = 'terms';
-        $first = ['schema_id' => 1, 'word_id' => 1];
-        $second = ['schema_id' => 1, 'word_id' => 2];
-        $third = ['schema_id' => 2, 'word_id' => 1];
-
         $this->storage->create();
-        $this->storage->insert($table, $first);
-        $this->storage->insert($table, $second);
-        $this->storage->insert($table, $third);
-
+        $this->storage->insert($table = 'terms', $first = ['schema_id' => 1, 'word_id' => 1]);
+        $this->storage->insert($table, $second = ['schema_id' => 1, 'word_id' => 2]);
+        $this->storage->insert($table, $third = ['schema_id' => 2, 'word_id' => 1]);
         $this->assertTrue(is_array($this->storage->getWhere($table, ['schema_id' => 1, 'word_id' => 3])));
         $this->assertTrue(is_array($this->storage->getWhere($table, ['schema_id' => 3, 'word_id' => 1])));
         $this->assertEmpty($this->storage->getWhere($table, ['schema_id' => 1, 'word_id' => 3]));
         $this->assertEmpty($this->storage->getWhere($table, ['schema_id' => 3, 'word_id' => 1]));
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testAllReturnsEntireRecordSet()
     {
-        $table = 'terms';
-        $first = ['schema_id' => 1, 'word_id' => 1];
-        $second = ['schema_id' => 1, 'word_id' => 2];
-        $third = ['schema_id' => 2, 'word_id' => 1];
-
         $this->storage->create();
-        $this->storage->insert($table, $first);
-        $this->storage->insert($table, $second);
-        $this->storage->insert($table, $third);
-
+        $this->storage->insert($table = 'terms', $first = ['schema_id' => 1, 'word_id' => 1]);
+        $this->storage->insert($table, $second = ['schema_id' => 1, 'word_id' => 2]);
+        $this->storage->insert($table, $third = ['schema_id' => 2, 'word_id' => 1]);
         $this->assertEquals([1 => $first, 2 => $second, 3 => $third], $this->storage->all($table));
     }
 
-    /** @test */
-    public function testNextKeyReturnsAutoincrementingIntegers()
+    /**
+     * @test
+     */
+    public function testNextKeyReturnsAutoIncrementingIntegers()
     {
         $this->storage->create();
-
         $nextKey = new ReflectionMethod(Storage::class, 'nextKey');
         $nextKey->setAccessible(true);
-
         $this->assertEquals(1, $nextKey->invoke($this->storage, 'schemas'));
         $this->assertEquals(2, $nextKey->invoke($this->storage, 'schemas'));
         $this->assertEquals(3, $nextKey->invoke($this->storage, 'schemas'));
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testNextKeyUsesSeparateKeyStoreForEachTable()
     {
         $this->storage->create();
-
         $nextKey = new ReflectionMethod(Storage::class, 'nextKey');
         $nextKey->setAccessible(true);
-
         $this->assertEquals(1, $nextKey->invoke($this->storage, 'schemas'));
         $this->assertEquals(2, $nextKey->invoke($this->storage, 'schemas'));
         $this->assertEquals(3, $nextKey->invoke($this->storage, 'schemas'));
-
         $this->assertEquals(1, $nextKey->invoke($this->storage, 'words'));
         $this->assertEquals(2, $nextKey->invoke($this->storage, 'words'));
-
         $this->assertEquals(1, $nextKey->invoke($this->storage, 'positions'));
         $this->assertEquals(2, $nextKey->invoke($this->storage, 'positions'));
         $this->assertEquals(3, $nextKey->invoke($this->storage, 'positions'));
         $this->assertEquals(4, $nextKey->invoke($this->storage, 'positions'));
-
         $this->assertEquals(4, $nextKey->invoke($this->storage, 'schemas'));
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testColumnsReturnsColumnRepository()
     {
         $this->storage->create();
-
         $this->assertInstanceOf(ColumnRepositoryInterface::class, $this->storage->columns());
         $this->assertInstanceOf(ColumnRepository::class, $this->storage->columns());
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testColumnsReturnsSameColumnRepositoryEachTime()
     {
         $this->storage->create();
-
         $first = $this->storage->columns();
         $second = $this->storage->columns();
         $third = $this->storage->columns();
-
         $this->assertSame($first, $second);
         $this->assertSame($first, $third);
         $this->assertSame($second, $third);
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testDocumentsReturnsDocumentRepository()
     {
         $this->storage->create();
-
         $this->assertInstanceOf(DocumentRepositoryInterface::class, $this->storage->documents());
         $this->assertInstanceOf(DocumentRepository::class, $this->storage->documents());
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testDocumentsReturnsSameDocumentRepositoryEachTime()
     {
         $this->storage->create();
-
         $first = $this->storage->documents();
         $second = $this->storage->documents();
         $third = $this->storage->documents();
-
         $this->assertSame($first, $second);
         $this->assertSame($first, $third);
         $this->assertSame($second, $third);
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testFieldsReturnsFieldsRepository()
     {
         $this->storage->create();
-
         $this->assertInstanceOf(FieldRepositoryInterface::class, $this->storage->fields());
         $this->assertInstanceOf(FieldRepository::class, $this->storage->fields());
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testFieldsReturnsSameFieldRepositoryEachTime()
     {
         $this->storage->create();
-
         $first = $this->storage->fields();
         $second = $this->storage->fields();
         $third = $this->storage->fields();
-
         $this->assertSame($first, $second);
         $this->assertSame($first, $third);
         $this->assertSame($second, $third);
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testOccurrencesReturnsOccurrencesRepository()
     {
         $this->storage->create();
-
         $this->assertInstanceOf(OccurrenceRepositoryInterface::class, $this->storage->occurrences());
         $this->assertInstanceOf(OccurrenceRepository::class, $this->storage->occurrences());
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testOccurrencesReturnsSameOccurrenceRepositoryEachTime()
     {
         $this->storage->create();
-
         $first = $this->storage->occurrences();
         $second = $this->storage->occurrences();
         $third = $this->storage->occurrences();
-
         $this->assertSame($first, $second);
         $this->assertSame($first, $third);
         $this->assertSame($second, $third);
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testPositionsReturnsPositionsRepository()
     {
         $this->storage->create();
-
         $this->assertInstanceOf(PositionRepositoryInterface::class, $this->storage->positions());
         $this->assertInstanceOf(PositionRepository::class, $this->storage->positions());
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testPositionsReturnsSamePositionRepositoryEachTime()
     {
         $this->storage->create();
-
         $first = $this->storage->positions();
         $second = $this->storage->positions();
         $third = $this->storage->positions();
-
         $this->assertSame($first, $second);
         $this->assertSame($first, $third);
         $this->assertSame($second, $third);
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testSchemasReturnsSchemasRepository()
     {
         $this->storage->create();
-
         $this->assertInstanceOf(SchemaRepositoryInterface::class, $this->storage->schemas());
         $this->assertInstanceOf(SchemaRepository::class, $this->storage->schemas());
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testSchemasReturnsSameSchemaRepositoryEachTime()
     {
         $this->storage->create();
-
         $first = $this->storage->schemas();
         $second = $this->storage->schemas();
         $third = $this->storage->schemas();
-
         $this->assertSame($first, $second);
         $this->assertSame($first, $third);
         $this->assertSame($second, $third);
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testTermsReturnsTermsRepository()
     {
         $this->storage->create();
-
         $this->assertInstanceOf(TermRepositoryInterface::class, $this->storage->terms());
         $this->assertInstanceOf(TermRepository::class, $this->storage->terms());
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testTermsReturnsSameTermRepositoryEachTime()
     {
         $this->storage->create();
-
         $first = $this->storage->terms();
         $second = $this->storage->terms();
         $third = $this->storage->terms();
-
         $this->assertSame($first, $second);
         $this->assertSame($first, $third);
         $this->assertSame($second, $third);
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testWordsReturnsWordsRepository()
     {
         $this->storage->create();
-
         $this->assertInstanceOf(WordRepositoryInterface::class, $this->storage->words());
         $this->assertInstanceOf(WordRepository::class, $this->storage->words());
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testWordsReturnsSameWordRepositoryEachTime()
     {
         $this->storage->create();
-
         $first = $this->storage->words();
         $second = $this->storage->words();
         $third = $this->storage->words();
-
         $this->assertSame($first, $second);
         $this->assertSame($first, $third);
         $this->assertSame($second, $third);

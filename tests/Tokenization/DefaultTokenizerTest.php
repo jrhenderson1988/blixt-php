@@ -79,7 +79,7 @@ class DefaultTokenizerTest extends TestCase
 
 class DummyStemmer implements Stemmer
 {
-    public function stem($word)
+    public function stem(string $word): string
     {
         return $word;
     }
