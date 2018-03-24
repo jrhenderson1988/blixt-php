@@ -9,18 +9,18 @@ class Document extends Entity
     use BelongsToSchema;
 
     /**
-     * @var null|mixed
+     * @var mixed
      */
     protected $key;
 
     /**
      * Document constructor.
      *
-     * @param int|null|mixed $id
-     * @param int|null|mixed $schemaId
-     * @param null|mixed     $key
+     * @param int|null $id
+     * @param int      $schemaId
+     * @param mixed    $key
      */
-    public function __construct($id = null, $schemaId = null, $key = null)
+    public function __construct(?int $id, int $schemaId, $key)
     {
         parent::__construct($id);
 
@@ -29,7 +29,7 @@ class Document extends Entity
     }
 
     /**
-     * @return null|mixed
+     * @return mixed
      */
     public function getKey()
     {
@@ -37,10 +37,37 @@ class Document extends Entity
     }
 
     /**
-     * @param null|mixed $key
+     * @param mixed $key
      */
-    public function setKey($key)
+    public function setKey($key): void
     {
         $this->key = $key;
+    }
+
+    /**
+     * Factory method to create a new Document.
+     *
+     * @param int   $schemaId
+     * @param mixed $key
+     *
+     * @return \Blixt\Storage\Entities\Document
+     */
+    public static function create(int $schemaId, $key): Document
+    {
+        return new static(null, $schemaId, $key);
+    }
+
+    /**
+     * Factory method to create a new Document from an existing record.
+     *
+     * @param int   $id
+     * @param int   $schemaId
+     * @param mixed $key
+     *
+     * @return \Blixt\Storage\Entities\Document
+     */
+    public static function make(int $id, int $schemaId, $key): Document
+    {
+        return new static($id, $schemaId, $key);
     }
 }

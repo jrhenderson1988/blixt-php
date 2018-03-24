@@ -7,25 +7,31 @@ use Blixt\Storage\Entities\Schema;
 trait BelongsToSchema
 {
     /**
-     * @var int|null
+     * @var int
      */
     protected $schemaId;
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getSchemaId()
+    public function getSchemaId(): int
     {
         return $this->schemaId;
     }
 
     /**
-     * @param int|null|mixed $schemaId
+     * @param int $schemaId
      */
-    public function setSchemaId($schemaId)
+    public function setSchemaId(int $schemaId): void
     {
-        $this->schemaId = $schemaId !== null
-            ? ($schemaId instanceof Schema ? $schemaId->getId() : intval($schemaId))
-            : null;
+        $this->schemaId = $schemaId;
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Schema $schema
+     */
+    public function setSchemaIdFromSchema(Schema $schema): void
+    {
+        $this->schemaId = $schema->getId();
     }
 }

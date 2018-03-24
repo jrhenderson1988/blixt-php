@@ -7,25 +7,31 @@ use Blixt\Storage\Entities\Word;
 trait BelongsToWord
 {
     /**
-     * @var int|null
+     * @var int
      */
     protected $wordId;
 
     /**
-     * @return int|null|mixed
+     * @return int
      */
-    public function getWordId()
+    public function getWordId(): int
     {
         return $this->wordId;
     }
 
     /**
-     * @param int|null|mixed $wordId
+     * @param int $wordId
      */
-    public function setWordId($wordId)
+    public function setWordId(int $wordId): void
     {
-        $this->wordId = $wordId !== null
-            ? ($wordId instanceof Word ? $wordId->getId() : intval($wordId))
-            : null;
+        $this->wordId = $wordId;
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Word $word
+     */
+    public function setWordIdFromWord(Word $word): void
+    {
+        $this->wordId = $word->getId();
     }
 }

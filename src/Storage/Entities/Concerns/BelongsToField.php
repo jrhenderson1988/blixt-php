@@ -7,25 +7,31 @@ use Blixt\Storage\Entities\Field;
 trait BelongsToField
 {
     /**
-     * @var int|null
+     * @var int
      */
     protected $fieldId;
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getFieldId()
+    public function getFieldId(): int
     {
         return $this->fieldId;
     }
 
     /**
-     * @param int|null|mixed $fieldId
+     * @param int $fieldId
      */
-    public function setFieldId($fieldId)
+    public function setFieldId(int $fieldId): void
     {
-        $this->fieldId = $fieldId !== null
-            ? ($fieldId instanceof Field ? $fieldId->getId() : intval($fieldId))
-            : null;
+        $this->fieldId = $fieldId;
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Field $field
+     */
+    public function setFieldIdFromField(Field $field): void
+    {
+        $this->fieldId = $field->getId();
     }
 }

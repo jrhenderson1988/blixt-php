@@ -7,25 +7,31 @@ use Blixt\Storage\Entities\Occurrence;
 trait BelongsToOccurrence
 {
     /**
-     * @var int|null
+     * @var int
      */
     protected $occurrenceId;
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getOccurrenceId()
+    public function getOccurrenceId(): int
     {
         return $this->occurrenceId;
     }
 
     /**
-     * @param int|null|mixed $occurrenceId
+     * @param int $occurrenceId
      */
-    public function setOccurrenceId($occurrenceId)
+    public function setOccurrenceId(int $occurrenceId): void
     {
-        $this->occurrenceId = $occurrenceId !== null
-            ? ($occurrenceId instanceof Occurrence ? $occurrenceId->getId() : intval($occurrenceId))
-            : null;
+        $this->occurrenceId = $occurrenceId;
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Occurrence $occurrence
+     */
+    public function setOccurrenceIdFromOccurrence(Occurrence $occurrence): void
+    {
+        $this->occurrenceId = $occurrence->getId();
     }
 }

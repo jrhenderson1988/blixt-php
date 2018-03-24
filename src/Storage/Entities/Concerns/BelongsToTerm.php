@@ -7,25 +7,31 @@ use Blixt\Storage\Entities\Term;
 trait BelongsToTerm
 {
     /**
-     * @var int|null
+     * @var int
      */
     protected $termId;
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getTermId()
+    public function getTermId(): int
     {
         return $this->termId;
     }
 
     /**
-     * @param int|null|mixed $termId
+     * @param int $termId
      */
-    public function setTermId($termId)
+    public function setTermId(int $termId): void
     {
-        $this->termId = $termId !== null
-            ? ($termId instanceof Term ? $termId->getId() : intval($termId))
-            : null;
+        $this->termId = $termId;
+    }
+
+    /**
+     * @param \Blixt\Storage\Entities\Term $term
+     */
+    public function setTermIdFromTerm(Term $term): void
+    {
+        $this->termId = $term->getId();
     }
 }

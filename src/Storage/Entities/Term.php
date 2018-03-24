@@ -10,19 +10,19 @@ class Term extends Entity
     use BelongsToSchema, BelongsToWord;
 
     /**
-     * @var int|null
+     * @var int
      */
     protected $fieldCount;
 
     /**
      * Term constructor.
      *
-     * @param int|null|mixed $id
-     * @param int|null|mixed $schemaId
-     * @param int|null|mixed $wordId
-     * @param int|null|mixed $fieldCount
+     * @param int|null $id
+     * @param int      $schemaId
+     * @param int      $wordId
+     * @param int      $fieldCount
      */
-    public function __construct($id = null, $schemaId = null, $wordId = null, $fieldCount = null)
+    public function __construct(?int $id, int $schemaId, int $wordId, int $fieldCount)
     {
         parent::__construct($id);
 
@@ -32,18 +32,47 @@ class Term extends Entity
     }
 
     /**
-     * @return int|null|mixed
+     * @return int
      */
-    public function getFieldCount()
+    public function getFieldCount(): int
     {
         return $this->fieldCount;
     }
 
     /**
-     * @param int|null|mixed $fieldCount
+     * @param int $fieldCount
      */
-    public function setFieldCount($fieldCount)
+    public function setFieldCount(int $fieldCount): void
     {
-        $this->fieldCount = $fieldCount !== null ? intval($fieldCount) : null;
+        $this->fieldCount = $fieldCount;
+    }
+
+    /**
+     * Factory method to create a new Term.
+     *
+     * @param int $schemaId
+     * @param int $wordId
+     * @param int $fieldCount
+     *
+     * @return \Blixt\Storage\Entities\Term
+     */
+    public static function create(int $schemaId, int $wordId, int $fieldCount): Term
+    {
+        return new static(null, $schemaId, $wordId, $fieldCount);
+    }
+
+    /**
+     * Factory method to make a Term from an existing record.
+     *
+     * @param int $id
+     * @param int $schemaId
+     * @param int $wordId
+     * @param int $fieldCount
+     *
+     * @return \Blixt\Storage\Entities\Term
+     */
+    public static function make(int $id, int $schemaId, int $wordId, int $fieldCount): Term
+    {
+        return new static($id, $schemaId, $wordId, $fieldCount);
     }
 }

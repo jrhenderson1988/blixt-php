@@ -10,19 +10,19 @@ class Occurrence extends Entity
     use BelongsToField, BelongsToTerm;
 
     /**
-     * @var int|null
+     * @var int
      */
     protected $frequency;
 
     /**
      * Occurrence constructor.
      *
-     * @param int|null|mixed $id
-     * @param int|null|mixed $fieldId
-     * @param int|null|mixed $termId
-     * @param int|null|mixed $frequency
+     * @param int|null $id
+     * @param int      $fieldId
+     * @param int      $termId
+     * @param int      $frequency
      */
-    public function __construct($id = null, $fieldId = null, $termId = null, $frequency = null)
+    public function __construct(?int $id, int $fieldId, int $termId, int $frequency)
     {
         parent::__construct($id);
 
@@ -32,18 +32,47 @@ class Occurrence extends Entity
     }
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getFrequency()
+    public function getFrequency(): int
     {
         return $this->frequency;
     }
 
     /**
-     * @param int|null|mixed $frequency
+     * @param int $frequency
      */
-    public function setFrequency($frequency)
+    public function setFrequency(int $frequency): void
     {
-        $this->frequency = $frequency !== null ? intval($frequency) : null;
+        $this->frequency = $frequency;
+    }
+
+    /**
+     * Factory method to create a new Occurrence.
+     *
+     * @param int $fieldId
+     * @param int $termId
+     * @param int $frequency
+     *
+     * @return \Blixt\Storage\Entities\Occurrence
+     */
+    public static function create(int $fieldId, int $termId, int $frequency): Occurrence
+    {
+        return new static(null, $fieldId, $termId, $frequency);
+    }
+
+    /**
+     * Factory method to make a Field from an existing record.
+     *
+     * @param int $id
+     * @param int $fieldId
+     * @param int $termId
+     * @param int $frequency
+     *
+     * @return \Blixt\Storage\Entities\Occurrence
+     */
+    public static function make(int $id, int $fieldId, int $termId, int $frequency): Occurrence
+    {
+        return new static($id, $fieldId, $termId, $frequency);
     }
 }

@@ -14,25 +14,25 @@ abstract class Entity
      *
      * @param int|null $id
      */
-    public function __construct($id = null)
+    public function __construct(?int $id)
     {
         $this->setId($id);
     }
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
 
     /**
-     * @param int|null|mixed $id
+     * @param int|null $id
      */
-    public function setId($id)
+    public function setId(?int $id): void
     {
-        $this->id = $id !== null ? intval($id) : null;
+        $this->id = $id;
     }
 
     /**
@@ -40,7 +40,7 @@ abstract class Entity
      *
      * @return bool
      */
-    public function exists()
+    public function exists(): bool
     {
         return $this->getId() !== null;
     }

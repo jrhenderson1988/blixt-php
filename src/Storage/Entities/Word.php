@@ -5,17 +5,17 @@ namespace Blixt\Storage\Entities;
 class Word extends Entity
 {
     /**
-     * @var string|null
+     * @var string
      */
     protected $word;
 
     /**
      * Word constructor.
      *
-     * @param int|null|mixed $id
-     * @param int|null|mixed $word
+     * @param int|null $id
+     * @param string   $word
      */
-    public function __construct($id = null, $word = null)
+    public function __construct(?int $id, string $word)
     {
         parent::__construct($id);
 
@@ -23,18 +23,43 @@ class Word extends Entity
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getWord()
+    public function getWord(): string
     {
         return $this->word;
     }
 
     /**
-     * @param string|null|mixed $word
+     * @param string $word
      */
-    public function setWord($word)
+    public function setWord(string $word): void
     {
-        $this->word = $word !== null ? strval($word) : null;
+        $this->word = $word;
+    }
+
+    /**
+     * Factory method to create a new Word.
+     *
+     * @param string $word
+     *
+     * @return \Blixt\Storage\Entities\Word
+     */
+    public static function create(string $word): Word
+    {
+        return new static(null, $word);
+    }
+
+    /**
+     * Factory method to make a Word from an existing record.
+     *
+     * @param int    $id
+     * @param string $word
+     *
+     * @return \Blixt\Storage\Entities\Word
+     */
+    public static function make(int $id, string $word): Word
+    {
+        return new static($id, $word);
     }
 }

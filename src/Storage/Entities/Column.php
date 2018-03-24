@@ -9,30 +9,30 @@ class Column extends Entity
     use BelongsToSchema;
 
     /**
-     * @var string|null
+     * @var string
      */
     protected $name;
 
     /**
-     * @var bool|null
+     * @var bool
      */
     protected $isIndexed;
 
     /**
-     * @var bool|null
+     * @var bool
      */
     protected $isStored;
 
     /**
      * Column constructor.
      *
-     * @param int|null|mixed    $id
-     * @param int|null|mixed    $schemaId
-     * @param string|null|mixed $name
-     * @param bool|null|mixed   $isIndexed
-     * @param bool|null|mixed   $isStored
+     * @param int|null $id
+     * @param int      $schemaId
+     * @param string   $name
+     * @param bool     $isIndexed
+     * @param bool     $isStored
      */
-    public function __construct($id = null, $schemaId = null, $name = null, $isIndexed = null, $isStored = null)
+    public function __construct(?int $id, int $schemaId, string $name, bool $isIndexed, bool $isStored)
     {
         parent::__construct($id);
 
@@ -43,50 +43,81 @@ class Column extends Entity
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
     /**
-     * @param string|null|mixed $name
+     * @param string $name
      */
-    public function setName($name)
+    public function setName(string $name): void
     {
-        $this->name = $name !== null ? strval($name) : null;
+        $this->name = $name;
     }
 
     /**
-     * @return bool|null
+     * @return bool
      */
-    public function isIndexed()
+    public function isIndexed(): bool
     {
         return $this->isIndexed;
     }
 
     /**
-     * @param bool|null|mixed $isIndexed
+     * @param bool $isIndexed
      */
-    public function setIndexed($isIndexed)
+    public function setIndexed(bool $isIndexed): void
     {
-        $this->isIndexed = $isIndexed !== null ? !! $isIndexed : null;
+        $this->isIndexed = $isIndexed;
     }
 
     /**
-     * @return bool|null
+     * @return bool
      */
-    public function isStored()
+    public function isStored(): bool
     {
         return $this->isStored;
     }
 
     /**
-     * @param bool|null|mixed $isStored
+     * @param bool $isStored
      */
-    public function setStored($isStored)
+    public function setStored(bool $isStored): void
     {
-        $this->isStored = $isStored !== null ? !! $isStored : null;
+        $this->isStored = $isStored;
+    }
+
+    /**
+     * Factory method to create a new Column.
+     *
+     * @param int    $schemaId
+     * @param string $name
+     * @param bool   $isIndexed
+     * @param bool   $isStored
+     *
+     * @return \Blixt\Storage\Entities\Column
+     */
+    public static function create(int $schemaId, string $name, bool $isIndexed, bool $isStored): Column
+    {
+        return new static(null, $schemaId, $name, $isIndexed, $isStored);
+    }
+
+    /**
+     * Factory method to make a Column from an existing record.
+     *
+     * @param int    $id
+     * @param int    $schemaId
+     * @param string $name
+     * @param bool   $isIndexed
+     * @param bool   $isStored
+     *
+     * @return \Blixt\Storage\Entities\Column
+     */
+    public static function make(int $id, int $schemaId, string $name, bool $isIndexed, bool $isStored): Column
+    {
+        return new static($id, $schemaId, $name, $isIndexed, $isStored);
     }
 }
