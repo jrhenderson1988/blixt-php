@@ -89,6 +89,7 @@ class Blixt
      * @throws \Blixt\Exceptions\SchemaDoesNotExistException
      * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\StorageException
+     * @throws \Blixt\Exceptions\InvalidSchemaException
      */
     public function open(string $name, Closure $closure = null): Index
     {
@@ -116,6 +117,7 @@ class Blixt
      * @throws \Blixt\Exceptions\IndexAlreadyExistsException
      * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\StorageException
+     * @throws \Blixt\Exceptions\InvalidSchemaException
      */
     public function create(Blueprint $blueprint): Index
     {
@@ -196,6 +198,7 @@ class Blixt
      * @param \Blixt\Storage\Entities\Schema $schema
      *
      * @return \Blixt\Index\Index
+     * @throws \Blixt\Exceptions\InvalidSchemaException
      */
     protected function createIndexForSchema(Schema $schema)
     {
