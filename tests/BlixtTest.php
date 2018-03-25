@@ -90,6 +90,9 @@ class BlixtTest extends TestCase
     public function testOpeningExistingSchemaReturnsIndex()
     {
         $schema = new Schema(1, 'test');
+        $schema->setColumns(Collection::make([
+            Column::make(1, 1, 'test', false, false)
+        ]));
 
         $this->schemaRepo->shouldReceive('findByName')->withArgs(['test'])->andReturn($schema);
         $this->columnRepo->shouldReceive('getBySchema')->with(m::on(function ($arg) use ($schema) {

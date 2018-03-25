@@ -12,8 +12,11 @@ use Blixt\Index\Blueprint\Definition;
 use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Drivers\Memory\Storage as MemoryStorage;
 use Blixt\Storage\Entities\Column;
+use Blixt\Storage\Entities\Document;
+use Blixt\Storage\Entities\Field;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Repositories\DocumentRepository;
+use Blixt\Storage\Repositories\FieldRepository;
 use Blixt\Storage\Storage;
 use Blixt\Tokenization\Token;
 use Blixt\Tokenization\Tokenizer;
@@ -35,17 +38,21 @@ class IndexTest extends TestCase
     protected $index;
     protected $schema;
 
-    public function createMockedIndexWithSchema(Schema $schema)
+    public function setUp()
     {
         $this->storage = m::mock(Storage::class);
         $this->tokenizer = m::mock(Tokenizer::class);
         $this->blixt = m::mock(Blixt::class);
-        $this->schema = $schema;
-
-        return $this->index = new Index($this->schema, $this->storage, $this->tokenizer);
     }
 
-    public function createMockedIndexWithPeopleSchemaWithNameAndAgeColumns()
+    public function makeIndexForSchema(Schema $schema)
+    {
+        return $this->index = new Index(
+            $this->schema = $schema, $this->storage, $this->tokenizer
+        );
+    }
+
+    public function makeIndexForPeopleSchemaWithNameAndAgeColumns()
     {
         $schema = new Schema(1, 'people');
         $schema->setColumns(new Collection([
@@ -53,43 +60,69 @@ class IndexTest extends TestCase
             new Column(2, 1, 'age', false, true)
         ]));
 
-        return $this->createMockedIndexWithSchema($schema);
+        return $this->makeIndexForSchema($schema);
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testIndexingAlreadyExistingDocumentThrowsDocumentAlreadyExistsException()
     {
-        $this->createMockedIndexWithPeopleSchemaWithNameAndAgeColumns();
-
+        $this->makeIndexForPeopleSchemaWithNameAndAgeColumns();
         $document = new Indexable(1);
-
         $documentRepo = m::mock(DocumentRepository::class);
         $this->storage->shouldReceive('documents')->once()->andReturn($documentRepo);
         $documentRepo->shouldReceive('findByKey')->once()->withArgs([$document->getKey()])->andReturn($document);
-
         $this->expectException(DocumentAlreadyExistsException::class);
         $this->index->add($document);
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testIndexingDocumentWithMissingFieldsThrowsInvalidDocumentException()
     {
-        $this->createMockedIndexWithPeopleSchemaWithNameAndAgeColumns();
-
+        $this->makeIndexForPeopleSchemaWithNameAndAgeColumns();
         $document = new Indexable(123);
         $document->setField('name', 'Joe Bloggs');
-
         $documentRepo = m::mock(DocumentRepository::class);
         $this->storage->shouldReceive('documents')->once()->andReturn($documentRepo);
         $documentRepo->shouldReceive('findByKey')->withArgs([$document->getKey()])->andReturn(null);
-
         $this->expectException(InvalidDocumentException::class);
         $this->index->add($document);
     }
 
     public function testExtraFieldsAreSilentlyIgnoredWhenIndexingDocument()
     {
-        // TODO
+        $schema = Schema::make(1, 'test');
+        $schema->setColumns(Collection::make([
+            $nameColumn = Column::make(1, 1, 'name', false, true),
+            $ageColumn = Column::make(2, 1, 'age', false, truew)
+        ]));
+        $this->makeIndexForSchema($schema);
+        $indexable = new Indexable(123);
+        $indexable->setField('name', 'Joe Bloggs');
+        $indexable->setField('age', 29);
+        $indexable->setField('extra', 'this should be ignored.');
+        $documentRepo = m::mock(DocumentRepository::class);
+        $this->storage->shouldReceive('documents')->andReturn($documentRepo);
+        $documentRepo->shouldReceive('findByKey')->withArgs([$indexable->getKey()])->andReturn(null);
+        $documentRepo->shouldReceive('save')->with(m::on(function ($arg) use ($schema, $indexable) {
+            return $arg == Document::create($schema->getId(), $indexable->getKey());
+        }))->andReturn($document = Document::make(1, $schema->getId(), $indexable->getKey()));
+        $fieldRepo = m::mock(FieldRepository::class);
+        $this->storage->shouldReceive('fields')->andReturn($fieldRepo);
+        $fieldRepo->shouldReceive('save')->twice()->with(m::on(function ($arg) use ($document, $nameColumn, $ageColumn) {
+            if ($arg instanceof Field && $arg->getDocumentId() == $document->getId()) {
+                if ($arg->getColumnId() == $nameColumn->getId()) {
+                    return $arg->getValue() == 'Joe Bloggs';
+                } elseif ($arg->getColumnId() == $ageColumn->getId()) {
+                    return $arg->getValue() == 29;
+                }
+            }
+            return false;
+        }))->andReturn(Field::make(1, $document->getId(), $nameColumn->getId(), null));
+        $this->assertTrue($this->index->add($indexable));
     }
 
     /**
@@ -100,40 +133,32 @@ class IndexTest extends TestCase
     {
         $storage = new MemoryStorage();
         $storage->create();
-        $tokenizer = new DummyTokenizer(new DummyStemmer());
-
-        $blixt = new Blixt($storage, $tokenizer);
+        $blixt = new Blixt($storage, $tokenizer = new DummyTokenizer(new DummyStemmer()));
         $index = $blixt->create($blueprint);
-
         $indexables = is_array($indexables) ? $indexables : [$indexables];
         foreach ($indexables as $indexable) {
             $index->add($indexable);
         }
-
-        $reflection = new \ReflectionClass(MemoryStorage::class);
-        $dataProperty = $reflection->getProperty('data');
-        $dataProperty->setAccessible(true);
-        $actual = $dataProperty->getValue($storage);
-
-        $this->assertEquals($expected, $actual);
+        $data = $this->getInaccessibleProperty($storage, 'data');
+        $this->assertEquals($expected, $data);
     }
 
     public function documentsIndexedCorrectlyProvider()
     {
-        $peopleBlueprint = new Blueprint('people', [
+        $peopleBlueprint = new Blueprint('people', Collection::make([
             new Definition('name', true, false),
             new Definition('age', false, true)
-        ]);
+        ]));
 
-        $joeBloggsIndexable = new Indexable(1, [
+        $joeBloggsIndexable = new Indexable(1, Collection::make([
             'name' => 'Joe Bloggs',
             'age' => 30
-        ]);
+        ]));
 
-        $janeDoeIndexable = new Indexable(2, [
+        $janeDoeIndexable = new Indexable(2, Collection::make([
             'name' => 'Jane Doe',
             'age' => 28
-        ]);
+        ]));
 
         $expectedPeopleJoeBloggs = [
             'schemas' => [1 => ['name' => 'people']],
