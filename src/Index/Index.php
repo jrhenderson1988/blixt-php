@@ -90,11 +90,21 @@ class Index
     }
 
     /**
+     * Translate the given search string into a query object and run it.
+     *
+     * @param string $search
+     */
+    public function search(string $search)
+    {
+
+    }
+
+    /**
      * @param \Blixt\Search\Query\Query $query
      */
-    public function search(Query $query)
+    public function query(Query $query)
     {
-        // TODO
+
     }
 
     /**

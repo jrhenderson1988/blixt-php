@@ -15,11 +15,6 @@ abstract class AbstractQuery
     protected $storage;
 
     /**
-     * @var \Blixt\Stemming\Stemmer
-     */
-    protected $stemmer;
-
-    /**
      * @var \Blixt\Tokenization\Tokenizer
      */
     protected $tokenizer;
@@ -35,14 +30,6 @@ abstract class AbstractQuery
     public function setStorage(Storage $storage)
     {
         $this->storage = $storage;
-    }
-
-    /**
-     * @param \Blixt\Stemming\Stemmer $stemmer
-     */
-    public function setStemmer(Stemmer $stemmer)
-    {
-        $this->stemmer = $stemmer;
     }
 
     /**
