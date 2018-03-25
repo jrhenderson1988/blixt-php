@@ -97,7 +97,7 @@ class IndexTest extends TestCase
         $schema = Schema::make(1, 'test');
         $schema->setColumns(Collection::make([
             $nameColumn = Column::make(1, 1, 'name', false, true),
-            $ageColumn = Column::make(2, 1, 'age', false, truew)
+            $ageColumn = Column::make(2, 1, 'age', false, true)
         ]));
         $this->makeIndexForSchema($schema);
         $indexable = new Indexable(123);
