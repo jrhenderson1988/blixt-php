@@ -2,7 +2,6 @@
 
 namespace Blixt\Search\Query;
 
-use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Schema;
 use Blixt\Storage\Storage;
 use Blixt\Tokenization\Tokenizer;
@@ -27,7 +26,7 @@ abstract class AbstractQuery
     /**
      * @param \Blixt\Storage\Storage $storage
      */
-    public function setStorage(Storage $storage)
+    public function setStorage(Storage $storage): void
     {
         $this->storage = $storage;
     }
@@ -35,7 +34,7 @@ abstract class AbstractQuery
     /**
      * @param \Blixt\Tokenization\Tokenizer $tokenizer
      */
-    public function setTokenizer(Tokenizer $tokenizer)
+    public function setTokenizer(Tokenizer $tokenizer): void
     {
         $this->tokenizer = $tokenizer;
     }
@@ -43,7 +42,7 @@ abstract class AbstractQuery
     /**
      * @param \Blixt\Storage\Entities\Schema $schema
      */
-    public function setSchema(Schema $schema)
+    public function setSchema(Schema $schema): void
     {
         $this->schema = $schema;
     }

@@ -56,24 +56,6 @@ class Index
     }
 
     /**
-     * Load the schema's columns if they've not yet been loaded.
-     *
-     * @throws \Blixt\Exceptions\InvalidSchemaException
-     */
-    protected function loadColumns(): void
-    {
-        if ($this->schema->getColumns()->isEmpty()) {
-            $columns = $this->storage->columns()->getBySchema($this->schema);
-
-            if ($columns->isEmpty()) {
-                throw InvalidSchemaException::noColumns();
-            }
-
-            $this->schema->setColumns($columns);
-        }
-    }
-
-    /**
      * @param \Blixt\Document\Indexable $indexable
      *
      * @return bool
@@ -104,7 +86,29 @@ class Index
      */
     public function query(Query $query)
     {
+        $query->setSchema($this->schema);
+        $query->setStorage($this->storage);
+        $query->setTokenizer($this->tokenizer);
 
+        return $query->execute();
+    }
+
+    /**
+     * Load the schema's columns if they've not yet been loaded.
+     *
+     * @throws \Blixt\Exceptions\InvalidSchemaException
+     */
+    protected function loadColumns(): void
+    {
+        if ($this->schema->getColumns()->isEmpty()) {
+            $columns = $this->storage->columns()->getBySchema($this->schema);
+
+            if ($columns->isEmpty()) {
+                throw InvalidSchemaException::noColumns();
+            }
+
+            $this->schema->setColumns($columns);
+        }
     }
 
     /**
