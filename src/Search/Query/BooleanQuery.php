@@ -24,7 +24,18 @@ class BooleanQuery extends AbstractQuery implements Query
 
     public function execute(): void
     {
+        // Initialisation --
+        // Look up words related to each clause
+        // Look up corresponding terms in that schema
 
+        // Build up candidates --
+        // Look up occurrences that correspond to terms in our OR / AND clause lists
+        // Look up the fields that correspond to each of those occurrences
+        // Build a set of candidate document IDs for those fields
+
+        // Evaluation --
+        // Look up all of the documents in our set of candidate document IDs and load in ALL of their corresponding
+        //
     }
 
     /**
