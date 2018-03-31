@@ -2,31 +2,13 @@
 
 namespace Blixt\Storage\Drivers\Memory;
 
+use Blixt\Persistence\Drivers\AbstractDriver;
 use Blixt\Persistence\Drivers\Driver;
 use Blixt\Storage\Entities\Entity;
 use InvalidArgumentException;
 
-class MemoryDriver implements Driver
+class MemoryDriver extends AbstractDriver implements Driver
 {
-    /**
-     * @var array
-     */
-    protected static $tables = [
-        'columns',
-        'documents',
-        'fields',
-        'occurrences',
-        'positions',
-        'schemas',
-        'terms',
-        'words'
-    ];
-
-    /**
-     * @var array
-     */
-    protected $repositories;
-
     /**
      * @var array
      */
@@ -42,7 +24,6 @@ class MemoryDriver implements Driver
      */
     public function __construct()
     {
-        $this->repositories = [];
         $this->data = [];
         $this->keys = [];
     }
@@ -52,10 +33,10 @@ class MemoryDriver implements Driver
      *
      * @return boolean
      */
-    public function exists()
+    public function exists(): bool
     {
-        foreach (self::$tables as $table) {
-            if (! isset($this->data[$table])) {
+        foreach ($this->entities as $entity) {
+            if (! isset($this->data[$this->getTableFromEntityClassName($entity)])) {
                 return false;
             }
         }
@@ -68,25 +49,13 @@ class MemoryDriver implements Driver
      *
      * @return bool
      */
-    public function create()
+    public function create(): bool
     {
-        foreach (self::$tables as $table) {
+        foreach ($this->entities as $entity) {
+            $table = $this->getTableFromEntityClassName($entity);
             $this->data[$table] = [];
             $this->keys[$table] = 1;
         }
-
-        return true;
-    }
-
-    /**
-     * Destroy the storage represented by the engine.
-     *
-     * @return boolean
-     */
-    public function destroy()
-    {
-        $this->data = [];
-        $this->keys = [];
 
         return true;
     }
@@ -97,9 +66,9 @@ class MemoryDriver implements Driver
      * @param string $table
      * @param array  $data
      *
-     * @return int
+     * @return array
      */
-    public function insert($table, array $data)
+    public function insert(string $table, array $data): array
     {
         $this->assertTableExists($table);
 
