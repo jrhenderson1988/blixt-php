@@ -2,7 +2,8 @@
 
 namespace Blixt\Persistence\Drivers;
 
-use Blixt\Persistence\Record;
+use Blixt\Persistence\Entities\Entity;
+use Illuminate\Support\Collection;
 
 interface Driver
 {
@@ -23,56 +24,64 @@ interface Driver
     /**
      * Find an entity in the storage by the given field/value combination.
      *
-     * @param string $table
-     * @param int    $field
+     * @param string $class
+     * @param string $field
      * @param mixed  $value
      *
-     * @return array|null
+     * @return \Blixt\Persistence\Entities\Entity|null
      */
-    public function findBy(string $table, int $field, $value): ?Record;
+    public function findBy(string $class, string $field, $value): ?Entity;
 
     /**
      * Find an entity in the storage by its primary key.
      *
-     * @param string $table
-     * @param int    $key
+     * @param string $class
+     * @param int    $id
      *
-     * @return array|null
+     * @return \Blixt\Persistence\Entities\Entity|null
      */
-    public function find(string $table, int $key): ?Record;
+    public function find(string $class, int $id): ?Entity;
 
     /**
      * Get one or many entities from the storage with the given conditions.
      *
-     * @param string   $table
+     * @param string   $class
      * @param array    $conditions
      * @param int      $offset
      * @param int|null $limit
      *
-     * @return array|null
+     * @return \Illuminate\Support\Collection
      */
-    public function getWhere(string $table, array $conditions, int $offset = 0, ?int $limit = null): ?array;
+    public function getWhere(string $class, array $conditions, int $offset = 0, ?int $limit = null): Collection;
+
+    /**
+     * Get all of the entities from the storage with an optional offset and limit.
+     *
+     * @param string   $class
+     * @param int      $offset
+     * @param int|null $limit
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function all(string $class, int $offset = 0, ?int $limit = null): Collection;
 
     /**
      * Insert a new entity into the storage with the given set of attributes. The returned array must be the new set of
      * attributes, with the entity's key included.
      *
-     * @param string $table
-     * @param array  $attributes
+     * @param \Blixt\Persistence\Entities\Entity $entity
      *
-     * @return \Blixt\Persistence\Record
+     * @return \Blixt\Persistence\Entities\Entity
      */
-    public function insert(string $table, array $attributes): Record;
+    public function insert(Entity $entity): Entity;
 
     /**
      * Update an entity identified by the given key, in the storage with the given set of attributes. The returned array
      * must be the updated set of attributes.
      *
-     * @param string $table
-     * @param int    $key
-     * @param array  $attributes
+     * @param \Blixt\Persistence\Entities\Entity $entity
      *
-     * @return \Blixt\Persistence\Record
+     * @return \Blixt\Persistence\Entities\Entity
      */
-    public function update(string $table, int $key, array $attributes): Record;
+    public function update(Entity $entity): Entity;
 }
