@@ -1,11 +1,10 @@
 <?php
 
-namespace Blixt\Storage\Drivers\Memory;
+namespace Blixt\Persistence\Drivers;
 
-use Blixt\Persistence\Drivers\AbstractDriver;
-use Blixt\Persistence\Drivers\Driver;
-use Blixt\Storage\Entities\Entity;
-use InvalidArgumentException;
+use Blixt\Exceptions\StorageException;
+use Blixt\Persistence\Entities\Entity;
+use Illuminate\Support\Collection;
 
 class MemoryDriver extends AbstractDriver implements Driver
 {
@@ -61,92 +60,45 @@ class MemoryDriver extends AbstractDriver implements Driver
     }
 
     /**
-     * Create a new entry in the data for the given table and return the new key.
+     * Insert a new entity into the storage with the given set of attributes. The returned array must be the new set of
+     * attributes, with the entity's key included.
      *
-     * @param string $table
-     * @param array  $data
+     * @param \Blixt\Persistence\Entities\Entity $entity
      *
-     * @return array
+     * @return \Blixt\Persistence\Entities\Entity
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function insert(string $table, array $data): array
+    public function insert(Entity $entity): Entity
     {
-        $this->assertTableExists($table);
+        $this->assertTableExists($table = $this->getTableFromEntity($entity));
 
-        $this->data[$table][$key = $this->nextKey($table)] = $data;
+        $entity->setId($id = $this->nextKey($table));
 
-        return $key;
+        $this->data[$table][$id] = $entity->toArray();
+
+        return $entity;
     }
 
     /**
-     * Update the data identified by the given key in the given table, with the data provided. The data provided is
-     * merged into the existing data, which allows for full, or partial updates. True is returned upon success.
+     * Update an entity identified by the given key, in the storage with the given set of attributes. The returned array
+     * must be the updated set of attributes.
      *
-     * @param string $table
-     * @param int    $key
-     * @param array  $data
+     * @param \Blixt\Persistence\Entities\Entity $entity
      *
-     * @return bool
+     * @return \Blixt\Persistence\Entities\Entity
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function update($table, $key, array $data)
+    public function update(Entity $entity): Entity
     {
-        $this->assertTableExists($table);
+        $this->assertTableExists($table = $this->getTableFromEntity($entity));
 
-        $this->data[$table][$key] = array_merge($this->data[$table][$key], $data);
+        if (! isset($this->data[$table][$id = $entity->getId()])) {
+            throw new StorageException('Entity does not exist and cannot be updated.');
+        }
 
-        return true;
-    }
+        $this->data[$table][$id] = $entity->toArray();
 
-    /**
-     * Find an entity by the given table and key. If no such entity could be found, null is returned instead.
-     *
-     * @param string $table
-     * @param int    $key
-     *
-     * @return \Blixt\Storage\Entities\Entity|null
-     */
-    public function find(string $table, int $key): Entity
-    {
-        $this->assertTableExists($table);
-
-        return isset($this->data[$table][$key]) ? $this->data[$table][$key] : null;
-    }
-
-    /**
-     * Get all of the entries in the dataset for the given table, where the value identified by the column in each item
-     * is equal to the provided value.
-     *
-     * @param string $table
-     * @param array  $conditions
-     *
-     * @return array
-     */
-    public function getWhere($table, array $conditions)
-    {
-        $this->assertTableExists($table);
-
-        return array_filter($this->data[$table], function ($item) use ($conditions) {
-            foreach ($conditions as $key => $value) {
-                if ((is_array($value) && ! in_array($item[$key], $value)) || $item[$key] != $value) {
-                    return false;
-                }
-            }
-
-            return true;
-        });
-    }
-
-    /**
-     * Get all of the data for the given table.
-     *
-     * @param string $table
-     *
-     * @return array
-     */
-    public function all($table)
-    {
-        $this->assertTableExists($table);
-
-        return $this->data[$table];
+        return $entity;
     }
 
     /**
@@ -159,8 +111,6 @@ class MemoryDriver extends AbstractDriver implements Driver
      */
     protected function nextKey($table)
     {
-        $this->assertTableExists($table);
-
         return $this->keys[$table]++;
     }
 
@@ -168,11 +118,81 @@ class MemoryDriver extends AbstractDriver implements Driver
      * Ensure that the given table exists in the data, throwing an InvalidArgumentException if not.
      *
      * @param string $table
+     *
+     * @throws \Blixt\Exceptions\StorageException
      */
     protected function assertTableExists($table)
     {
         if (! isset($this->data[$table], $this->keys[$table])) {
-            throw new InvalidArgumentException("The table '{$table}' does not exist.");
+            throw new StorageException("The table '{$table}' does not exist.");
         }
+    }
+
+    /**
+     * Find an entity in the storage by the given field/value combination.
+     *
+     * @param string $class
+     * @param string $field
+     * @param mixed  $value
+     *
+     * @return \Blixt\Persistence\Entities\Entity|null
+     */
+    public function findBy(string $class, string $field, $value): ?Entity
+    {
+        return $this->getWhere($class, [$field => $value], 0, 1)->first();
+    }
+
+    /**
+     * Find an entity in the storage by its primary key.
+     *
+     * @param string $class
+     * @param int    $id
+     *
+     * @return \Blixt\Persistence\Entities\Entity|null
+     */
+    public function find(string $class, int $id): ?Entity
+    {
+        return $this->findBy($class, Entity::FIELD_ID, $id);
+    }
+
+    /**
+     * Get one or many entities from the storage with the given conditions.
+     *
+     * @param string   $class
+     * @param array    $conditions
+     * @param int      $offset
+     * @param int|null $limit
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getWhere(string $class, array $conditions, int $offset = 0, ?int $limit = null): Collection
+    {
+        $table = $this->getTableFromEntityClassName($class);
+
+        return Collection::make($this->data[$table])->filter(function ($item) use ($conditions) {
+            foreach ($conditions as $key => $value) {
+                if ($item[$key] != $value) {
+                    return false;
+                }
+            }
+
+            return true;
+        })->slice($offset, $limit)->map(function ($item) use ($class) {
+            return $class::fromArray($item);
+        });
+    }
+
+    /**
+     * Get all of the entities from the storage with an optional offset and limit.
+     *
+     * @param string   $class
+     * @param int      $offset
+     * @param int|null $limit
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function all(string $class, int $offset = 0, ?int $limit = null): Collection
+    {
+        return $this->getWhere($class, [], $offset, $limit);
     }
 }
