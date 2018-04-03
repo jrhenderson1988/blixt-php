@@ -49,6 +49,16 @@ abstract class Entity
     }
 
     /**
+     * Get the table for the entity.
+     *
+     * @return string
+     */
+    public function getTable()
+    {
+        return static::TABLE;
+    }
+
+    /**
      * Convert this entity to an array for storage.
      *
      * @return array
