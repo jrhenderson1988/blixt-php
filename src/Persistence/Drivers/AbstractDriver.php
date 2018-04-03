@@ -36,6 +36,6 @@ abstract class AbstractDriver
 
     protected function getTableFromEntity(Entity $entity): string
     {
-        return $this->getTableFromEntityClassName(get_class($entity));
+        return $entity->getTable();
     }
 }
