@@ -25,12 +25,11 @@ interface Driver
      * Find an entity in the storage by the given field/value combination.
      *
      * @param string $class
-     * @param string $field
-     * @param mixed  $value
+     * @param array  $conditions
      *
      * @return \Blixt\Persistence\Entities\Entity|null
      */
-    public function findBy(string $class, string $field, $value): ?Entity;
+    public function findBy(string $class, array $conditions): ?Entity;
 
     /**
      * Find an entity in the storage by its primary key.
