@@ -132,14 +132,13 @@ class MemoryDriver extends AbstractDriver implements Driver
      * Find an entity in the storage by the given field/value combination.
      *
      * @param string $class
-     * @param string $field
-     * @param mixed  $value
+     * @param array  $conditions
      *
      * @return \Blixt\Persistence\Entities\Entity|null
      */
-    public function findBy(string $class, string $field, $value): ?Entity
+    public function findBy(string $class, array $conditions): ?Entity
     {
-        return $this->getWhere($class, [$field => $value], 0, 1)->first();
+        return $this->getWhere($class, $conditions, 0, 1)->first();
     }
 
     /**
@@ -152,7 +151,7 @@ class MemoryDriver extends AbstractDriver implements Driver
      */
     public function find(string $class, int $id): ?Entity
     {
-        return $this->findBy($class, Entity::FIELD_ID, $id);
+        return $this->findBy($class, [Entity::FIELD_ID => $id]);
     }
 
     /**
@@ -171,8 +170,16 @@ class MemoryDriver extends AbstractDriver implements Driver
 
         return Collection::make($this->data[$table])->filter(function ($item) use ($conditions) {
             foreach ($conditions as $key => $value) {
-                if ($item[$key] != $value) {
-                    return false;
+                $value = is_array($value) ? Collection::make($value) : $value;
+
+                if ($value instanceof Collection) {
+                    if (! $value->contains($item[$key])) {
+                        return false;
+                    }
+                } else {
+                    if ($item[$key] != $value) {
+                        return false;
+                    }
                 }
             }
 
