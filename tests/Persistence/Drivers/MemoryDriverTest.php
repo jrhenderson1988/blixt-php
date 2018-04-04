@@ -5,6 +5,7 @@ namespace BlixtTests\Persistence\Drivers;
 use Blixt\Exceptions\StorageException;
 use Blixt\Persistence\Drivers\MemoryDriver;
 use Blixt\Persistence\Entities\Schema;
+use Blixt\Persistence\Entities\Column;
 use BlixtTests\TestCase;
 use Illuminate\Support\Collection;
 
@@ -126,7 +127,52 @@ class MemoryDriverTest extends TestCase
         $target = $this->driver->insert(Schema::create('second'));
         $this->driver->insert(Schema::create('third'));
 
-        $this->assertEquals($target, $this->driver->findBy(Schema::class, Schema::FIELD_NAME, 'second'));
+        $this->assertEquals($target, $this->driver->findBy(Schema::class, [Schema::FIELD_NAME => 'second']));
+    }
+
+    /**
+     * @test
+     */
+    public function testFindByReturnsCorrectEntityWhenPassingCollectionAsCondition()
+    {
+        $this->driver->insert(Schema::create('first'));
+        $this->driver->insert(Schema::create('second'));
+        $target = $this->driver->insert(Schema::create('third'));
+
+        $this->assertEquals($target, $this->driver->findBy(Schema::class, [
+            Schema::FIELD_NAME => Collection::make(['third', 'fourth', 'fifth'])
+        ]));
+    }
+
+    /**
+     * @test
+     */
+    public function testFindByReturnsCorrectEntityWhenPassingArrayAsCondition()
+    {
+        $this->driver->insert(Schema::create('first'));
+        $this->driver->insert(Schema::create('second'));
+        $target = $this->driver->insert(Schema::create('third'));
+
+        $this->assertEquals($target, $this->driver->findBy(Schema::class, [
+            Schema::FIELD_NAME => ['third', 'fourth', 'fifth']
+        ]));
+    }
+
+    /**
+     * @test
+     */
+    public function testFindByReturnsCorrectEntityWhenPassingMultipleConditions()
+    {
+        $this->driver->insert(Column::create(1, 'first', true, false));
+        $target = $this->driver->insert(Column::create(1, 'second', true, false));
+        $this->driver->insert(Column::create(1, 'third', true, false));
+
+        $found = $this->driver->findBy(Column::class, [
+            Column::FIELD_NAME => 'second',
+            Column::FIELD_IS_INDEXED => true
+        ]);
+        $this->assertInstanceOf(Column::class, $found);
+        $this->assertEquals($target, $found);
     }
 
     /**
@@ -138,7 +184,7 @@ class MemoryDriverTest extends TestCase
         $this->driver->insert(Schema::create('second'));
         $this->driver->insert(Schema::create('third'));
 
-        $this->assertNull($this->driver->findBy(Schema::class, Schema::FIELD_NAME, 'fourth'));
+        $this->assertNull($this->driver->findBy(Schema::class, [Schema::FIELD_NAME => 'fourth']));
     }
 
     /**
@@ -173,6 +219,65 @@ class MemoryDriverTest extends TestCase
         $item = $collection->first();
         $this->assertInstanceOf(Schema::class, $item);
         $this->assertEquals('third', $item->getName());
+    }
+
+    /**
+     * @test
+     */
+    public function testGetWhereReturnsCorrectEntitiesWhenPassingCollectionAsCondition()
+    {
+        $this->driver->insert(Schema::create('first'));
+        $this->driver->insert(Schema::create('second'));
+        $this->driver->insert(Schema::create('third'));
+
+        $collection = $this->driver->getWhere(Schema::class, [
+            Schema::FIELD_NAME => Collection::make(['first', 'second'])
+        ]);
+        $this->assertInstanceOf(Collection::class, $collection);
+        $this->assertEquals(2, $collection->count());
+        $collection->each(function ($item) {
+            $this->assertInstanceOf(Schema::class, $item);
+            $this->assertTrue(in_array($item->getName(), ['first', 'second']));
+        });
+    }
+
+    /**
+     * @test
+     */
+    public function testGetWhereReturnsCorrectEntitiesWhenPassingArrayAsCondition()
+    {
+        $this->driver->insert(Schema::create('first'));
+        $this->driver->insert(Schema::create('second'));
+        $this->driver->insert(Schema::create('third'));
+
+        $collection = $this->driver->getWhere(Schema::class, [
+            Schema::FIELD_NAME => ['first', 'second']
+        ]);
+        $this->assertInstanceOf(Collection::class, $collection);
+        $this->assertEquals(2, $collection->count());
+        $collection->each(function ($item) {
+            $this->assertInstanceOf(Schema::class, $item);
+            $this->assertTrue(in_array($item->getName(), ['first', 'second']));
+        });
+    }
+
+    /**
+     * @test
+     */
+    public function testGetWhereReturnsCorrectEntityWhenPassingMultipleConditions()
+    {
+        $this->driver->insert(Column::create(1, 'first', true, false));
+        $target = $this->driver->insert(Column::create(1, 'second', true, false));
+        $this->driver->insert(Column::create(1, 'third', true, false));
+
+        $collection = $this->driver->getWhere(Column::class, [
+            Column::FIELD_NAME => 'second',
+            Column::FIELD_IS_INDEXED => true
+        ]);
+        $this->assertInstanceOf(Collection::class, $collection);
+        $first = $collection->first();
+        $this->assertInstanceOf(Column::class, $first);
+        $this->assertEquals($target, $first);
     }
 
     /**
@@ -243,6 +348,9 @@ class MemoryDriverTest extends TestCase
         });
     }
 
+    /**
+     * @test
+     */
     public function testAllReturnsEmptyCollectionWhenThereAreNoRecords()
     {
         $schemas = $this->driver->all(Schema::class);
