@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Document\" />
+    <Folder Include="Exceptions\" />
+    <Folder Include="Index\Blueprint\" />
+    <Folder Include="Persistence\Drivers\" />
+    <Folder Include="Persistence\Entities\Concerns\" />
+    <Folder Include="Persistence\Repositories\" />
+    <Folder Include="Search\Query\Clauses\" />
+    <Folder Include="Search\Results\" />
+    <Folder Include="Stemming\" />
+    <Folder Include="Storage\Drivers\Memory\Repositories\" />
+    <Folder Include="Storage\Entities\Concerns\" />
+    <Folder Include="Storage\Repositories\" />
+    <Folder Include="Tokenization\" />
+  </ItemGroup>
+
+</Project>
