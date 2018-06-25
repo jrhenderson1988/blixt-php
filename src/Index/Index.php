@@ -118,7 +118,7 @@ class Index
      *
      * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
      */
-    protected function assertDocumentDoesNotExist(Indexable $indexable)
+    protected function assertDocumentDoesNotExist(Indexable $indexable): void
     {
         if ($document = $this->storage->documents()->findByKey($indexable->getKey())) {
             throw new DocumentAlreadyExistsException(
@@ -132,7 +132,7 @@ class Index
      *
      * @throws \Blixt\Exceptions\InvalidDocumentException
      */
-    protected function assertDocumentMatchesSchema(Indexable $document)
+    protected function assertDocumentMatchesSchema(Indexable $document): void
     {
         $fields = $document->getFields();
 
@@ -152,7 +152,7 @@ class Index
      *
      * @return \Blixt\Storage\Entities\Document
      */
-    protected function createDocument(Indexable $indexable)
+    protected function createDocument(Indexable $indexable): Document
     {
         $document = $this->storage->documents()->save(
             Document::create($this->schema->getId(), $indexable->getKey())
@@ -174,7 +174,7 @@ class Index
      *
      * @return \Blixt\Storage\Entities\Field
      */
-    protected function createField(Document $document, Column $column, $content)
+    protected function createField(Document $document, Column $column, $content): Field
     {
         $field = $this->storage->fields()->save(
             Field::create($document->getId(), $column->getId(), $column->isStored() ? $content : null)
@@ -195,7 +195,7 @@ class Index
      * @param \Blixt\Storage\Entities\Field $field
      * @param string|mixed|null             $content
      */
-    protected function indexField(Field $field, $content)
+    protected function indexField(Field $field, $content): void
     {
         $positions = new Collection();
 
@@ -227,7 +227,7 @@ class Index
      *
      * @return \Blixt\Storage\Entities\Word
      */
-    protected function findOrCreateWord($stem)
+    protected function findOrCreateWord(string $stem): Word
     {
         $word = $this->storage->words()->findByWord($stem);
 
@@ -245,7 +245,7 @@ class Index
      *
      * @return \Blixt\Storage\Entities\Term
      */
-    protected function findOrCreateTerm(Word $word, $fieldCount = 1)
+    protected function findOrCreateTerm(Word $word, int $fieldCount = 1): Term
     {
         if ($term = $this->storage->terms()->findBySchemaAndWord($this->schema, $word)) {
             $term->setFieldCount(
@@ -267,7 +267,7 @@ class Index
      *
      * @return \Blixt\Storage\Entities\Occurrence
      */
-    protected function createOccurrence(Field $field, Term $term, $frequency)
+    protected function createOccurrence(Field $field, Term $term, int $frequency): Occurrence
     {
         return $this->storage->occurrences()->save(
             Occurrence::create($field->getId(), $term->getId(), $frequency)
@@ -280,7 +280,7 @@ class Index
      *
      * @return \Blixt\Storage\Entities\Position
      */
-    protected function createPosition(Occurrence $occurrence, $position)
+    protected function createPosition(Occurrence $occurrence, int $position): Position
     {
         return $this->storage->positions()->save(
             Position::create($occurrence->getId(), $position)

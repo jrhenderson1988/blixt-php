@@ -161,30 +161,89 @@ class IndexTest extends TestCase
         ]));
 
         $expectedPeopleJoeBloggs = [
-            'schemas' => [1 => ['name' => 'people']],
-            'columns' => [1 => ['schema_id' => 1, 'name' => 'name', 'is_indexed' => true, 'is_stored' => false], 2 => ['schema_id' => 1, 'name' => 'age', 'is_indexed' => false, 'is_stored' => true]],
-            'words' => [1 => ['word' => 'joe'], 2 => ['word' => 'bloggs']],
-            'terms' => [1 => ['schema_id' => 1, 'word_id' => 1, 'field_count' => 1], 2 => ['schema_id' => 1, 'word_id' => 2, 'field_count' => 1]],
-            'documents' => [1 => ['schema_id' => 1, 'key' => 1]],
-            'fields' => [1 => ['document_id' => 1, 'column_id' => 1, 'value' => null], 2 => ['document_id' => 1, 'column_id' => 2, 'value' => 30]],
-            'occurrences' => [1 => ['field_id' => 1, 'term_id' => 1, 'frequency' => 1], 2 => ['field_id' => 1, 'term_id' => 2, 'frequency' => 1]],
-            'positions' => [1 => ['occurrence_id' => 1, 'position' => 0], 2 => ['occurrence_id' => 2, 'position' => 1]]
+            'schemas' => [
+                1 => ['name' => 'people']
+            ],
+            'columns' => [
+                1 => ['schema_id' => 1, 'name' => 'name', 'is_indexed' => true, 'is_stored' => false],
+                2 => ['schema_id' => 1, 'name' => 'age', 'is_indexed' => false, 'is_stored' => true]
+            ],
+            'words' => [
+                1 => ['word' => 'joe'],
+                2 => ['word' => 'bloggs']
+            ],
+            'terms' => [
+                1 => ['schema_id' => 1, 'word_id' => 1, 'field_count' => 1],
+                2 => ['schema_id' => 1, 'word_id' => 2, 'field_count' => 1]
+            ],
+            'documents' => [
+                1 => ['schema_id' => 1, 'key' => 1]
+            ],
+            'fields' => [
+                1 => ['document_id' => 1, 'column_id' => 1, 'value' => null],
+                2 => ['document_id' => 1, 'column_id' => 2, 'value' => 30]
+            ],
+            'occurrences' => [
+                1 => ['field_id' => 1, 'term_id' => 1, 'frequency' => 1],
+                2 => ['field_id' => 1, 'term_id' => 2, 'frequency' => 1]
+            ],
+            'positions' => [
+                1 => ['occurrence_id' => 1, 'position' => 0],
+                2 => ['occurrence_id' => 2, 'position' => 1]
+            ]
         ];
 
         $expectedPeopleJoeBloggsJaneDoe = [
-            'schemas' => [1 => ['name' => 'people']],
-            'columns' => [1 => ['schema_id' => 1, 'name' => 'name', 'is_indexed' => true, 'is_stored' => false], 2 => ['schema_id' => 1, 'name' => 'age', 'is_indexed' => false, 'is_stored' => true]],
-            'words' => [1 => ['word' => 'joe'], 2 => ['word' => 'bloggs'], 3 => ['word' => 'jane'], 4 => ['word' => 'doe']],
-            'terms' => [1 => ['schema_id' => 1, 'word_id' => 1, 'field_count' => 1], 2 => ['schema_id' => 1, 'word_id' => 2, 'field_count' => 1], 3 => ['schema_id' => 1, 'word_id' => 3, 'field_count' => 1], 4 => ['schema_id' => 1, 'word_id' => 4, 'field_count' => 1]],
-            'documents' => [1 => ['schema_id' => 1, 'key' => 1], 2 => ['schema_id' => 1, 'key' => 2]],
-            'fields' => [1 => ['document_id' => 1, 'column_id' => 1, 'value' => null], 2 => ['document_id' => 1, 'column_id' => 2, 'value' => 30], 3 => ['document_id' => 2, 'column_id' => 1, 'value' => null], 4 => ['document_id' => 2, 'column_id' => 2, 'value' => 28]],
-            'occurrences' => [1 => ['field_id' => 1, 'term_id' => 1, 'frequency' => 1], 2 => ['field_id' => 1, 'term_id' => 2, 'frequency' => 1], 3 => ['field_id' => 3, 'term_id' => 3, 'frequency' => 1], 4 => ['field_id' => 3, 'term_id' => 4, 'frequency' => 1]],
-            'positions' => [1 => ['occurrence_id' => 1, 'position' => 0], 2 => ['occurrence_id' => 2, 'position' => 1], 3 => ['occurrence_id' => 3, 'position' => 0], 4 => ['occurrence_id' => 4, 'position' => 1]]
+            'schemas' => [
+                1 => ['name' => 'people']
+            ],
+            'columns' => [
+                1 => ['schema_id' => 1, 'name' => 'name', 'is_indexed' => true, 'is_stored' => false],
+                2 => ['schema_id' => 1, 'name' => 'age', 'is_indexed' => false, 'is_stored' => true]
+            ],
+            'words' => [
+                1 => ['word' => 'joe'],
+                2 => ['word' => 'bloggs'],
+                3 => ['word' => 'jane'],
+                4 => ['word' => 'doe']
+            ],
+            'terms' => [
+                1 => ['schema_id' => 1, 'word_id' => 1, 'field_count' => 1],
+                2 => ['schema_id' => 1, 'word_id' => 2, 'field_count' => 1],
+                3 => ['schema_id' => 1, 'word_id' => 3, 'field_count' => 1],
+                4 => ['schema_id' => 1, 'word_id' => 4, 'field_count' => 1]
+            ],
+            'documents' => [
+                1 => ['schema_id' => 1, 'key' => 1],
+                2 => ['schema_id' => 1, 'key' => 2]
+            ],
+            'fields' => [
+                1 => ['document_id' => 1, 'column_id' => 1, 'value' => null],
+                2 => ['document_id' => 1, 'column_id' => 2, 'value' => 30],
+                3 => ['document_id' => 2, 'column_id' => 1, 'value' => null],
+                4 => ['document_id' => 2, 'column_id' => 2, 'value' => 28]
+            ],
+            'occurrences' => [
+                1 => ['field_id' => 1, 'term_id' => 1, 'frequency' => 1],
+                2 => ['field_id' => 1, 'term_id' => 2, 'frequency' => 1],
+                3 => ['field_id' => 3, 'term_id' => 3, 'frequency' => 1],
+                4 => ['field_id' => 3, 'term_id' => 4, 'frequency' => 1]
+            ],
+            'positions' => [
+                1 => ['occurrence_id' => 1, 'position' => 0],
+                2 => ['occurrence_id' => 2, 'position' => 1],
+                3 => ['occurrence_id' => 3, 'position' => 0],
+                4 => ['occurrence_id' => 4, 'position' => 1]
+            ]
         ];
 
         return [
-            'people schema, joe bloggs' => [$peopleBlueprint, [$joeBloggsIndexable], $expectedPeopleJoeBloggs],
-            'people schema, joe bloggs and jane doe' => [$peopleBlueprint, [$joeBloggsIndexable, $janeDoeIndexable], $expectedPeopleJoeBloggsJaneDoe],
+            'people schema, joe bloggs' => [
+                $peopleBlueprint, [$joeBloggsIndexable], $expectedPeopleJoeBloggs
+            ],
+            'people schema, joe bloggs and jane doe' => [
+                $peopleBlueprint, [$joeBloggsIndexable, $janeDoeIndexable], $expectedPeopleJoeBloggsJaneDoe
+            ],
         ];
     }
 

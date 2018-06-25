@@ -21,6 +21,9 @@ use Mockery as m;
 
 class BlixtTest extends TestCase
 {
+    /**
+     * @var \Blixt\Blixt
+     */
     protected $blixt;
     protected $storage;
     protected $tokenizer;
@@ -193,7 +196,9 @@ class BlixtTest extends TestCase
         $this->blixt->create(new Blueprint('test'));
     }
 
-    /** @test */
+    /**
+     * @test
+     */
     public function testExceptionIsThrownWhenStorageIsUnableToCreateSchema()
     {
         $this->storage->shouldReceive('schemas')->andReturn($this->schemaRepo);
