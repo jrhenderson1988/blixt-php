@@ -63,12 +63,12 @@ class MemoryDriver extends AbstractDriver implements Driver
      * Insert a new entity into the storage with the given set of attributes. The returned array must be the new set of
      * attributes, with the entity's key included.
      *
-     * @param \Blixt\Persistence\Entities\Entity $entity
+     * @param \Blixt\Persistence\Entities\Entity|null $entity
      *
      * @return \Blixt\Persistence\Entities\Entity
      * @throws \Blixt\Exceptions\StorageException
      */
-    public function insert(Entity $entity): Entity
+    public function insert(Entity $entity): ?Entity
     {
         $this->assertTableExists($table = $this->getTableFromEntity($entity));
 
@@ -83,12 +83,12 @@ class MemoryDriver extends AbstractDriver implements Driver
      * Update an entity identified by the given key, in the storage with the given set of attributes. The returned array
      * must be the updated set of attributes.
      *
-     * @param \Blixt\Persistence\Entities\Entity $entity
+     * @param \Blixt\Persistence\Entities\Entity|null $entity
      *
      * @return \Blixt\Persistence\Entities\Entity
      * @throws \Blixt\Exceptions\StorageException
      */
-    public function update(Entity $entity): Entity
+    public function update(Entity $entity): ?Entity
     {
         $this->assertTableExists($table = $this->getTableFromEntity($entity));
 
@@ -109,7 +109,7 @@ class MemoryDriver extends AbstractDriver implements Driver
      *
      * @return int
      */
-    protected function nextKey($table)
+    protected function nextKey($table): int
     {
         return $this->keys[$table]++;
     }
@@ -121,7 +121,7 @@ class MemoryDriver extends AbstractDriver implements Driver
      *
      * @throws \Blixt\Exceptions\StorageException
      */
-    protected function assertTableExists($table)
+    protected function assertTableExists($table): void
     {
         if (! isset($this->data[$table], $this->keys[$table])) {
             throw new StorageException("The table '{$table}' does not exist.");

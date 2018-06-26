@@ -70,9 +70,9 @@ interface Driver
      *
      * @param \Blixt\Persistence\Entities\Entity $entity
      *
-     * @return \Blixt\Persistence\Entities\Entity
+     * @return \Blixt\Persistence\Entities\Entity|null
      */
-    public function insert(Entity $entity): Entity;
+    public function insert(Entity $entity): ?Entity;
 
     /**
      * Update an entity identified by the given key, in the storage with the given set of attributes. The returned array
@@ -80,7 +80,7 @@ interface Driver
      *
      * @param \Blixt\Persistence\Entities\Entity $entity
      *
-     * @return \Blixt\Persistence\Entities\Entity
+     * @return \Blixt\Persistence\Entities\Entity|null
      */
-    public function update(Entity $entity): Entity;
+    public function update(Entity $entity): ?Entity;
 }
