@@ -26,7 +26,7 @@ abstract class Repository
      *
      * @return \Blixt\Persistence\Drivers\Driver
      */
-    protected function driver()
+    protected function driver(): Driver
     {
         return $this->driver;
     }

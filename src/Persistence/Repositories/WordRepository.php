@@ -40,9 +40,9 @@ class WordRepository extends Repository
      *
      * @param \Blixt\Persistence\Entities\Word $word
      *
-     * @return \Blixt\Persistence\Entities\Word
+     * @return \Blixt\Persistence\Entities\Word|null
      */
-    public function save(Word $word): Word
+    public function save(Word $word): ?Word
     {
         return $word->exists() ? $this->driver()->update($word) : $this->driver()->insert($word);
     }

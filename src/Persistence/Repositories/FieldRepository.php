@@ -11,9 +11,9 @@ class FieldRepository extends Repository
      *
      * @param \Blixt\Persistence\Entities\Field $field
      *
-     * @return \Blixt\Persistence\Entities\Field
+     * @return \Blixt\Persistence\Entities\Field|null
      */
-    public function save(Field $field): Field
+    public function save(Field $field): ?Field
     {
         return $field->exists() ? $this->driver()->update($field) : $this->driver()->insert($field);
     }

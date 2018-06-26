@@ -15,9 +15,9 @@ class TermRepository extends Repository
      * @param \Blixt\Persistence\Entities\Schema $schema
      * @param \Blixt\Persistence\Entities\Word   $word
      *
-     * @return \Blixt\Persistence\Entities\Term
+     * @return \Blixt\Persistence\Entities\Term|null
      */
-    public function findBySchemaAndWord(Schema $schema, Word $word): Term
+    public function findBySchemaAndWord(Schema $schema, Word $word): ?Term
     {
         return $this->driver()->findBy(Term::class, [
             Term::FIELD_SCHEMA_ID => $schema->getId(),
@@ -48,9 +48,9 @@ class TermRepository extends Repository
      *
      * @param \Blixt\Persistence\Entities\Term $term
      *
-     * @return \Blixt\Persistence\Entities\Term
+     * @return \Blixt\Persistence\Entities\Term|null
      */
-    public function save(Term $term): Term
+    public function save(Term $term): ?Term
     {
         return $term->exists() ? $this->driver()->update($term) : $this->driver()->insert($term);
     }

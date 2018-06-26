@@ -11,9 +11,9 @@ class OccurrenceRepository extends Repository
      *
      * @param \Blixt\Persistence\Entities\Occurrence $occurrence
      *
-     * @return \Blixt\Persistence\Entities\Occurrence
+     * @return \Blixt\Persistence\Entities\Occurrence|null
      */
-    public function save(Occurrence $occurrence): Occurrence
+    public function save(Occurrence $occurrence): ?Occurrence
     {
         return $occurrence->exists() ? $this->driver()->update($occurrence) : $this->driver()->insert($occurrence);
     }

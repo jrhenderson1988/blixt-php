@@ -23,9 +23,9 @@ class SchemaRepository extends Repository
      *
      * @param \Blixt\Persistence\Entities\Schema $schema
      *
-     * @return \Blixt\Persistence\Entities\Schema
+     * @return \Blixt\Persistence\Entities\Schema|null
      */
-    public function save(Schema $schema): Schema
+    public function save(Schema $schema): ?Schema
     {
         return $schema->exists() ? $this->driver()->update($schema) : $this->driver()->insert($schema);
     }

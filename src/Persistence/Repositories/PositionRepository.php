@@ -11,9 +11,9 @@ class PositionRepository extends Repository
      *
      * @param \Blixt\Persistence\Entities\Position $position
      *
-     * @return \Blixt\Persistence\Entities\Position
+     * @return \Blixt\Persistence\Entities\Position|null
      */
-    public function save(Position $position): Position
+    public function save(Position $position): ?Position
     {
         return $position->exists() ? $this->driver()->update($position) : $this->driver()->insert($position);
     }

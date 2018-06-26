@@ -23,9 +23,9 @@ class DocumentRepository extends Repository
      *
      * @param \Blixt\Persistence\Entities\Document $document
      *
-     * @return \Blixt\Persistence\Entities\Document
+     * @return \Blixt\Persistence\Entities\Document|null
      */
-    public function save(Document $document): Document
+    public function save(Document $document): ?Document
     {
         return $document->exists() ? $this->driver()->update($document) : $this->driver()->insert($document);
     }

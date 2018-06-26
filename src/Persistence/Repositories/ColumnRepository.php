@@ -27,9 +27,9 @@ class ColumnRepository extends Repository
      *
      * @param \Blixt\Persistence\Entities\Column $column
      *
-     * @return \Blixt\Persistence\Entities\Column
+     * @return \Blixt\Persistence\Entities\Column|null
      */
-    public function save(Column $column): Column
+    public function save(Column $column): ?Column
     {
         return $column->exists() ? $this->driver()->update($column) : $this->driver()->insert($column);
     }
