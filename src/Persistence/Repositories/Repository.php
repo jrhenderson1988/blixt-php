@@ -175,11 +175,9 @@ abstract class Repository
             throw new InvalidArgumentException("That entity already exists.");
         }
 
-        if (($record = $this->driver()->create($this->table(), $this->getAttributes($entity))) === null) {
-            throw new StorageException("Could not insert entity.");
-        }
-
-        return $this->fromRecord($record);
+        return $this->fromRecord(
+            $this->driver()->create($this->table(), $this->getAttributes($entity))
+        );
     }
 
     /**
@@ -199,14 +197,9 @@ abstract class Repository
             throw new InvalidArgumentException("That entity does not exist.");
         }
 
-        $id = $this->getId($entity);
-        $attributes = $this->getAttributes($entity);
-
-        if (($record = $this->driver()->update($this->table(), $id, $attributes)) === null) {
-            throw new StorageException("Could not update entity.");
-        }
-
-        return $this->fromRecord($record);
+        return $this->fromRecord(
+            $this->driver()->update($this->table(), $this->getId($entity), $this->getAttributes($entity))
+        );
     }
 
     /**

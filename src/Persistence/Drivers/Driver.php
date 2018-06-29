@@ -69,9 +69,10 @@ interface Driver
      * @param string $table
      * @param array $attributes
      *
-     * @return \Blixt\Persistence\Record|null
+     * @return \Blixt\Persistence\Record
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function create(string $table, array $attributes): ?Record;
+    public function create(string $table, array $attributes): Record;
 
     /**
      * Update a single entity in the storage with the given set of attributes, identified by the given ID. Returns a
@@ -81,7 +82,8 @@ interface Driver
      * @param int $id
      * @param array $attributes
      *
-     * @return \Blixt\Persistence\Record|null
+     * @return \Blixt\Persistence\Record
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function update(string $table, int $id, array $attributes): ?Record;
+    public function update(string $table, int $id, array $attributes): Record;
 }
