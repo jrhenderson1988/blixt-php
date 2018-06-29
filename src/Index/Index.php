@@ -7,15 +7,15 @@ use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
 use Blixt\Exceptions\InvalidSchemaException;
 use Blixt\Search\Query\Query;
-use Blixt\Storage\Entities\Column;
-use Blixt\Storage\Entities\Document;
-use Blixt\Storage\Entities\Field;
-use Blixt\Storage\Entities\Occurrence;
-use Blixt\Storage\Entities\Position;
-use Blixt\Storage\Entities\Schema;
-use Blixt\Storage\Entities\Term;
-use Blixt\Storage\Entities\Word;
-use Blixt\Storage\Storage;
+use Blixt\Persistence\Entities\Column;
+use Blixt\Persistence\Entities\Document;
+use Blixt\Persistence\Entities\Field;
+use Blixt\Persistence\Entities\Occurrence;
+use Blixt\Persistence\Entities\Position;
+use Blixt\Persistence\Entities\Schema;
+use Blixt\Persistence\Entities\Term;
+use Blixt\Persistence\Entities\Word;
+use Blixt\Persistence\Storage;
 use Blixt\Tokenization\Token;
 use Blixt\Tokenization\Tokenizer;
 use Illuminate\Support\Collection;
@@ -23,12 +23,12 @@ use Illuminate\Support\Collection;
 class Index
 {
     /**
-     * @var \Blixt\Storage\Entities\Schema
+     * @var \Blixt\Persistence\Entities\Schema
      */
     protected $schema;
 
     /**
-     * @var \Blixt\Storage\Storage
+     * @var \Blixt\Persistence\Storage
      */
     protected $storage;
 
@@ -40,9 +40,9 @@ class Index
     /**
      * Index constructor.
      *
-     * @param \Blixt\Storage\Entities\Schema $schema
-     * @param \Blixt\Storage\Storage         $storage
-     * @param \Blixt\Tokenization\Tokenizer  $tokenizer
+     * @param \Blixt\Persistence\Entities\Schema $schema
+     * @param \Blixt\Persistence\Storage $storage
+     * @param \Blixt\Tokenization\Tokenizer $tokenizer
      *
      * @throws \Blixt\Exceptions\InvalidSchemaException
      */
@@ -61,6 +61,7 @@ class Index
      * @return bool
      * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
      * @throws \Blixt\Exceptions\InvalidDocumentException
+     * @throws \Blixt\Exceptions\StorageException
      */
     public function add(Indexable $indexable): bool
     {
@@ -86,11 +87,11 @@ class Index
      */
     public function query(Query $query)
     {
-        $query->setSchema($this->schema);
-        $query->setStorage($this->storage);
-        $query->setTokenizer($this->tokenizer);
-
-        return $query->execute();
+//        $query->setSchema($this->schema);
+//        $query->setStorage($this->storage);
+//        $query->setTokenizer($this->tokenizer);
+//
+//        return $query->execute();
     }
 
     /**
@@ -100,7 +101,7 @@ class Index
      */
     protected function loadColumns(): void
     {
-        if ($this->schema->getColumns()->isEmpty()) {
+        if (! $this->schema->hasColumns()) {
             $columns = $this->storage->columns()->getBySchema($this->schema);
 
             if ($columns->isEmpty()) {
@@ -128,6 +129,10 @@ class Index
     }
 
     /**
+     * Ensure that the given indexable document matches the schema loaded for this Index object, i.e. all of the columns
+     * defined by the schema are present as fields in the indexable document. If any of the required columns are missing
+     * from the indexable document, an InvalidDocumentException is thrown.
+     *
      * @param \Blixt\Document\Indexable $document
      *
      * @throws \Blixt\Exceptions\InvalidDocumentException
@@ -150,7 +155,8 @@ class Index
      *
      * @param \Blixt\Document\Indexable $indexable
      *
-     * @return \Blixt\Storage\Entities\Document
+     * @return \Blixt\Persistence\Entities\Document
+     * @throws \Blixt\Exceptions\StorageException
      */
     protected function createDocument(Indexable $indexable): Document
     {
@@ -168,11 +174,12 @@ class Index
     /**
      * Create a field for the given document and column using the given field string.
      *
-     * @param \Blixt\Storage\Entities\Document $document
-     * @param \Blixt\Storage\Entities\Column   $column
-     * @param string|mixed                     $content
+     * @param \Blixt\Persistence\Entities\Document $document
+     * @param \Blixt\Persistence\Entities\Column $column
+     * @param string|mixed $content
      *
-     * @return \Blixt\Storage\Entities\Field
+     * @return \Blixt\Persistence\Entities\Field
+     * @throws \Blixt\Exceptions\StorageException
      */
     protected function createField(Document $document, Column $column, $content): Field
     {
@@ -192,7 +199,7 @@ class Index
      *
      * TODO: Improve this method by grouping together lookups for words, terms etc (by whole field or all fields)
      *
-     * @param \Blixt\Storage\Entities\Field $field
+     * @param \Blixt\Persistence\Entities\Field $field
      * @param string|mixed|null             $content
      */
     protected function indexField(Field $field, $content): void
@@ -225,7 +232,8 @@ class Index
      *
      * @param string $stem
      *
-     * @return \Blixt\Storage\Entities\Word
+     * @return \Blixt\Persistence\Entities\Word
+     * @throws \Blixt\Exceptions\StorageException
      */
     protected function findOrCreateWord(string $stem): Word
     {
@@ -240,10 +248,11 @@ class Index
      * Find or create a term for the given word and the schema represented by this index, adding the provided field
      * count to any existing field count or using it as the field count for the new term.
      *
-     * @param \Blixt\Storage\Entities\Word $word
-     * @param int                          $fieldCount
+     * @param \Blixt\Persistence\Entities\Word $word
+     * @param int $fieldCount
      *
-     * @return \Blixt\Storage\Entities\Term
+     * @return \Blixt\Persistence\Entities\Term
+     * @throws \Blixt\Exceptions\StorageException
      */
     protected function findOrCreateTerm(Word $word, int $fieldCount = 1): Term
     {
@@ -261,11 +270,14 @@ class Index
     }
 
     /**
-     * @param \Blixt\Storage\Entities\Field $field
-     * @param \Blixt\Storage\Entities\Term  $term
-     * @param int                           $frequency
+     * Create an occurrence record for the given Field, Term and frequency.
      *
-     * @return \Blixt\Storage\Entities\Occurrence
+     * @param \Blixt\Persistence\Entities\Field $field
+     * @param \Blixt\Persistence\Entities\Term $term
+     * @param int $frequency
+     *
+     * @return \Blixt\Persistence\Entities\Occurrence
+     * @throws \Blixt\Exceptions\StorageException
      */
     protected function createOccurrence(Field $field, Term $term, int $frequency): Occurrence
     {
@@ -275,10 +287,13 @@ class Index
     }
 
     /**
-     * @param \Blixt\Storage\Entities\Occurrence $occurrence
-     * @param int                                $position
+     * Create a Position record for the given Occurrence and position.
      *
-     * @return \Blixt\Storage\Entities\Position
+     * @param \Blixt\Persistence\Entities\Occurrence $occurrence
+     * @param int $position
+     *
+     * @return \Blixt\Persistence\Entities\Position
+     * @throws \Blixt\Exceptions\StorageException
      */
     protected function createPosition(Occurrence $occurrence, int $position): Position
     {

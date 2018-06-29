@@ -9,9 +9,10 @@ use Blixt\Exceptions\StorageException;
 use Blixt\Index\Index;
 use Blixt\Index\Blueprint\Blueprint;
 use Blixt\Index\Blueprint\Definition;
-use Blixt\Storage\Entities\Column;
-use Blixt\Storage\Entities\Schema;
-use Blixt\Storage\Storage;
+use Blixt\Persistence\Drivers\Driver as StorageDriver;
+use Blixt\Persistence\Storage;
+use Blixt\Persistence\Entities\Column;
+use Blixt\Persistence\Entities\Schema;
 use Blixt\Tokenization\Tokenizer;
 use Closure;
 use Illuminate\Support\Collection;
@@ -19,7 +20,7 @@ use Illuminate\Support\Collection;
 class Blixt
 {
     /**
-     * @var \Blixt\Storage\Storage
+     * @var \Blixt\Persistence\Storage
      */
     protected $storage;
 
@@ -36,12 +37,12 @@ class Blixt
     /**
      * Blixt constructor.
      *
-     * @param \Blixt\Storage\Storage        $storage
-     * @param \Blixt\Tokenization\Tokenizer $tokenizer
+     * @param \Blixt\Persistence\Drivers\Driver $storage
+     * @param \Blixt\Tokenization\Tokenizer     $tokenizer
      */
-    public function __construct(Storage $storage, Tokenizer $tokenizer)
+    public function __construct(StorageDriver $storage, Tokenizer $tokenizer)
     {
-        $this->storage = $storage;
+        $this->storage = new Storage($storage);
         $this->tokenizer = $tokenizer;
     }
 
@@ -54,14 +55,14 @@ class Blixt
     public function install(): bool
     {
         if (! $this->getStorage()->exists()) {
-            return $this->getStorage()->create();
+            return $this->getStorage()->install();
         }
 
         return true;
     }
 
     /**
-     * @return \Blixt\Storage\Storage
+     * @return \Blixt\Persistence\Storage
      */
     public function getStorage(): Storage
     {
@@ -135,7 +136,7 @@ class Blixt
      *
      * @param string $name
      *
-     * @return \Blixt\Storage\Entities\Schema|null
+     * @return \Blixt\Persistence\Entities\Schema|null
      */
     protected function findSchemaByName(string $name): ?Schema
     {
@@ -166,11 +167,11 @@ class Blixt
      *
      * @param \Blixt\Index\Blueprint\Blueprint $blueprint
      *
-     * @return \Blixt\Storage\Entities\Schema
+     * @return \Blixt\Persistence\Entities\Schema
      * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\StorageException
      */
-    protected function createSchemaFromBlueprint(Blueprint $blueprint)
+    protected function createSchemaFromBlueprint(Blueprint $blueprint): Schema
     {
         if ($blueprint->getDefinitions()->isEmpty()) {
             throw new InvalidBlueprintException("At least one column must be defined to create a new index.");
@@ -195,12 +196,12 @@ class Blixt
     /**
      * Create an Index object for the given schema.
      *
-     * @param \Blixt\Storage\Entities\Schema $schema
+     * @param \Blixt\Persistence\Entities\Schema $schema
      *
      * @return \Blixt\Index\Index
      * @throws \Blixt\Exceptions\InvalidSchemaException
      */
-    protected function createIndexForSchema(Schema $schema)
+    protected function createIndexForSchema(Schema $schema): Index
     {
         return new Index($schema, $this->storage, $this->tokenizer);
     }
