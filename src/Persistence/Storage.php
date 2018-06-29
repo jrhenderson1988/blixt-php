@@ -61,6 +61,36 @@ class Storage
     }
 
     /**
+     * Get the driver.
+     *
+     * @return \Blixt\Persistence\Drivers\Driver
+     */
+    public function getDriver()
+    {
+        return $this->driver;
+    }
+
+    /**
+     * Tell if the storage represented by the given driver exists.
+     *
+     * @return bool
+     */
+    public function exists(): bool
+    {
+        return $this->getDriver()->exists();
+    }
+
+    /**
+     * Install the storage represented by the given driver.
+     *
+     * @return bool
+     */
+    public function install(): bool
+    {
+        return $this->getDriver()->install();
+    }
+
+    /**
      * Get or create a repository for the provided class name.
      *
      * @param string $class
@@ -79,7 +109,7 @@ class Storage
     /**
      * Get the column repository.
      *
-     * @return \Blixt\Persistence\Repositories\ColumnRepository
+     * @return \Blixt\Persistence\Repositories\ColumnRepository|\Blixt\Persistence\Repositories\Repository
      */
     public function columns(): ColumnRepository
     {
@@ -89,7 +119,7 @@ class Storage
     /**
      * Get the document repository.
      *
-     * @return \Blixt\Persistence\Repositories\DocumentRepository
+     * @return \Blixt\Persistence\Repositories\DocumentRepository|\Blixt\Persistence\Repositories\Repository
      */
     public function documents(): DocumentRepository
     {
@@ -99,7 +129,7 @@ class Storage
     /**
      * Get the field repository.
      *
-     * @return \Blixt\Persistence\Repositories\FieldRepository
+     * @return \Blixt\Persistence\Repositories\FieldRepository|\Blixt\Persistence\Repositories\Repository
      */
     public function fields(): FieldRepository
     {
@@ -109,7 +139,7 @@ class Storage
     /**
      * Get the occurrence repository.
      *
-     * @return \Blixt\Persistence\Repositories\OccurrenceRepository
+     * @return \Blixt\Persistence\Repositories\OccurrenceRepository|\Blixt\Persistence\Repositories\Repository
      */
     public function occurrences(): OccurrenceRepository
     {
@@ -119,7 +149,7 @@ class Storage
     /**
      * Get the position repository.
      *
-     * @return \Blixt\Persistence\Repositories\PositionRepository
+     * @return \Blixt\Persistence\Repositories\PositionRepository|\Blixt\Persistence\Repositories\Repository
      */
     public function positions(): PositionRepository
     {
@@ -129,7 +159,7 @@ class Storage
     /**
      * Get the schema repository.
      *
-     * @return \Blixt\Persistence\Repositories\SchemaRepository
+     * @return \Blixt\Persistence\Repositories\SchemaRepository|\Blixt\Persistence\Repositories\Repository
      */
     public function schemas(): SchemaRepository
     {
@@ -139,7 +169,7 @@ class Storage
     /**
      * Get the term repository.
      *
-     * @return \Blixt\Persistence\Repositories\TermRepository
+     * @return \Blixt\Persistence\Repositories\TermRepository|\Blixt\Persistence\Repositories\Repository
      */
     public function terms(): TermRepository
     {
@@ -149,7 +179,7 @@ class Storage
     /**
      * Get the word repository.
      *
-     * @return \Blixt\Persistence\Repositories\WordRepository
+     * @return \Blixt\Persistence\Repositories\WordRepository|\Blixt\Persistence\Repositories\Repository
      */
     public function words(): WordRepository
     {
@@ -186,6 +216,6 @@ class Storage
     {
         $repositoryClassName = $this->repositoryMappings[$class];
 
-        return new $repositoryClassName($this->driver);
+        return new $repositoryClassName($this->getDriver());
     }
 }

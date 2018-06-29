@@ -2,9 +2,18 @@
 
 namespace Blixt\Persistence\Drivers;
 
-use Blixt\Persistence\Entities\Entity;
-use Illuminate\Support\Collection;
+use Blixt\Persistence\Record;
 
+/**
+ * Storage driver interface. Each storage driver must manage its own IDs. A MySQL driver might decide that it will use
+ * an auto-incrementing, integer primary key column called 'id' as an ID for the record. An SQLite driver may use the
+ * in-built 'rowid' as the primary key which is itself an auto-incrementing integer. An in-memory, array driver might
+ * use the numeric index of the array as the ID. When returning data, representing records from the driver, the Record
+ * class must be used. This allows the driver to pass the record's ID separately to its attributes to allow the
+ * repositories using the driver to distinguish between the items.
+ *
+ * @package Blixt\Persistence\Drivers
+ */
 interface Driver
 {
     /**
@@ -19,68 +28,60 @@ interface Driver
      *
      * @return bool
      */
-    public function create(): bool;
+    public function install(): bool;
 
     /**
-     * Find an entity in the storage by the given field/value combination.
+     * Find a single entity by its ID in the storage.
      *
-     * @param string $class
-     * @param array  $conditions
+     * @param string $table
+     * @param int $id
      *
-     * @return \Blixt\Persistence\Entities\Entity|null
+     * @return \Blixt\Persistence\Record|null
      */
-    public function findBy(string $class, array $conditions): ?Entity;
+    public function find(string $table, int $id): ?Record;
 
     /**
-     * Find an entity in the storage by its primary key.
+     * Find a single entity in the storage by the given conditions. Returns a record with an ID and its attributes.
      *
-     * @param string $class
-     * @param int    $id
+     * @param string $table
+     * @param array $conditions
      *
-     * @return \Blixt\Persistence\Entities\Entity|null
+     * @return \Blixt\Persistence\Record|null
      */
-    public function find(string $class, int $id): ?Entity;
+    public function findBy(string $table, array $conditions): ?Record;
 
     /**
-     * Get one or many entities from the storage with the given conditions.
+     * Get one or more entities from the storage with the given conditions. Always returns an array of Record objects.
      *
-     * @param string   $class
-     * @param array    $conditions
-     * @param int      $offset
+     * @param string $table
+     * @param array $conditions
+     * @param int $offset
      * @param int|null $limit
      *
-     * @return \Illuminate\Support\Collection
+     * @return array
      */
-    public function getWhere(string $class, array $conditions, int $offset = 0, ?int $limit = null): Collection;
+    public function getWhere(string $table, array $conditions, int $offset = 0, ?int $limit = null): array;
 
     /**
-     * Get all of the entities from the storage with an optional offset and limit.
+     * Create a new entity in the storage with the given set of attributes. Returns a Record object containing the new
+     * ID of the record in the storage along with its attributes or null upon failure.
      *
-     * @param string   $class
-     * @param int      $offset
-     * @param int|null $limit
+     * @param string $table
+     * @param array $attributes
      *
-     * @return \Illuminate\Support\Collection
+     * @return \Blixt\Persistence\Record|null
      */
-    public function all(string $class, int $offset = 0, ?int $limit = null): Collection;
+    public function create(string $table, array $attributes): ?Record;
 
     /**
-     * Insert a new entity into the storage with the given set of attributes. The returned array must be the new set of
-     * attributes, with the entity's key included.
+     * Update a single entity in the storage with the given set of attributes, identified by the given ID. Returns a
+     * Record object containing the ID and the updated attributes or null upon failure.
      *
-     * @param \Blixt\Persistence\Entities\Entity $entity
+     * @param string $table
+     * @param int $id
+     * @param array $attributes
      *
-     * @return \Blixt\Persistence\Entities\Entity|null
+     * @return \Blixt\Persistence\Record|null
      */
-    public function insert(Entity $entity): ?Entity;
-
-    /**
-     * Update an entity identified by the given key, in the storage with the given set of attributes. The returned array
-     * must be the updated set of attributes.
-     *
-     * @param \Blixt\Persistence\Entities\Entity $entity
-     *
-     * @return \Blixt\Persistence\Entities\Entity|null
-     */
-    public function update(Entity $entity): ?Entity;
+    public function update(string $table, int $id, array $attributes): ?Record;
 }

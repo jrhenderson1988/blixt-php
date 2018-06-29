@@ -6,9 +6,6 @@ use Illuminate\Support\Collection;
 
 class Schema extends Entity
 {
-    const TABLE = 'schemas';
-    const FIELD_NAME = 'name';
-
     /**
      * @var string
      */
@@ -34,6 +31,8 @@ class Schema extends Entity
     }
 
     /**
+     * Get the name.
+     *
      * @return string
      */
     public function getName(): string
@@ -42,6 +41,8 @@ class Schema extends Entity
     }
 
     /**
+     * Set the name.
+     *
      * @param string $name
      */
     public function setName(string $name): void
@@ -50,6 +51,8 @@ class Schema extends Entity
     }
 
     /**
+     * Set the columns to the given collection. Filters out columns that don't have a schema ID matching this schema.
+     *
      * @param \Illuminate\Support\Collection $columns
      */
     public function setColumns(Collection $columns): void
@@ -60,6 +63,8 @@ class Schema extends Entity
     }
 
     /**
+     * Get this schema's columns.
+     *
      * @return \Illuminate\Support\Collection
      */
     public function getColumns(): Collection
@@ -68,16 +73,13 @@ class Schema extends Entity
     }
 
     /**
-     * Convert this entity to an array for storage.
+     * Tell if this schema actually has some columns.
      *
-     * @return array
+     * @return bool
      */
-    public function toArray(): array
+    public function hasColumns()
     {
-        return [
-            static::FIELD_ID => $this->getId(),
-            static::FIELD_NAME => $this->getName()
-        ];
+        return $this->columns->isNotEmpty();
     }
 
     /**
@@ -103,18 +105,5 @@ class Schema extends Entity
     public static function make(int $id, string $name): Schema
     {
         return new static($id, $name);
-    }
-
-    /**
-     * @param array $array
-     *
-     * @return \Blixt\Persistence\Entities\Schema
-     */
-    public static function fromArray(array $array): Entity
-    {
-        return new static(
-            $array[static::FIELD_ID],
-            $array[static::FIELD_NAME]
-        );
     }
 }

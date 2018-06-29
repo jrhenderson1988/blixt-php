@@ -14,7 +14,7 @@ class Record
     /**
      * @var int
      */
-    protected $identifier;
+    protected $id;
 
     /**
      * @var array
@@ -24,23 +24,23 @@ class Record
     /**
      * Record constructor.
      *
-     * @param int   $identifier
+     * @param int   $id
      * @param array $attributes
      */
-    public function __construct(int $identifier, array $attributes)
+    public function __construct(int $id, array $attributes)
     {
-        $this->identifier = $identifier;
+        $this->id = $id;
         $this->attributes = $attributes;
     }
 
     /**
-     * Get the identifier.
+     * Get the ID.
      *
      * @return int
      */
-    public function getIdentifier(): int
+    public function getId(): int
     {
-        return $this->identifier;
+        return $this->id;
     }
 
     /**

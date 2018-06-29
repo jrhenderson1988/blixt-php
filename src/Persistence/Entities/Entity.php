@@ -4,9 +4,6 @@ namespace Blixt\Persistence\Entities;
 
 abstract class Entity
 {
-    const TABLE = '';
-    const FIELD_ID = 'id';
-
     /**
      * @var int|null
      */
@@ -46,27 +43,5 @@ abstract class Entity
     public function exists(): bool
     {
         return $this->getId() !== null;
-    }
-
-    /**
-     * Get the table for the entity.
-     *
-     * @return string
-     */
-    public function getTable()
-    {
-        return static::TABLE;
-    }
-
-    /**
-     * Convert this entity to an array for storage.
-     *
-     * @return array
-     */
-    public function toArray(): array
-    {
-        return [
-            static::FIELD_ID => $this->getId()
-        ];
     }
 }

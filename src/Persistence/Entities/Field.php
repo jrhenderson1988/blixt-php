@@ -9,11 +9,6 @@ class Field extends Entity
 {
     use BelongsToDocument, BelongsToColumn;
 
-    const TABLE = 'fields';
-    const FIELD_DOCUMENT_ID = 'document_id';
-    const FIELD_COLUMN_ID = 'column_id';
-    const FIELD_VALUE = 'value';
-
     /**
      * @var mixed
      */
@@ -53,21 +48,6 @@ class Field extends Entity
     }
 
     /**
-     * Convert this entity to an array for storage.
-     *
-     * @return array
-     */
-    public function toArray(): array
-    {
-        return [
-            static::FIELD_ID => $this->getId(),
-            static::FIELD_DOCUMENT_ID => $this->getDocumentId(),
-            static::FIELD_COLUMN_ID => $this->getColumnId(),
-            static::FIELD_VALUE => $this->getValue()
-        ];
-    }
-
-    /**
      * Factory method to create a new Field.
      *
      * @param int   $documentId
@@ -94,22 +74,5 @@ class Field extends Entity
     public static function make(int $id, int $documentId, int $columnId, $value): Field
     {
         return new static($id, $documentId, $columnId, $value);
-    }
-
-    /**
-     * Create a Field from the given array.
-     *
-     * @param array $array
-     *
-     * @return \Blixt\Persistence\Entities\Field
-     */
-    public static function fromArray(array $array): Field
-    {
-        return new static(
-            $array[static::FIELD_ID],
-            $array[static::FIELD_DOCUMENT_ID],
-            $array[static::FIELD_COLUMN_ID],
-            $array[static::FIELD_VALUE]
-        );
     }
 }

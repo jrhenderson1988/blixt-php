@@ -2,22 +2,79 @@
 
 namespace Blixt\Persistence\Repositories;
 
+use Blixt\Persistence\Entities\Entity;
 use Blixt\Persistence\Entities\Word;
 use Illuminate\Support\Collection;
 
+/**
+ * WordRepository.
+ *
+ * @method Collection getWhere(array $conditions, int $offset = 0, int $limit = null)
+ * @method Collection all(int $offset = 0, int $limit = null)
+ * @method Word|null findBy(array $conditions)
+ * @method Word|null find(int $id)
+ * @method Word create(Word $entity)
+ * @method Word update(Word $entity)
+ * @method Word save(Word $entity)
+ *
+ * @package Blixt\Persistence\Repositories
+ */
 class WordRepository extends Repository
 {
+    public const TABLE = 'words';
+    public const WORD = 'word';
+
+    /**
+     * Get the name of the table that this repository represents.
+     *
+     * @return string
+     */
+    protected function table(): string
+    {
+        return static::TABLE;
+    }
+
+    /**
+     * Get the attributes from the given entity.
+     *
+     * @param \Blixt\Persistence\Entities\Word|\Blixt\Persistence\Entities\Entity $entity
+     *
+     * @return array
+     */
+    protected function getAttributes(Entity $entity): array
+    {
+        return [
+            static::WORD => $entity->getWord()
+        ];
+    }
+
+    /**
+     * Create a relevant entity from the given ID and set of attributes.
+     *
+     * @param int $id
+     * @param array $attributes
+     *
+     * @return \Blixt\Persistence\Entities\Word|\Blixt\Persistence\Entities\Entity
+     */
+    protected function toEntity(int $id, array $attributes): Entity
+    {
+        return Word::make(
+            $id,
+            $attributes[static::WORD]
+        );
+    }
+
     /**
      * Find a Word entity by the given word string.
      *
      * @param string $word
      *
-     * @return \Blixt\Persistence\Entities\Word|null
+     * @return \Blixt\Persistence\Entities\Word|\Blixt\Persistence\Entities\Entity|null
      */
     public function findByWord(string $word): ?Word
     {
-        return $this->driver()->findBy(Word::class, [
-            Word::FIELD_WORD => $word
+        return $this->findBy([
+            static::WORD => $word
         ]);
     }
 
@@ -30,20 +87,8 @@ class WordRepository extends Repository
      */
     public function getByWords(Collection $words): Collection
     {
-        return $this->driver()->getWhere(Word::class, [
-            Word::FIELD_WORD => $words
+        return $this->getWhere([
+            static::WORD => $words
         ]);
-    }
-
-    /**
-     * Save the given word, updating it in the storage if it already exists, or inserting a new one if it doesn't.
-     *
-     * @param \Blixt\Persistence\Entities\Word $word
-     *
-     * @return \Blixt\Persistence\Entities\Word|null
-     */
-    public function save(Word $word): ?Word
-    {
-        return $word->exists() ? $this->driver()->update($word) : $this->driver()->insert($word);
     }
 }

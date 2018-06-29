@@ -8,12 +8,6 @@ class Column extends Entity
 {
     use BelongsToSchema;
 
-    const TABLE = 'columns';
-    const FIELD_SCHEMA_ID = 'schema_id';
-    const FIELD_NAME = 'name';
-    const FIELD_IS_INDEXED = 'is_indexed';
-    const FIELD_IS_STORED = 'is_stored';
-
     /**
      * @var string
      */
@@ -97,22 +91,6 @@ class Column extends Entity
     }
 
     /**
-     * Get an array representation of the entity, for storage.
-     *
-     * @return array
-     */
-    public function toArray(): array
-    {
-        return [
-            static::FIELD_ID => $this->getId(),
-            static::FIELD_SCHEMA_ID => $this->getSchemaId(),
-            static::FIELD_NAME => $this->getName(),
-            static::FIELD_IS_INDEXED => $this->isIndexed(),
-            static::FIELD_IS_STORED => $this->isStored()
-        ];
-    }
-
-    /**
      * Factory method to create a new Column.
      *
      * @param int    $schemaId
@@ -141,23 +119,5 @@ class Column extends Entity
     public static function make(int $id, int $schemaId, string $name, bool $isIndexed, bool $isStored): Column
     {
         return new static($id, $schemaId, $name, $isIndexed, $isStored);
-    }
-
-    /**
-     * Create a Column object from the given array.
-     *
-     * @param array $attributes
-     *
-     * @return \Blixt\Persistence\Entities\Column
-     */
-    public static function fromArray(array $attributes): Column
-    {
-        return new static(
-            $attributes[static::FIELD_ID],
-            $attributes[static::FIELD_SCHEMA_ID],
-            $attributes[static::FIELD_NAME],
-            $attributes[static::FIELD_IS_INDEXED],
-            $attributes[static::FIELD_IS_STORED]
-        );
     }
 }

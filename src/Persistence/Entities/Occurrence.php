@@ -9,11 +9,6 @@ class Occurrence extends Entity
 {
     use BelongsToField, BelongsToTerm;
 
-    const TABLE = 'occurrences';
-    const FIELD_FIELD_ID = 'field_id';
-    const FIELD_TERM_ID = 'term_id';
-    const FIELD_FREQUENCY = 'frequency';
-
     /**
      * @var int
      */
@@ -53,21 +48,6 @@ class Occurrence extends Entity
     }
 
     /**
-     * Convert this entity to an array for storage.
-     *
-     * @return array
-     */
-    public function toArray(): array
-    {
-        return [
-            static::FIELD_ID => $this->getId(),
-            static::FIELD_FIELD_ID => $this->getFieldId(),
-            static::FIELD_TERM_ID => $this->getTermId(),
-            static::FIELD_FREQUENCY => $this->getFrequency(),
-        ];
-    }
-
-    /**
      * Factory method to create a new Occurrence.
      *
      * @param int $fieldId
@@ -94,22 +74,5 @@ class Occurrence extends Entity
     public static function make(int $id, int $fieldId, int $termId, int $frequency): Occurrence
     {
         return new static($id, $fieldId, $termId, $frequency);
-    }
-
-    /**
-     * Create an Occurrence from the given array.
-     *
-     * @param array $array
-     *
-     * @return \Blixt\Persistence\Entities\Occurrence
-     */
-    public static function fromArray(array $array): Occurrence
-    {
-        return new static(
-            $array[static::FIELD_ID],
-            $array[static::FIELD_FIELD_ID],
-            $array[static::FIELD_TERM_ID],
-            $array[static::FIELD_FREQUENCY]
-        );
     }
 }
