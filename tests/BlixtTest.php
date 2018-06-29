@@ -6,7 +6,6 @@ use Blixt\Blixt;
 use Blixt\Exceptions\IndexAlreadyExistsException;
 use Blixt\Exceptions\SchemaDoesNotExistException;
 use Blixt\Exceptions\InvalidBlueprintException;
-use Blixt\Exceptions\StorageException;
 use Blixt\Index\Blueprint\Definition;
 use Blixt\Index\Index;
 use Blixt\Index\Blueprint\Blueprint;
@@ -296,32 +295,5 @@ class BlixtTest extends TestCase
 
         $this->expectException(InvalidBlueprintException::class);
         $this->blixt->create(new Blueprint($name));
-    }
-
-    /**
-     * @test
-     * @throws \Blixt\Exceptions\InvalidBlueprintException
-     * @throws \Blixt\Exceptions\InvalidSchemaException
-     * @throws \Blixt\Exceptions\StorageException
-     * @throws \Blixt\Exceptions\IndexAlreadyExistsException
-     */
-    public function testExceptionIsThrownWhenStorageIsUnableToCreateSchema()
-    {
-        $name = 'test';
-
-        $this->storage->shouldReceive('findBy')
-            ->once()
-            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => $name]])
-            ->andReturnNull();
-
-        $this->storage->shouldReceive('create')
-            ->once()
-            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => $name]])
-            ->andReturnNull();
-
-        $this->expectException(StorageException::class);
-        $this->blixt->create(new Blueprint($name, new Collection([
-            new Definition('test_field', true, false)
-        ])));
     }
 }
