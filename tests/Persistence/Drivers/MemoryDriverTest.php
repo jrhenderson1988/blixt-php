@@ -4,10 +4,10 @@ namespace BlixtTests\Persistence\Drivers;
 
 use Blixt\Exceptions\StorageException;
 use Blixt\Persistence\Drivers\MemoryDriver;
-use Blixt\Persistence\Entities\Schema;
-use Blixt\Persistence\Entities\Column;
+use Blixt\Persistence\Record;
+use Blixt\Persistence\Repositories\ColumnRepository;
+use Blixt\Persistence\Repositories\SchemaRepository;
 use BlixtTests\TestCase;
-use Illuminate\Support\Collection;
 
 class MemoryDriverTest extends TestCase
 {
@@ -19,7 +19,7 @@ class MemoryDriverTest extends TestCase
     public function setUp()
     {
         $this->driver = new MemoryDriver();
-        $this->driver->create();
+        $this->driver->install();
     }
 
     /**
@@ -46,351 +46,324 @@ class MemoryDriverTest extends TestCase
     {
         $driver = new MemoryDriver();
         $this->assertFalse($driver->exists());
-        $this->assertTrue($driver->create());
+        $this->assertTrue($driver->install());
         $this->assertTrue($driver->exists());
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function testInsertReturnsEquivalentEntityWithIDSet()
+    public function testCreateReturnsRecordContainingNewIdWithProvidedAttributes()
     {
-        $entity = Schema::create('name');
-        $this->assertNull($entity->getId());
-        $created = $this->driver->insert($entity);
-        $this->assertEquals(get_class($created), get_class($entity));
-        $this->assertNotNull($created->getId());
-        $entity->setId($created->getId());
-        $this->assertEquals($entity, $created);
+        $table = SchemaRepository::TABLE;
+        $attributes = [SchemaRepository::NAME => 'foobar'];
+        $record = $this->driver->create($table, $attributes);
+
+        $this->assertInstanceOf(Record::class, $record);
+        $this->assertEquals($attributes, $record->getAttributes());
+        $this->assertNotNull($record->getId());
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function testUpdateReturnsEquivalentEntity()
+    public function testUpdateReturnsRecordContainingSameIdAndAttributes()
     {
-        $initial = Schema::create('test');
-        $entity = $this->driver->insert($initial);
+        $table = SchemaRepository::TABLE;
+        $attributes = [SchemaRepository::NAME => 'foobar'];
+        $initial = $this->driver->create($table, $attributes);
+
+        $this->assertInstanceOf(Record::class, $initial);
+        $this->assertEquals($attributes, $initial->getAttributes());
         $this->assertNotNull($initial->getId());
-        $changed = clone $entity;
-        $entity->setName('testing');
-        $updated = $this->driver->update($changed);
-        $this->assertEquals($changed, $updated);
+
+        $newAttributes = [SchemaRepository::NAME => 'updated'];
+        $updated = $this->driver->update($table, $initial->getId(), $newAttributes);
+
+        $this->assertInstanceOf(Record::class, $updated);
+        $this->assertEquals($newAttributes, $updated->getAttributes());
+        $this->assertEquals($initial->getId(), $updated->getId());
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function testUpdateThrowsStorageExceptionWhenEntityDoesNotAlreadyExist()
+    public function testUpdateThrowsStorageExceptionWhenRecordDoesNotAlreadyExist()
     {
-        $entity = Schema::make(1, 'test');
+        $table = SchemaRepository::TABLE;
+        $id = 1234;
+        $attributes = [SchemaRepository::NAME => 'foobar'];
+
         $this->expectException(StorageException::class);
-        $this->driver->update($entity);
+        $this->driver->update($table, $id, $attributes);
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function testFindReturnsCorrectEntity()
+    public function testFindReturnsCorrectRecord()
     {
-        $first = $this->driver->insert(Schema::create('first'));
-        $second = $this->driver->insert(Schema::create('second'));
-        $third = $this->driver->insert(Schema::create('third'));
+        $table = SchemaRepository::TABLE;
 
-        $this->assertEquals($first, $firstFound = $this->driver->find(Schema::class, $first->getId()));
-        $this->assertEquals($second, $secondFound = $this->driver->find(Schema::class, $second->getId()));
-        $this->assertEquals($third, $thirdFound = $this->driver->find(Schema::class, $third->getId()));
+        $first = $this->driver->create($table, [SchemaRepository::NAME => 'first']);
+        $second = $this->driver->create($table, [SchemaRepository::NAME => 'second']);
+        $third = $this->driver->create($table, [SchemaRepository::NAME => 'third']);
 
-        $this->assertInstanceOf(Schema::class, $firstFound);
-        $this->assertInstanceOf(Schema::class, $secondFound);
-        $this->assertInstanceOf(Schema::class, $thirdFound);
+        $this->assertEquals($first, $this->driver->find($table, $first->getId()));
+        $this->assertEquals($second, $this->driver->find($table, $second->getId()));
+        $this->assertEquals($third, $this->driver->find($table, $third->getId()));
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function testFindReturnsNullWhenEntityDoesNotExist()
+    public function testFindReturnsNullWhenRecordDoesNotExist()
     {
-        $this->driver->insert(Schema::create('first'));
-        $this->driver->insert(Schema::create('second'));
-        $this->driver->insert(Schema::create('third'));
+        $table = SchemaRepository::TABLE;
 
-        $this->assertNull($this->driver->find(Schema::class, 10));
+        $this->driver->create($table, [SchemaRepository::NAME => 'first']);
+        $this->driver->create($table, [SchemaRepository::NAME => 'second']);
+        $this->driver->create($table, [SchemaRepository::NAME => 'third']);
+
+        $this->assertNull($this->driver->find($table, 1234));
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function testFindByReturnsCorrectEntity()
+    public function testFindByReturnsCorrectRecord()
     {
-        $this->driver->insert(Schema::create('first'));
-        $target = $this->driver->insert(Schema::create('second'));
-        $this->driver->insert(Schema::create('third'));
+        $table = SchemaRepository::TABLE;
 
-        $this->assertEquals($target, $this->driver->findBy(Schema::class, [Schema::FIELD_NAME => 'second']));
-    }
+        $this->driver->create($table, [SchemaRepository::NAME => 'foo']);
+        $target = $this->driver->create($table, [SchemaRepository::NAME => $targetName = 'target']);
+        $this->driver->create($table, [SchemaRepository::NAME => 'bar']);
 
-    /**
-     * @test
-     */
-    public function testFindByReturnsCorrectEntityWhenPassingCollectionAsCondition()
-    {
-        $this->driver->insert(Schema::create('first'));
-        $this->driver->insert(Schema::create('second'));
-        $target = $this->driver->insert(Schema::create('third'));
-
-        $this->assertEquals($target, $this->driver->findBy(Schema::class, [
-            Schema::FIELD_NAME => Collection::make(['third', 'fourth', 'fifth'])
+        $this->assertEquals($target, $this->driver->findBy($table, [
+            SchemaRepository::NAME => $targetName
         ]));
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function testFindByReturnsCorrectEntityWhenPassingArrayAsCondition()
+    public function testFindByReturnsCorrectRecordWhenPassingArrayAsCondition()
     {
-        $this->driver->insert(Schema::create('first'));
-        $this->driver->insert(Schema::create('second'));
-        $target = $this->driver->insert(Schema::create('third'));
+        $table = SchemaRepository::TABLE;
 
-        $this->assertEquals($target, $this->driver->findBy(Schema::class, [
-            Schema::FIELD_NAME => ['third', 'fourth', 'fifth']
+        $this->driver->create($table, [SchemaRepository::NAME => 'foo']);
+        $target = $this->driver->create($table, [SchemaRepository::NAME => $targetName = 'target']);
+        $this->driver->create($table, [SchemaRepository::NAME => 'bar']);
+
+        $this->assertEquals($target, $this->driver->findBy($table, [
+            SchemaRepository::NAME => [$targetName, 'another', 'test']
         ]));
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function testFindByReturnsCorrectEntityWhenPassingMultipleConditions()
+    public function testFindByReturnsCorrectRecordWhenPassingMultipleConditions()
     {
-        $this->driver->insert(Column::create(1, 'first', true, false));
-        $target = $this->driver->insert(Column::create(1, 'second', true, false));
-        $this->driver->insert(Column::create(1, 'third', true, false));
+        $table = ColumnRepository::TABLE;
 
-        $found = $this->driver->findBy(Column::class, [
-            Column::FIELD_NAME => 'second',
-            Column::FIELD_IS_INDEXED => true
+        $this->driver->create($table, [
+            ColumnRepository::SCHEMA_ID => 1,
+            ColumnRepository::NAME => 'first',
+            ColumnRepository::IS_INDEXED => true,
+            ColumnRepository::IS_STORED => false,
         ]);
-        $this->assertInstanceOf(Column::class, $found);
-        $this->assertEquals($target, $found);
+
+        $this->driver->create($table, [
+            ColumnRepository::SCHEMA_ID => 2,
+            ColumnRepository::NAME => 'second',
+            ColumnRepository::IS_INDEXED => false,
+            ColumnRepository::IS_STORED => true,
+        ]);
+
+        $target = $this->driver->create($table, [
+            ColumnRepository::SCHEMA_ID => 3,
+            ColumnRepository::NAME => $targetName = 'target',
+            ColumnRepository::IS_INDEXED => $targetIndexed = true,
+            ColumnRepository::IS_STORED => true,
+        ]);
+
+        $this->assertEquals($target, $this->driver->findBy($table, [
+            ColumnRepository::NAME => $targetName,
+            ColumnRepository::IS_INDEXED => $targetIndexed
+        ]));
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
     public function testFindByReturnsNullIfNothingMatches()
     {
-        $this->driver->insert(Schema::create('first'));
-        $this->driver->insert(Schema::create('second'));
-        $this->driver->insert(Schema::create('third'));
+        $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'first']);
+        $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'second']);
+        $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'third']);
 
-        $this->assertNull($this->driver->findBy(Schema::class, [Schema::FIELD_NAME => 'fourth']));
+        $this->assertNull($this->driver->findBy(SchemaRepository::TABLE, [SchemaRepository::NAME => 'fourth']));
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function testGetWhereReturnsCollectionOfCorrespondingEntities()
+    public function testGetWhereReturnsArrayOfCorrespondingRecords()
     {
-        $this->driver->insert(Schema::create('first'));
-        $this->driver->insert(Schema::create('second'));
-        $this->driver->insert(Schema::create('third'));
+        $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'first']);
+        $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'second']);
+        $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'third']);
 
-        $collection = $this->driver->getWhere(Schema::class, []);
-        $this->assertInstanceOf(Collection::class, $collection);
-        $this->assertEquals(3, $collection->count());
-        $collection->each(function ($item) {
-            $this->assertInstanceOf(Schema::class, $item);
-        });
+        $results = $this->driver->getWhere(SchemaRepository::TABLE, []);
+
+        $this->assertTrue(is_array($results));
+        $this->assertCount(3, $results);
+        foreach ($results as $record) {
+            $this->assertInstanceOf(Record::class, $record);
+        }
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function testGetWhereReturnsCorrectValues()
+    public function testGetWhereReturnsCorrectRecord()
     {
-        $this->driver->insert(Schema::create('first'));
-        $this->driver->insert(Schema::create('second'));
-        $this->driver->insert(Schema::create('third'));
+        $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'first']);
+        $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'second']);
+        $target = $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => $targetName = 'third']);
 
-        $collection = $this->driver->getWhere(Schema::class, [Schema::FIELD_NAME => 'third']);
-        $this->assertInstanceOf(Collection::class, $collection);
-        $this->assertEquals(1, $collection->count());
-        $item = $collection->first();
-        $this->assertInstanceOf(Schema::class, $item);
-        $this->assertEquals('third', $item->getName());
+        $results = $this->driver->getWhere(SchemaRepository::TABLE, [SchemaRepository::NAME => $targetName]);
+        $this->assertTrue(is_array($results));
+        $this->assertCount(1, $results);
+        $this->assertInstanceOf(Record::class, $results[0]);
+        $this->assertEquals($target, $results[0]);
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function testGetWhereReturnsCorrectEntitiesWhenPassingCollectionAsCondition()
+    public function testGetWhereReturnsCorrectRecordsWhenPassingArrayAsCondition()
     {
-        $this->driver->insert(Schema::create('first'));
-        $this->driver->insert(Schema::create('second'));
-        $this->driver->insert(Schema::create('third'));
+        $target1 = $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => $targetName1 = 'first']);
+        $target2 = $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => $targetName2 = 'second']);
+        $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'third']);
 
-        $collection = $this->driver->getWhere(Schema::class, [
-            Schema::FIELD_NAME => Collection::make(['first', 'second'])
+        $results = $this->driver->getWhere(SchemaRepository::TABLE, [
+            SchemaRepository::NAME => [$targetName1, $targetName2]
         ]);
-        $this->assertInstanceOf(Collection::class, $collection);
-        $this->assertEquals(2, $collection->count());
-        $collection->each(function ($item) {
-            $this->assertInstanceOf(Schema::class, $item);
-            $this->assertTrue(in_array($item->getName(), ['first', 'second']));
-        });
+
+        $this->assertTrue(is_array($results));
+        $this->assertCount(2, $results);
+        foreach ($results as $record) {
+            $this->assertInstanceOf(Record::class, $record);
+            $this->assertTrue(in_array($record, [$target1, $target2]));
+        }
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function testGetWhereReturnsCorrectEntitiesWhenPassingArrayAsCondition()
+    public function testGetWhereReturnsCorrectRecordWhenPassingMultipleConditions()
     {
-        $this->driver->insert(Schema::create('first'));
-        $this->driver->insert(Schema::create('second'));
-        $this->driver->insert(Schema::create('third'));
-
-        $collection = $this->driver->getWhere(Schema::class, [
-            Schema::FIELD_NAME => ['first', 'second']
+        $this->driver->create(ColumnRepository::TABLE, [
+            ColumnRepository::SCHEMA_ID => 1,
+            ColumnRepository::NAME => 'first',
+            ColumnRepository::IS_INDEXED => true,
+            ColumnRepository::IS_STORED => false,
         ]);
-        $this->assertInstanceOf(Collection::class, $collection);
-        $this->assertEquals(2, $collection->count());
-        $collection->each(function ($item) {
-            $this->assertInstanceOf(Schema::class, $item);
-            $this->assertTrue(in_array($item->getName(), ['first', 'second']));
-        });
-    }
 
-    /**
-     * @test
-     */
-    public function testGetWhereReturnsCorrectEntityWhenPassingMultipleConditions()
-    {
-        $this->driver->insert(Column::create(1, 'first', true, false));
-        $target = $this->driver->insert(Column::create(1, 'second', true, false));
-        $this->driver->insert(Column::create(1, 'third', true, false));
-
-        $collection = $this->driver->getWhere(Column::class, [
-            Column::FIELD_NAME => 'second',
-            Column::FIELD_IS_INDEXED => true
+        $this->driver->create(ColumnRepository::TABLE, [
+            ColumnRepository::SCHEMA_ID => 2,
+            ColumnRepository::NAME => 'second',
+            ColumnRepository::IS_INDEXED => false,
+            ColumnRepository::IS_STORED => true,
         ]);
-        $this->assertInstanceOf(Collection::class, $collection);
-        $first = $collection->first();
-        $this->assertInstanceOf(Column::class, $first);
+
+        $target = $this->driver->create(ColumnRepository::TABLE, [
+            ColumnRepository::SCHEMA_ID => 3,
+            ColumnRepository::NAME => $targetName = 'target',
+            ColumnRepository::IS_INDEXED => $targetIndexed = true,
+            ColumnRepository::IS_STORED => true,
+        ]);
+
+        $results = $this->driver->getWhere(ColumnRepository::TABLE, [
+            ColumnRepository::NAME => $targetName,
+            ColumnRepository::IS_INDEXED => $targetIndexed
+        ]);
+        $this->assertTrue(is_array($results));
+        $this->assertCount(1, $results);
+        $this->assertInstanceOf(Record::class, $first = $results[0]);
         $this->assertEquals($target, $first);
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
-    public function testGetWhereReturnsEmptyCollectionWhenNothingMatches()
+    public function testGetWhereReturnsEmptyArrayWhenNothingMatches()
     {
-        $this->driver->insert(Schema::create('first'));
-        $this->driver->insert(Schema::create('second'));
-        $this->driver->insert(Schema::create('third'));
+        $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'first']);
+        $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'second']);
+        $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'third']);
 
-        $collection = $this->driver->getWhere(Schema::class, [Schema::FIELD_NAME => 'fourth']);
-        $this->assertInstanceOf(Collection::class, $collection);
-        $this->assertEquals(0, $collection->count());
+        $results = $this->driver->getWhere(SchemaRepository::TABLE, [SchemaRepository::NAME => 'fourth']);
+        $this->assertTrue(is_array($results));
+        $this->assertCount(0, $results);
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
     public function testGetWhereCanBeLimited()
     {
-        $this->driver->insert(Schema::create('first'));
-        $this->driver->insert(Schema::create('second'));
-        $this->driver->insert(Schema::create('third'));
+        $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'first']);
+        $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'second']);
+        $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'third']);
 
-        $notLimited = $this->driver->getWhere(Schema::class, []);
-        $this->assertInstanceOf(Collection::class, $notLimited);
-        $this->assertEquals(3, $notLimited->count());
-        $limited = $this->driver->getWhere(Schema::class, [], 0, 2);
-        $this->assertInstanceOf(Collection::class, $limited);
-        $this->assertEquals(2, $limited->count());
+        $notLimited = $this->driver->getWhere(SchemaRepository::TABLE, []);
+        $this->assertTrue(is_array($notLimited));
+        $this->assertCount(3, $notLimited);
+        $limited = $this->driver->getWhere(SchemaRepository::TABLE, [], 0, 2);
+        $this->assertTrue(is_array($limited));
+        $this->assertCount(2, $limited);
     }
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\StorageException
      */
     public function testGetWhereCanBeOffset()
     {
-        $this->driver->insert(Schema::create('first'));
-        $this->driver->insert(Schema::create('second'));
-        $this->driver->insert(Schema::create('third'));
+        $first = $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'first']);
+        $second = $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'second']);
+        $third = $this->driver->create(SchemaRepository::TABLE, [SchemaRepository::NAME => 'third']);
 
-        $notOffset = $this->driver->getWhere(Schema::class, []);
-        $this->assertInstanceOf(Collection::class, $notOffset);
-        $this->assertEquals(3, $notOffset->count());
-        $this->assertEquals('first', $notOffset->first()->getName());
-        $offset = $this->driver->getWhere(Schema::class, [], 1);
-        $this->assertInstanceOf(Collection::class, $offset);
-        $this->assertEquals(2, $offset->count());
-        $this->assertEquals('second', $offset->first()->getName());
-    }
+        $notOffset = $this->driver->getWhere(SchemaRepository::TABLE, []);
+        $this->assertTrue(is_array($notOffset));
+        $this->assertCount(3, $notOffset);
+        $this->assertEquals($first, $notOffset[0]);
+        $this->assertEquals($second, $notOffset[1]);
+        $this->assertEquals($third, $notOffset[2]);
 
-    /**
-     * @test
-     */
-    public function testAllReturnsCollectionContainingAllEntities()
-    {
-        $this->driver->insert(Schema::create('first'));
-        $this->driver->insert(Schema::create('second'));
-        $this->driver->insert(Schema::create('third'));
-
-        $collection = $this->driver->all(Schema::class);
-        $this->assertInstanceOf(Collection::class, $collection);
-        $this->assertEquals(3, $collection->count());
-        $collection->each(function ($item) {
-            $this->assertInstanceOf(Schema::class, $item);
-            $this->assertTrue(in_array($item->getName(), ['first', 'second', 'third']));
-        });
-    }
-
-    /**
-     * @test
-     */
-    public function testAllReturnsEmptyCollectionWhenThereAreNoRecords()
-    {
-        $schemas = $this->driver->all(Schema::class);
-        $this->assertInstanceOf(Collection::class, $schemas);
-        $this->assertEquals(0, $schemas->count());
-    }
-
-    /**
-     * @test
-     */
-    public function testAllCanBeLimited()
-    {
-        $this->driver->insert(Schema::create('first'));
-        $this->driver->insert(Schema::create('second'));
-        $this->driver->insert(Schema::create('third'));
-
-        $notLimited = $this->driver->all(Schema::class);
-        $this->assertInstanceOf(Collection::class, $notLimited);
-        $this->assertEquals(3, $notLimited->count());
-        $limited = $this->driver->all(Schema::class, 0, 2);
-        $this->assertInstanceOf(Collection::class, $limited);
-        $this->assertEquals(2, $limited->count());
-    }
-
-    /**
-     * @test
-     */
-    public function testAllCanBeOffset()
-    {
-        $this->driver->insert(Schema::create('first'));
-        $this->driver->insert(Schema::create('second'));
-        $this->driver->insert(Schema::create('third'));
-
-        $notOffset = $this->driver->all(Schema::class);
-        $this->assertInstanceOf(Collection::class, $notOffset);
-        $this->assertEquals(3, $notOffset->count());
-        $this->assertEquals('first', $notOffset->first()->getName());
-        $offset = $this->driver->all(Schema::class, 1);
-        $this->assertInstanceOf(Collection::class, $offset);
-        $this->assertEquals(2, $offset->count());
-        $this->assertEquals('second', $offset->first()->getName());
+        $offset = $this->driver->getWhere(SchemaRepository::TABLE, [], 1);
+        $this->assertTrue(is_array($offset));
+        $this->assertCount(2, $offset);
+        $this->assertEquals($second, $offset[0]);
+        $this->assertEquals($third, $offset[1]);
     }
 }

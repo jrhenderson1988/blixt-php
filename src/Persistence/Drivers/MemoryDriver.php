@@ -3,11 +3,34 @@
 namespace Blixt\Persistence\Drivers;
 
 use Blixt\Exceptions\StorageException;
-use Blixt\Persistence\Entities\Entity;
-use Illuminate\Support\Collection;
+use Blixt\Persistence\Record;
+use Blixt\Persistence\Repositories\ColumnRepository;
+use Blixt\Persistence\Repositories\DocumentRepository;
+use Blixt\Persistence\Repositories\FieldRepository;
+use Blixt\Persistence\Repositories\OccurrenceRepository;
+use Blixt\Persistence\Repositories\PositionRepository;
+use Blixt\Persistence\Repositories\SchemaRepository;
+use Blixt\Persistence\Repositories\TermRepository;
+use Blixt\Persistence\Repositories\WordRepository;
 
 class MemoryDriver extends AbstractDriver implements Driver
 {
+    /**
+     * The tables that this driver must maintain.
+     *
+     * @var array
+     */
+    protected static $tables = [
+        SchemaRepository::TABLE,
+        ColumnRepository::TABLE,
+        WordRepository::TABLE,
+        TermRepository::TABLE,
+        DocumentRepository::TABLE,
+        FieldRepository::TABLE,
+        OccurrenceRepository::TABLE,
+        PositionRepository::TABLE
+    ];
+
     /**
      * @var array
      */
@@ -34,8 +57,8 @@ class MemoryDriver extends AbstractDriver implements Driver
      */
     public function exists(): bool
     {
-        foreach ($this->entities as $entity) {
-            if (! isset($this->data[$this->getTableFromEntityClassName($entity)])) {
+        foreach (static::$tables as $table) {
+            if (! isset($this->data[$table])) {
                 return false;
             }
         }
@@ -48,10 +71,9 @@ class MemoryDriver extends AbstractDriver implements Driver
      *
      * @return bool
      */
-    public function create(): bool
+    public function install(): bool
     {
-        foreach ($this->entities as $entity) {
-            $table = $this->getTableFromEntityClassName($entity);
+        foreach (static::$tables as $table) {
             $this->data[$table] = [];
             $this->keys[$table] = 1;
         }
@@ -60,45 +82,126 @@ class MemoryDriver extends AbstractDriver implements Driver
     }
 
     /**
-     * Insert a new entity into the storage with the given set of attributes. The returned array must be the new set of
-     * attributes, with the entity's key included.
+     * Find a single entity by its ID in the storage.
      *
-     * @param \Blixt\Persistence\Entities\Entity|null $entity
+     * @param string $table
+     * @param int $id
      *
-     * @return \Blixt\Persistence\Entities\Entity
+     * @return \Blixt\Persistence\Record|null
      * @throws \Blixt\Exceptions\StorageException
      */
-    public function insert(Entity $entity): ?Entity
+    public function find(string $table, int $id): ?Record
     {
-        $this->assertTableExists($table = $this->getTableFromEntity($entity));
+        $this->assertTableExists($table);
 
-        $entity->setId($id = $this->nextKey($table));
+        $attributes = $this->data[$table][$id] ?? null;
 
-        $this->data[$table][$id] = $entity->toArray();
-
-        return $entity;
+        return $attributes !== null ? new Record($id, $attributes) : null;
     }
 
     /**
-     * Update an entity identified by the given key, in the storage with the given set of attributes. The returned array
-     * must be the updated set of attributes.
+     * Find a single entity in the storage by the given conditions. Returns a record with an ID and its attributes.
      *
-     * @param \Blixt\Persistence\Entities\Entity|null $entity
+     * @param string $table
+     * @param array $conditions
      *
-     * @return \Blixt\Persistence\Entities\Entity
+     * @return \Blixt\Persistence\Record|null
      * @throws \Blixt\Exceptions\StorageException
      */
-    public function update(Entity $entity): ?Entity
+    public function findBy(string $table, array $conditions): ?Record
     {
-        $this->assertTableExists($table = $this->getTableFromEntity($entity));
+        $items = $this->getWhere($table, $conditions, 0, 1);
 
-        if (! isset($this->data[$table][$id = $entity->getId()])) {
-            throw new StorageException('Entity does not exist and cannot be updated.');
+        if (count($items) > 0 && ($record = reset($items)) instanceof Record) {
+            return $record;
         }
 
-        $this->data[$table][$id] = $entity->toArray();
+        return null;
+    }
 
-        return $entity;
+    /**
+     * Get one or more entities from the storage with the given conditions. Always returns an array of Record objects.
+     *
+     * @param string $table
+     * @param array $conditions
+     * @param int $offset
+     * @param int|null $limit
+     *
+     * @return array
+     * @throws \Blixt\Exceptions\StorageException
+     */
+    public function getWhere(string $table, array $conditions, int $offset = 0, ?int $limit = null): array
+    {
+        $this->assertTableExists($table);
+
+        $items = array_filter($this->data[$table], function ($attributes) use ($conditions) {
+            foreach ($conditions as $key => $value) {
+                if (is_array($value)) {
+                    if (! in_array($attributes[$key], $value)) {
+                        return false;
+                    }
+                } else {
+                    if ($attributes[$key] != $value) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }, ARRAY_FILTER_USE_BOTH);
+
+        $items = array_slice($items, $offset, $limit, true);
+
+        $keys = array_keys($items);
+
+        return array_map(function ($attributes, $key) {
+            return new Record($key, $attributes);
+        }, $items, $keys);
+    }
+
+    /**
+     * Create a new entity in the storage with the given set of attributes. Returns a Record object containing the new
+     * ID of the record in the storage along with its attributes or null upon failure.
+     *
+     * @param string $table
+     * @param array $attributes
+     *
+     * @return \Blixt\Persistence\Record
+     * @throws \Blixt\Exceptions\StorageException
+     */
+    public function create(string $table, array $attributes): Record
+    {
+        $this->assertTableExists($table);
+
+        $id = $this->nextKey($table);
+
+        $this->data[$table][$id] = $attributes;
+
+        return new Record($id, $attributes);
+    }
+
+    /**
+     * Update a single entity in the storage with the given set of attributes, identified by the given ID. Returns a
+     * Record object containing the ID and the updated attributes or null upon failure.
+     *
+     * @param string $table
+     * @param int $id
+     * @param array $attributes
+     *
+     * @return \Blixt\Persistence\Record
+     * @throws \Blixt\Exceptions\StorageException
+     */
+    public function update(string $table, int $id, array $attributes): Record
+    {
+        $this->assertTableExists($table);
+
+        if (! isset($this->data[$table][$id])) {
+            throw new StorageException("Entity does not exist and cannot be updated.");
+        }
+
+        $this->data[$table][$id] = $attributes;
+
+        return new Record($id, $attributes);
     }
 
     /**
@@ -126,80 +229,5 @@ class MemoryDriver extends AbstractDriver implements Driver
         if (! isset($this->data[$table], $this->keys[$table])) {
             throw new StorageException("The table '{$table}' does not exist.");
         }
-    }
-
-    /**
-     * Find an entity in the storage by the given field/value combination.
-     *
-     * @param string $class
-     * @param array  $conditions
-     *
-     * @return \Blixt\Persistence\Entities\Entity|null
-     */
-    public function findBy(string $class, array $conditions): ?Entity
-    {
-        return $this->getWhere($class, $conditions, 0, 1)->first();
-    }
-
-    /**
-     * Find an entity in the storage by its primary key.
-     *
-     * @param string $class
-     * @param int    $id
-     *
-     * @return \Blixt\Persistence\Entities\Entity|null
-     */
-    public function find(string $class, int $id): ?Entity
-    {
-        return $this->findBy($class, [Entity::FIELD_ID => $id]);
-    }
-
-    /**
-     * Get one or many entities from the storage with the given conditions.
-     *
-     * @param string   $class
-     * @param array    $conditions
-     * @param int      $offset
-     * @param int|null $limit
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public function getWhere(string $class, array $conditions, int $offset = 0, ?int $limit = null): Collection
-    {
-        $table = $this->getTableFromEntityClassName($class);
-
-        return Collection::make($this->data[$table])->filter(function ($item) use ($conditions) {
-            foreach ($conditions as $key => $value) {
-                $value = is_array($value) ? Collection::make($value) : $value;
-
-                if ($value instanceof Collection) {
-                    if (! $value->contains($item[$key])) {
-                        return false;
-                    }
-                } else {
-                    if ($item[$key] != $value) {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        })->slice($offset, $limit)->map(function ($item) use ($class) {
-            return $class::fromArray($item);
-        });
-    }
-
-    /**
-     * Get all of the entities from the storage with an optional offset and limit.
-     *
-     * @param string   $class
-     * @param int      $offset
-     * @param int|null $limit
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public function all(string $class, int $offset = 0, ?int $limit = null): Collection
-    {
-        return $this->getWhere($class, [], $offset, $limit);
     }
 }
