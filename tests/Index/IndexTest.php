@@ -20,6 +20,7 @@ use Blixt\Persistence\Repositories\ColumnRepository;
 use Blixt\Persistence\Repositories\DocumentRepository;
 use Blixt\Persistence\Repositories\FieldRepository;
 use Blixt\Persistence\Repositories\SchemaRepository;
+use Blixt\Persistence\Repositories\TermRepository;
 use Blixt\Persistence\Repositories\WordRepository;
 use Blixt\Stemming\Stemmer;
 use Blixt\Storage\Entities\Word;
@@ -260,9 +261,29 @@ class IndexTest extends TestCase
 
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([WordRepository::TABLE, [WordRepository::WORD => $wordJoe]])
+            ->withArgs([WordRepository::TABLE, [WordRepository::WORD => $wordJoe->getWord()]])
             ->andReturn(new Record($wordJoe->getId(), [
                 WordRepository::WORD => $wordJoe->getWord()
+            ]));
+
+        $this->storage->shouldReceive('findBy')
+            ->once()
+            ->withArgs([TermRepository::TABLE, [
+                TermRepository::SCHEMA_ID => $termJoe->getSchemaId(),
+                TermRepository::WORD_ID => $termJoe->getWordId()
+            ]])
+            ->andReturnNull();
+
+        $this->storage->shouldReceive('create')
+            ->once()
+            ->withArgs([TermRepository::TABLE, [
+                TermRepository::SCHEMA_ID => $termJoe->getSchemaId(),
+                TermRepository::WORD_ID => $termJoe->getWordId(),
+                TermRepository::FIELD_COUNT => $termJoe->getFieldCount()
+            ]])
+            ->andReturn(new Record($termJoe->getId(), [
+                TermRepository::SCHEMA_ID => $termJoe->getSchemaId(),
+                TermRepository::WORD_ID => $termJoe->getWordId()
             ]));
 
 

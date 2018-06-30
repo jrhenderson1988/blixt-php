@@ -23,7 +23,7 @@ use Illuminate\Support\Collection;
  */
 class TermRepository extends Repository
 {
-    public const TABLE = 'term';
+    public const TABLE = 'terms';
     public const SCHEMA_ID = 'schema_id';
     public const WORD_ID = 'word_id';
     public const FIELD_COUNT = 'field_count';
