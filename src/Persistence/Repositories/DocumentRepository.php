@@ -71,9 +71,9 @@ class DocumentRepository extends Repository
      *
      * @param mixed $key
      *
-     * @return \Blixt\Persistence\Entities\Document|\Blixt\Persistence\Entities\Entity
+     * @return \Blixt\Persistence\Entities\Document|\Blixt\Persistence\Entities\Entity|null
      */
-    public function findByKey($key): Entity
+    public function findByKey($key): ?Entity
     {
         return $this->findBy([static::KEY => $key]);
     }
