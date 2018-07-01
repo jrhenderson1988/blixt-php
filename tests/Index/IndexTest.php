@@ -6,23 +6,19 @@ use Blixt\Blixt;
 use Blixt\Document\Indexable;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
-use Blixt\Index\Index;
 use Blixt\Persistence\Drivers\Driver as StorageDriver;
 use Blixt\Persistence\Entities\Column;
-use Blixt\Persistence\Entities\Document;
-use Blixt\Persistence\Entities\Field;
-use Blixt\Persistence\Entities\Occurrence;
-use Blixt\Persistence\Entities\Position;
 use Blixt\Persistence\Entities\Schema;
-use Blixt\Persistence\Entities\Term;
 use Blixt\Persistence\Record;
 use Blixt\Persistence\Repositories\ColumnRepository;
 use Blixt\Persistence\Repositories\DocumentRepository;
 use Blixt\Persistence\Repositories\FieldRepository;
+use Blixt\Persistence\Repositories\OccurrenceRepository;
+use Blixt\Persistence\Repositories\PositionRepository;
 use Blixt\Persistence\Repositories\SchemaRepository;
+use Blixt\Persistence\Repositories\TermRepository;
 use Blixt\Persistence\Repositories\WordRepository;
 use Blixt\Stemming\Stemmer;
-use Blixt\Storage\Entities\Word;
 use Blixt\Tokenization\Token;
 use Blixt\Tokenization\Tokenizer;
 use BlixtTests\TestCase;
@@ -78,6 +74,29 @@ class IndexTest extends TestCase
             $this->storage = m::mock(StorageDriver::class),
             $this->tokenizer = m::mock(Tokenizer::class)
         );
+    }
+
+    protected function shouldReceiveOnce($method, $args, $return)
+    {
+        $expectation = $this->storage->shouldReceive($method)
+            ->once()
+            ->withArgs($args);
+
+        if ($return === null) {
+            $expectation->andReturnNull();
+        } else {
+            $expectation->andReturn($return);
+        }
+
+        return $expectation;
+    }
+
+    protected function storageShouldReceive($method, $table, $attributes, $andReturn)
+    {
+        $this->storage->shouldReceive($method)
+            ->once()
+            ->withArgs([$table, $attributes])
+            ->andReturn($andReturn);
     }
 
     /**
@@ -151,7 +170,10 @@ class IndexTest extends TestCase
 
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([DocumentRepository::TABLE, [DocumentRepository::KEY => $indexable->getKey()]])
+            ->withArgs([DocumentRepository::TABLE, [
+                DocumentRepository::SCHEMA_ID => $this->schema->getId(),
+                DocumentRepository::KEY => $indexable->getKey()
+            ]])
             ->andReturn(new Record($indexable->getKey(), [
                 DocumentRepository::SCHEMA_ID => $this->schema->getId(),
                 DocumentRepository::KEY => $indexable->getKey()
@@ -179,7 +201,10 @@ class IndexTest extends TestCase
 
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([DocumentRepository::TABLE, [DocumentRepository::KEY => $indexable->getKey()]])
+            ->withArgs([DocumentRepository::TABLE, [
+                DocumentRepository::SCHEMA_ID => $this->schema->getId(),
+                DocumentRepository::KEY => $indexable->getKey()
+            ]])
             ->andReturnNull();
 
         $this->expectException(InvalidDocumentException::class);
@@ -188,124 +213,142 @@ class IndexTest extends TestCase
 
     /**
      * @test
+     * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
      * @throws \Blixt\Exceptions\InvalidBlueprintException
+     * @throws \Blixt\Exceptions\InvalidDocumentException
      * @throws \Blixt\Exceptions\InvalidSchemaException
      * @throws \Blixt\Exceptions\SchemaDoesNotExistException
      * @throws \Blixt\Exceptions\StorageException
      */
-    public function testExtraFieldsAreSilentlyIgnoredWhenIndexingDocument()
+    public function testDocumentCanBeIndexed()
     {
         $this->makeIndexForPeopleSchemaWithNameAndAgeColumns();
 
-        $name = 'Joe Bloggs';
-        $age = 30;
+        // Find document by its schema ID and key, returns null (doesn't exist). Create new document.
+        $documentCriteria = [DocumentRepository::SCHEMA_ID => $this->schema->getId(), DocumentRepository::KEY => 123];
+        $documentAttrs = $documentCriteria;
+        $documentRecord = new Record(1, $documentAttrs);
+        $this->storageShouldReceive('findBy', DocumentRepository::TABLE, $documentCriteria, null);
+        $this->storageShouldReceive('create', DocumentRepository::TABLE, $documentAttrs, $documentRecord);
 
-        $document = Document::make(1, $this->schema->getId(), 123);
-        $nameField = Field::make(1, $document->getId(), $this->nameColumn->getId(), null);
-        $ageFieldId = Field::make(2, $document->getId(), $this->ageColumn->getId(), 30);
-        $wordJoe = Word::make(1, 'joe');
-        $wordBloggs = Word::make(2, 'bloggs');
-        $termJoe = Term::make(1, $this->schema->getId(), $wordJoe->getId(), 1);
-        $termBloggs = Term::make(2, $this->schema->getId(), $wordBloggs->getId(), 1);
-        $occurrenceJoe = Occurrence::make(1, $nameField->getId(), $termJoe->getId(), 1);
-        $occurrenceBloggs = Occurrence::make(2, $nameField->getId(), $termBloggs->getId(), 1);
-        $positionJoe = Position::make(1, $occurrenceJoe->getId(), 0);
-        $positionBloggs = Position::make(1, $occurrenceJoe->getId(), 1);
+        // Make field for name (Value is NOT stored)
+        $nameFieldAttrs = [
+            FieldRepository::DOCUMENT_ID => $documentRecord->getId(),
+            FieldRepository::COLUMN_ID => $this->nameColumn->getId(),
+            FieldRepository::VALUE => null
+        ];
+        $nameFieldRecord = new Record(1, $nameFieldAttrs);
+        $this->storageShouldReceive('create', FieldRepository::TABLE, $nameFieldAttrs, $nameFieldRecord);
 
-        $indexable = new Indexable(123);
-        $indexable->setField('name', $name);
-        $indexable->setField('age', $age);
-        $indexable->setField('extra', 'This should be ignored.');
+        // Tokenize name field
+        $tokens = Collection::make([
+            $joeToken = new Token('joe', 0),
+            $bloggsToken = new Token('bloggs', 1)
+        ]);
+        $this->tokenizer->shouldReceive('tokenize')->once()->withArgs(['Joe Bloggs'])->andReturn($tokens);
 
-        $this->storage->shouldReceive('findBy')
-            ->once()
-            ->withArgs([DocumentRepository::TABLE, [DocumentRepository::KEY => $indexable->getKey()]])
-            ->andReturnNull();
+        // Make word for 'joe' in name
+        $joeWordCriteria = [WordRepository::WORD => 'joe'];
+        $joeWordAttrs = $joeWordCriteria;
+        $joeWordRecord = new Record(1, $joeWordAttrs);
+        $this->storageShouldReceive('findBy', WordRepository::TABLE, $joeWordCriteria, null);
+        $this->storageShouldReceive('create', WordRepository::TABLE, $joeWordAttrs, $joeWordRecord);
 
-        $this->storage->shouldReceive('create')
-            ->once()
-            ->withArgs([DocumentRepository::TABLE, [
-                DocumentRepository::SCHEMA_ID => $this->schema->getId(),
-                DocumentRepository::KEY => $indexable->getKey()
-            ]])
-            ->andReturn(new Record($document->getId(), [
-                DocumentRepository::SCHEMA_ID => $document->getSchemaId(),
-                DocumentRepository::KEY => $document->getKey()
-            ]));
+        // Make term for 'joe' in name
+        $joeTermCriteria = [
+            TermRepository::SCHEMA_ID => $this->schema->getId(),
+            TermRepository::WORD_ID => $joeWordRecord->getId()
+        ];
+        $joeTermAttrs = array_merge($joeTermCriteria, [TermRepository::FIELD_COUNT => 1]);
+        $joeTermRecord = new Record(1, $joeTermAttrs);
+        $this->storageShouldReceive('findBy', TermRepository::TABLE, $joeTermCriteria, null);
+        $this->storageShouldReceive('create', TermRepository::TABLE, $joeTermAttrs, $joeTermRecord);
 
-        $this->storage->shouldReceive('create')
-            ->once()
-            ->withArgs([FieldRepository::TABLE, [
-                FieldRepository::DOCUMENT_ID => $nameField->getDocumentId(),
-                FieldRepository::COLUMN_ID => $nameField->getColumnId(),
-                FieldRepository::VALUE => $nameField->getValue()
-            ]])
-            ->andReturn(new Record($nameField->getId(), [
-                FieldRepository::DOCUMENT_ID => $nameField->getDocumentId(),
-                FieldRepository::COLUMN_ID => $nameField->getColumnId(),
-                FieldRepository::VALUE => $nameField->getValue()
-            ]));
+        // Make occurrence for 'joe' in name
+        $joeOccurrenceAttrs = [
+            OccurrenceRepository::FIELD_ID => $nameFieldRecord->getId(),
+            OccurrenceRepository::TERM_ID => $joeTermRecord->getId(),
+            OccurrenceRepository::FREQUENCY => 1
+        ];
+        $joeOccurrenceRecord = new Record(1, $joeOccurrenceAttrs);
+        $this->storageShouldReceive('create', OccurrenceRepository::TABLE, $joeOccurrenceAttrs, $joeOccurrenceRecord);
 
-        $this->tokenizer->shouldReceive('tokenize')
-            ->once()
-            ->withArgs([$name])
-            ->andReturn(Collection::make([
-                new Token($wordJoe->getWord(), 0), new Token($wordBloggs->getWord(), 1)
-            ]));
+        // Make position for 'joe' in name
+        $joePositionAttrs = [
+            PositionRepository::OCCURRENCE_ID => $joeOccurrenceRecord->getId(),
+            PositionRepository::POSITION => $joeToken->getPosition()
+        ];
+        $joePositionRecord = new Record(1, $joePositionAttrs);
+        $this->storageShouldReceive('create', PositionRepository::TABLE, $joePositionAttrs, $joePositionRecord);
 
-        $this->storage->shouldReceive('findBy')
-            ->once()
-            ->withArgs([WordRepository::TABLE, [WordRepository::WORD => $wordJoe->getWord()]])
-            ->andReturnNull();
+        // Make word for 'bloggs' in name
+        $bloggsWordCriteria = [WordRepository::WORD => 'bloggs'];
+        $bloggsWordAttrs = $bloggsWordCriteria;
+        $bloggsWordRecord = new Record(2, $bloggsWordAttrs);
+        $this->storageShouldReceive('findBy', WordRepository::TABLE, $bloggsWordCriteria, null);
+        $this->storageShouldReceive('create', WordRepository::TABLE, $bloggsWordAttrs, $bloggsWordRecord);
 
-        $this->storage->shouldReceive('create')
-            ->once()
-            ->withArgs([WordRepository::TABLE, [WordRepository::WORD => $wordJoe]])
-            ->andReturn(new Record($wordJoe->getId(), [
-                WordRepository::WORD => $wordJoe->getWord()
-            ]));
+        // Make term for 'bloggs' in name
+        $bloggsTermCriteria = [
+            TermRepository::SCHEMA_ID => $this->schema->getId(),
+            TermRepository::WORD_ID => $bloggsWordRecord->getId()
+        ];
+        $bloggsTermAttrs = array_merge($bloggsTermCriteria, [TermRepository::FIELD_COUNT => 1]);
+        $bloggsTermRecord = new Record(2, $bloggsTermAttrs);
+        $this->storageShouldReceive('findBy', TermRepository::TABLE, $bloggsTermCriteria, null);
+        $this->storageShouldReceive('create', TermRepository::TABLE, $bloggsTermAttrs, $bloggsTermRecord);
+
+        // Make occurrence for 'bloggs' in name
+        $bloggsOccurrenceAttrs = [
+            OccurrenceRepository::FIELD_ID => $nameFieldRecord->getId(),
+            OccurrenceRepository::TERM_ID => $bloggsTermRecord->getId(),
+            OccurrenceRepository::FREQUENCY => 1
+        ];
+        $bloggsOccurrenceRecord = new Record(2, $bloggsOccurrenceAttrs);
+        $this->storageShouldReceive('create', OccurrenceRepository::TABLE, $bloggsOccurrenceAttrs, $bloggsOccurrenceRecord);
+
+        // Make position for 'bloggs' in name
+        $bloggsPositionAttrs = [
+            PositionRepository::OCCURRENCE_ID => $bloggsOccurrenceRecord->getId(),
+            PositionRepository::POSITION => $bloggsToken->getPosition()
+        ];
+        $bloggsPositionRecord = new Record(2, $bloggsPositionAttrs);
+        $this->storageShouldReceive('create', PositionRepository::TABLE, $bloggsPositionAttrs, $bloggsPositionRecord);
+
+        // Make field for age (Value IS stored)
+        // Age is not indexed so we don't bother going any further
+        $ageFieldAttrs = [
+            FieldRepository::DOCUMENT_ID => $documentRecord->getId(),
+            FieldRepository::COLUMN_ID => $this->ageColumn->getId(),
+            FieldRepository::VALUE => 23
+        ];
+        $ageFieldRecord = new Record(1, $ageFieldAttrs);
+        $this->storageShouldReceive('create', FieldRepository::TABLE, $ageFieldAttrs, $ageFieldRecord);
 
 
+        $document = new Indexable(123);
+        $document->setField('name', 'Joe Bloggs');
+        $document->setField('age', 23);
 
-        $this->index->add($indexable);
+        $this->assertTrue($this->index->add($document));
+    }
 
+    /**
+     * @test
+     */
+    public function testDocumentCanBeIndexedWhenWordsAlreadyExist()
+    {
+        $this->markTestSkipped('TODO');
+    }
 
+    public function testDocumentCanBeIndexedWhenTermsAlreadyExistWithinSchema()
+    {
+        $this->markTestSkipped('TODO');
+    }
 
-
-
-
-
-
-
-//        $schema = Schema::make(1, 'test');
-//        $schema->setColumns(Collection::make([
-//            $nameColumn = Column::make(1, 1, 'name', false, true),
-//            $ageColumn = Column::make(2, 1, 'age', false, true)
-//        ]));
-//        $this->makeIndexForSchema($schema);
-//        $indexable = new Indexable(123);
-//        $indexable->setField('name', 'Joe Bloggs');
-//        $indexable->setField('age', 29);
-//        $indexable->setField('extra', 'this should be ignored.');
-//        $documentRepo = m::mock(DocumentRepository::class);
-//        $this->storage->shouldReceive('documents')->andReturn($documentRepo);
-//        $documentRepo->shouldReceive('findByKey')->withArgs([$indexable->getKey()])->andReturn(null);
-//        $documentRepo->shouldReceive('save')->with(m::on(function ($arg) use ($schema, $indexable) {
-//            return $arg == Document::create($schema->getId(), $indexable->getKey());
-//        }))->andReturn($document = Document::make(1, $schema->getId(), $indexable->getKey()));
-//        $fieldRepo = m::mock(FieldRepository::class);
-//        $this->storage->shouldReceive('fields')->andReturn($fieldRepo);
-//        $fieldRepo->shouldReceive('save')->twice()->with(m::on(function ($arg) use ($document, $nameColumn, $ageColumn) {
-//            if ($arg instanceof Field && $arg->getDocumentId() == $document->getId()) {
-//                if ($arg->getColumnId() == $nameColumn->getId()) {
-//                    return $arg->getValue() == 'Joe Bloggs';
-//                } elseif ($arg->getColumnId() == $ageColumn->getId()) {
-//                    return $arg->getValue() == 29;
-//                }
-//            }
-//            return false;
-//        }))->andReturn(Field::make(1, $document->getId(), $nameColumn->getId(), null));
-//        $this->assertTrue($this->index->add($indexable));
+    public function testExtraFieldsAreIgnoredWhenIndexingDocument()
+    {
+        $this->markTestSkipped('TODO');
     }
 
 //    /**
@@ -428,77 +471,6 @@ class IndexTest extends TestCase
 //                $peopleBlueprint, [$joeBloggsIndexable, $janeDoeIndexable], $expectedPeopleJoeBloggsJaneDoe
 //            ],
 //        ];
-//    }
-
-//    public function testAddIndexesDocumentCorrectly()
-//    {
-//        $indexable = new Indexable(123);
-//        $indexable->setField('name', 'Joe Bloggs');
-//        $indexable->setField('age', 30);
-//
-//        $inputDocument = new Document(null, $this->schema->getId(), $indexable->getKey());
-//        $document = new Document(1, $this->schema->getId(), $indexable->getKey());
-//        $inputNameField = new Field(null, 1, 1, null);  // Name should be indexed, but not stored.
-//        $nameField = new Field(1, 1, 1, null);
-//        $inputAgeField = new Field(null, 1, 2, 30);     // Age should be stored, but not indexed.
-//        $ageField = new Field(2, 1, 2, 30);
-//
-//        $documentRepo = m::mock(DocumentRepository::class);
-//        $this->storage->shouldReceive('documents')->andReturn($documentRepo);
-//        $documentRepo->shouldReceive('findByKey')->withArgs([$indexable->getKey()])->andReturn(null);
-//        $documentRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputDocument) {
-//            return $inputDocument == $arg;
-//        }))->andReturn($document);
-//
-//        $fieldsRepo = m::mock(FieldRepository::class);
-//        $this->storage->shouldReceive('fields')->andReturn($fieldsRepo);
-//        $fieldsRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputNameField) {
-//            return $inputNameField == $arg;
-//        }))->andReturn($nameField);
-//        $fieldsRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputAgeField) {
-//            return $inputAgeField == $arg;
-//        }))->andReturn($ageField);
-//
-//        $joeToken = new Token('joe', 0);
-//        $bloggsToken = new Token('bloggs', 1);
-//        $tokens = new Collection([$joeToken, $bloggsToken]);
-//        $this->tokenizer->shouldReceive('tokenize')->with('Joe Bloggs')->andReturn($tokens);
-//        $this->stemmer->shouldReceive('stem')->with($joeToken->getText())->andReturn('joe');
-//        $this->stemmer->shouldReceive('stem')->with($bloggsToken->getText())->andReturn('blogg');
-//
-//        $inputJoeWord = new Word(null, 'joe');
-//        $joeWord = new Word(1, 'joe');
-//        $inputBloggWord = new Word(null, 'blogg');
-//        $bloggWord = new Word(1, 'blogg');
-//        $wordsRepo = m::mock(WordRepository::class);
-//        $this->storage->shouldReceive('words')->andReturn($wordsRepo);
-//        $wordsRepo->shouldReceive('findByWord')->with('joe')->andReturn(null);
-//        $wordsRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputJoeWord) {
-//            return $arg == $inputJoeWord;
-//        }))->andReturn($joeWord);
-//        $wordsRepo->shouldReceive('findByWord')->with('blogg')->andReturn(null);
-//        $wordsRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputBloggWord) {
-//            return $arg == $inputBloggWord;
-//        }))->andReturn($bloggWord);
-//
-//        $inputJoeTerm = new Term(null, $this->schema->getId(), $joeWord->getId(), 0);
-//        $joeTerm = new Term(1, $this->schema->getId(), $joeWord->getId(), 0);
-//        $inputBloggTerm = new Term(null, $this->schema->getId(), $bloggWord->getId(), 0);
-//        $bloggTerm = new Term(1, $this->schema->getId(), $bloggWord->getId(), 0);
-//        $termRepo = m::mock(TermRepository::class);
-//        $this->storage->shouldReceive('terms')->andReturn($termRepo);
-//        $termRepo->shouldReceive('findBySchemaAndWord')->with($this->schema, $joeWord)->andReturn(null);
-//        $termRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputJoeTerm) {
-//            return $arg == $inputJoeTerm;
-//        }))->andReturn($joeTerm);
-//        $termRepo->shouldReceive('findBySchemaAndWord')->with($this->schema, $bloggWord)->andReturn(null);
-//        $termRepo->shouldReceive('save')->with(m::on(function ($arg) use ($inputBloggTerm) {
-//            return $arg == $inputBloggTerm;
-//        }))->andReturn($bloggTerm);
-//
-//
-//
-//        $this->index->add($indexable);
 //    }
 }
 
