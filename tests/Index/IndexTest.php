@@ -13,26 +13,20 @@ use Blixt\Persistence\Drivers\MemoryDriver;
 use Blixt\Persistence\Entities\Column;
 use Blixt\Persistence\Entities\Schema;
 use Blixt\Persistence\Record;
-use Blixt\Persistence\Repositories\ColumnRepository as ColRepo;
-use Blixt\Persistence\Repositories\DocumentRepository as DocRepo;
-use Blixt\Persistence\Repositories\FieldRepository as FldRepo;
-use Blixt\Persistence\Repositories\OccurrenceRepository as OccRepo;
-use Blixt\Persistence\Repositories\PositionRepository as PosRepo;
-use Blixt\Persistence\Repositories\SchemaRepository as SmaRepo;
-use Blixt\Persistence\Repositories\TermRepository as TrmRepo;
-use Blixt\Persistence\Repositories\WordRepository as WrdRepo;
+use Blixt\Persistence\Repositories\ColumnRepository;
+use Blixt\Persistence\Repositories\DocumentRepository;
+use Blixt\Persistence\Repositories\FieldRepository;
+use Blixt\Persistence\Repositories\OccurrenceRepository;
+use Blixt\Persistence\Repositories\PositionRepository;
+use Blixt\Persistence\Repositories\SchemaRepository;
+use Blixt\Persistence\Repositories\TermRepository;
+use Blixt\Persistence\Repositories\WordRepository;
 use Blixt\Stemming\Stemmer;
 use Blixt\Tokenization\Token;
 use Blixt\Tokenization\Tokenizer;
 use BlixtTests\TestCase;
 use Illuminate\Support\Collection;
 use Mockery as m;
-
-// TODO: Move testDocumentsAreCorrectlyIndexed into a memory driver based test
-// Test that fields marked as not stored are not stored
-// Test that fields marked as not indexed don't have occurrence and position records created
-// Test that fields marked as stored have a value in their field
-// Test that fields marked as indexed have position and occurrence records
 
 class IndexTest extends TestCase
 {
@@ -94,19 +88,19 @@ class IndexTest extends TestCase
 
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([SmaRepo::TABLE, [SmaRepo::NAME => $schema->getName()]])
-            ->andReturn(new Record($schema->getId(), [SmaRepo::NAME => $schema->getName()]));
+            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => $schema->getName()]])
+            ->andReturn(new Record($schema->getId(), [SchemaRepository::NAME => $schema->getName()]));
 
         $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([ColRepo::TABLE, [ColRepo::SCHEMA_ID => $schema->getId()], 0, null])
+            ->withArgs([ColumnRepository::TABLE, [ColumnRepository::SCHEMA_ID => $schema->getId()], 0, null])
             ->andReturn(
                 $schema->getColumns()->map(function (Column $column) {
                     return new Record($column->getId(), [
-                        ColRepo::SCHEMA_ID => $column->getSchemaId(),
-                        ColRepo::NAME => $column->getName(),
-                        ColRepo::IS_INDEXED => $column->isIndexed(),
-                        ColRepo::IS_STORED => $column->isStored()
+                        ColumnRepository::SCHEMA_ID => $column->getSchemaId(),
+                        ColumnRepository::NAME => $column->getName(),
+                        ColumnRepository::IS_INDEXED => $column->isIndexed(),
+                        ColumnRepository::IS_STORED => $column->isStored()
                     ]);
                 })->toArray()
             );
@@ -150,13 +144,13 @@ class IndexTest extends TestCase
 
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([DocRepo::TABLE, [
-                DocRepo::SCHEMA_ID => $this->schema->getId(),
-                DocRepo::KEY => $indexable->getKey()
+            ->withArgs([DocumentRepository::TABLE, [
+                DocumentRepository::SCHEMA_ID => $this->schema->getId(),
+                DocumentRepository::KEY => $indexable->getKey()
             ]])
             ->andReturn(new Record($indexable->getKey(), [
-                DocRepo::SCHEMA_ID => $this->schema->getId(),
-                DocRepo::KEY => $indexable->getKey()
+                DocumentRepository::SCHEMA_ID => $this->schema->getId(),
+                DocumentRepository::KEY => $indexable->getKey()
             ]));
 
         $this->expectException(DocumentAlreadyExistsException::class);
@@ -181,9 +175,9 @@ class IndexTest extends TestCase
 
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([DocRepo::TABLE, [
-                DocRepo::SCHEMA_ID => $this->schema->getId(),
-                DocRepo::KEY => $indexable->getKey()
+            ->withArgs([DocumentRepository::TABLE, [
+                DocumentRepository::SCHEMA_ID => $this->schema->getId(),
+                DocumentRepository::KEY => $indexable->getKey()
             ]])
             ->andReturnNull();
 
@@ -205,26 +199,26 @@ class IndexTest extends TestCase
         $this->makeIndexForPeopleSchemaWithNameAndAgeColumns();
 
         // Find document by its schema ID and key, returns null (doesn't exist). Create new document.
-        $documentCriteria = [DocRepo::SCHEMA_ID => $this->schema->getId(), DocRepo::KEY => 123];
+        $documentCriteria = [DocumentRepository::SCHEMA_ID => $this->schema->getId(), DocumentRepository::KEY => 123];
         $documentAttrs = $documentCriteria;
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([DocRepo::TABLE, $documentCriteria])
+            ->withArgs([DocumentRepository::TABLE, $documentCriteria])
             ->andReturnNull();
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([DocRepo::TABLE, $documentAttrs])
+            ->withArgs([DocumentRepository::TABLE, $documentAttrs])
             ->andReturn($documentRecord = new Record(1, $documentAttrs));
 
         // Make field for name (Value is NOT stored)
         $nameFieldAttrs = [
-            FldRepo::DOCUMENT_ID => $documentRecord->getId(),
-            FldRepo::COLUMN_ID => $this->nameColumn->getId(),
-            FldRepo::VALUE => null
+            FieldRepository::DOCUMENT_ID => $documentRecord->getId(),
+            FieldRepository::COLUMN_ID => $this->nameColumn->getId(),
+            FieldRepository::VALUE => null
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([FldRepo::TABLE, $nameFieldAttrs])
+            ->withArgs([FieldRepository::TABLE, $nameFieldAttrs])
             ->andReturn($nameFieldRecord = new Record(1, $nameFieldAttrs));
 
         // Tokenize name field
@@ -237,111 +231,111 @@ class IndexTest extends TestCase
             ]));
 
         // Make word for 'joe' in name
-        $joeWordCriteria = [WrdRepo::WORD => 'joe'];
+        $joeWordCriteria = [WordRepository::WORD => 'joe'];
         $joeWordAttrs = $joeWordCriteria;
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([WrdRepo::TABLE, $joeWordCriteria])
+            ->withArgs([WordRepository::TABLE, $joeWordCriteria])
             ->andReturnNull();
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([WrdRepo::TABLE, $joeWordAttrs])
+            ->withArgs([WordRepository::TABLE, $joeWordAttrs])
             ->andReturn($joeWordRecord = new Record(1, $joeWordAttrs));
 
         // Make term for 'joe' in name
         $joeTermCriteria = [
-            TrmRepo::SCHEMA_ID => $this->schema->getId(),
-            TrmRepo::WORD_ID => $joeWordRecord->getId()
+            TermRepository::SCHEMA_ID => $this->schema->getId(),
+            TermRepository::WORD_ID => $joeWordRecord->getId()
         ];
-        $joeTermAttrs = array_merge($joeTermCriteria, [TrmRepo::FIELD_COUNT => 1]);
+        $joeTermAttrs = array_merge($joeTermCriteria, [TermRepository::FIELD_COUNT => 1]);
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([TrmRepo::TABLE, $joeTermCriteria])
+            ->withArgs([TermRepository::TABLE, $joeTermCriteria])
             ->andReturnNull();
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([TrmRepo::TABLE, $joeTermAttrs])
+            ->withArgs([TermRepository::TABLE, $joeTermAttrs])
             ->andReturn($joeTermRecord = new Record(1, $joeTermAttrs));
 
         // Make occurrence for 'joe' in name
         $joeOccurrenceAttrs = [
-            OccRepo::FIELD_ID => $nameFieldRecord->getId(),
-            OccRepo::TERM_ID => $joeTermRecord->getId(),
-            OccRepo::FREQUENCY => 1
+            OccurrenceRepository::FIELD_ID => $nameFieldRecord->getId(),
+            OccurrenceRepository::TERM_ID => $joeTermRecord->getId(),
+            OccurrenceRepository::FREQUENCY => 1
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([OccRepo::TABLE, $joeOccurrenceAttrs])
+            ->withArgs([OccurrenceRepository::TABLE, $joeOccurrenceAttrs])
             ->andReturn($joeOccurrenceRecord = new Record(1, $joeOccurrenceAttrs));
 
         // Make position for 'joe' in name
         $joePositionAttrs = [
-            PosRepo::OCCURRENCE_ID => $joeOccurrenceRecord->getId(),
-            PosRepo::POSITION => $joeToken->getPosition()
+            PositionRepository::OCCURRENCE_ID => $joeOccurrenceRecord->getId(),
+            PositionRepository::POSITION => $joeToken->getPosition()
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([PosRepo::TABLE, $joePositionAttrs])
+            ->withArgs([PositionRepository::TABLE, $joePositionAttrs])
             ->andReturn($joePositionRecord = new Record(1, $joePositionAttrs));
 
         // Make word for 'bloggs' in name
-        $bloggsWordCriteria = [WrdRepo::WORD => 'bloggs'];
+        $bloggsWordCriteria = [WordRepository::WORD => 'bloggs'];
         $bloggsWordAttrs = $bloggsWordCriteria;
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([WrdRepo::TABLE, $bloggsWordCriteria])
+            ->withArgs([WordRepository::TABLE, $bloggsWordCriteria])
             ->andReturnNull();
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([WrdRepo::TABLE, $bloggsWordAttrs])
+            ->withArgs([WordRepository::TABLE, $bloggsWordAttrs])
             ->andReturn($bloggsWordRecord = new Record(2, $bloggsWordAttrs));
 
         // Make term for 'bloggs' in name
         $bloggsTermCriteria = [
-            TrmRepo::SCHEMA_ID => $this->schema->getId(),
-            TrmRepo::WORD_ID => $bloggsWordRecord->getId()
+            TermRepository::SCHEMA_ID => $this->schema->getId(),
+            TermRepository::WORD_ID => $bloggsWordRecord->getId()
         ];
-        $bloggsTermAttrs = array_merge($bloggsTermCriteria, [TrmRepo::FIELD_COUNT => 1]);
+        $bloggsTermAttrs = array_merge($bloggsTermCriteria, [TermRepository::FIELD_COUNT => 1]);
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([TrmRepo::TABLE, $bloggsTermCriteria])
+            ->withArgs([TermRepository::TABLE, $bloggsTermCriteria])
             ->andReturnNull();
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([TrmRepo::TABLE, $bloggsTermAttrs])
+            ->withArgs([TermRepository::TABLE, $bloggsTermAttrs])
             ->andReturn($bloggsTermRecord = new Record(2, $bloggsTermAttrs));
 
         // Make occurrence for 'bloggs' in name
         $bloggsOccurrenceAttrs = [
-            OccRepo::FIELD_ID => $nameFieldRecord->getId(),
-            OccRepo::TERM_ID => $bloggsTermRecord->getId(),
-            OccRepo::FREQUENCY => 1
+            OccurrenceRepository::FIELD_ID => $nameFieldRecord->getId(),
+            OccurrenceRepository::TERM_ID => $bloggsTermRecord->getId(),
+            OccurrenceRepository::FREQUENCY => 1
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([OccRepo::TABLE, $bloggsOccurrenceAttrs])
+            ->withArgs([OccurrenceRepository::TABLE, $bloggsOccurrenceAttrs])
             ->andReturn($bloggsOccurrenceRecord = new Record(2, $bloggsOccurrenceAttrs));
 
         // Make position for 'bloggs' in name
         $bloggsPositionAttrs = [
-            PosRepo::OCCURRENCE_ID => $bloggsOccurrenceRecord->getId(),
-            PosRepo::POSITION => $bloggsToken->getPosition()
+            PositionRepository::OCCURRENCE_ID => $bloggsOccurrenceRecord->getId(),
+            PositionRepository::POSITION => $bloggsToken->getPosition()
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([PosRepo::TABLE, $bloggsPositionAttrs])
+            ->withArgs([PositionRepository::TABLE, $bloggsPositionAttrs])
             ->andReturn($bloggsPositionRecord = new Record(2, $bloggsPositionAttrs));
 
         // Make field for age (Value IS stored)
         // Age is not indexed so we don't bother going any further
         $ageFieldAttrs = [
-            FldRepo::DOCUMENT_ID => $documentRecord->getId(),
-            FldRepo::COLUMN_ID => $this->ageColumn->getId(),
-            FldRepo::VALUE => 23
+            FieldRepository::DOCUMENT_ID => $documentRecord->getId(),
+            FieldRepository::COLUMN_ID => $this->ageColumn->getId(),
+            FieldRepository::VALUE => 23
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([FldRepo::TABLE, $ageFieldAttrs])
+            ->withArgs([FieldRepository::TABLE, $ageFieldAttrs])
             ->andReturn($ageFieldRecord = new Record(1, $ageFieldAttrs));
 
         $document = new Indexable(123);
@@ -365,26 +359,26 @@ class IndexTest extends TestCase
         $this->makeIndexForPeopleSchemaWithNameAndAgeColumns();
 
         // Find document by its schema ID and key, returns null (doesn't exist). Create new document.
-        $documentCriteria = [DocRepo::SCHEMA_ID => $this->schema->getId(), DocRepo::KEY => 123];
+        $documentCriteria = [DocumentRepository::SCHEMA_ID => $this->schema->getId(), DocumentRepository::KEY => 123];
         $documentAttrs = $documentCriteria;
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([DocRepo::TABLE, $documentCriteria])
+            ->withArgs([DocumentRepository::TABLE, $documentCriteria])
             ->andReturnNull();
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([DocRepo::TABLE, $documentAttrs])
+            ->withArgs([DocumentRepository::TABLE, $documentAttrs])
             ->andReturn($documentRecord = new Record(1, $documentAttrs));
 
         // Make field for name (Value is NOT stored)
         $nameFieldAttrs = [
-            FldRepo::DOCUMENT_ID => $documentRecord->getId(),
-            FldRepo::COLUMN_ID => $this->nameColumn->getId(),
-            FldRepo::VALUE => null
+            FieldRepository::DOCUMENT_ID => $documentRecord->getId(),
+            FieldRepository::COLUMN_ID => $this->nameColumn->getId(),
+            FieldRepository::VALUE => null
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([FldRepo::TABLE, $nameFieldAttrs])
+            ->withArgs([FieldRepository::TABLE, $nameFieldAttrs])
             ->andReturn($nameFieldRecord = new Record(1, $nameFieldAttrs));
 
         // Tokenize name field
@@ -397,105 +391,105 @@ class IndexTest extends TestCase
             ]));
 
         // Make word for 'joe' in name
-        $joeWordCriteria = [WrdRepo::WORD => 'joe'];
+        $joeWordCriteria = [WordRepository::WORD => 'joe'];
         $joeWordAttrs = $joeWordCriteria;
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([WrdRepo::TABLE, $joeWordCriteria])
+            ->withArgs([WordRepository::TABLE, $joeWordCriteria])
             ->andReturn($joeWordRecord = new Record(1, $joeWordAttrs));
-        $this->storage->shouldNotReceive('create')->withArgs([WrdRepo::TABLE, $joeWordAttrs]);
+        $this->storage->shouldNotReceive('create')->withArgs([WordRepository::TABLE, $joeWordAttrs]);
 
         // Make term for 'joe' in name
         $joeTermCriteria = [
-            TrmRepo::SCHEMA_ID => $this->schema->getId(),
-            TrmRepo::WORD_ID => $joeWordRecord->getId()
+            TermRepository::SCHEMA_ID => $this->schema->getId(),
+            TermRepository::WORD_ID => $joeWordRecord->getId()
         ];
-        $joeTermAttrs = array_merge($joeTermCriteria, [TrmRepo::FIELD_COUNT => 1]);
+        $joeTermAttrs = array_merge($joeTermCriteria, [TermRepository::FIELD_COUNT => 1]);
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([TrmRepo::TABLE, $joeTermCriteria])
+            ->withArgs([TermRepository::TABLE, $joeTermCriteria])
             ->andReturnNull();
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([TrmRepo::TABLE, $joeTermAttrs])
+            ->withArgs([TermRepository::TABLE, $joeTermAttrs])
             ->andReturn($joeTermRecord = new Record(1, $joeTermAttrs));
 
         // Make occurrence for 'joe' in name
         $joeOccurrenceAttrs = [
-            OccRepo::FIELD_ID => $nameFieldRecord->getId(),
-            OccRepo::TERM_ID => $joeTermRecord->getId(),
-            OccRepo::FREQUENCY => 1
+            OccurrenceRepository::FIELD_ID => $nameFieldRecord->getId(),
+            OccurrenceRepository::TERM_ID => $joeTermRecord->getId(),
+            OccurrenceRepository::FREQUENCY => 1
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([OccRepo::TABLE, $joeOccurrenceAttrs])
+            ->withArgs([OccurrenceRepository::TABLE, $joeOccurrenceAttrs])
             ->andReturn($joeOccurrenceRecord = new Record(1, $joeOccurrenceAttrs));
 
         // Make position for 'joe' in name
         $joePositionAttrs = [
-            PosRepo::OCCURRENCE_ID => $joeOccurrenceRecord->getId(),
-            PosRepo::POSITION => $joeToken->getPosition()
+            PositionRepository::OCCURRENCE_ID => $joeOccurrenceRecord->getId(),
+            PositionRepository::POSITION => $joeToken->getPosition()
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([PosRepo::TABLE, $joePositionAttrs])
+            ->withArgs([PositionRepository::TABLE, $joePositionAttrs])
             ->andReturn($joePositionRecord = new Record(1, $joePositionAttrs));
 
         // Make word for 'bloggs' in name
-        $bloggsWordCriteria = [WrdRepo::WORD => 'bloggs'];
+        $bloggsWordCriteria = [WordRepository::WORD => 'bloggs'];
         $bloggsWordAttrs = $bloggsWordCriteria;
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([WrdRepo::TABLE, $bloggsWordCriteria])
+            ->withArgs([WordRepository::TABLE, $bloggsWordCriteria])
             ->andReturn($bloggsWordRecord = new Record(2, $bloggsWordAttrs));
-        $this->storage->shouldNotReceive('create')->withArgs([WrdRepo::TABLE, $bloggsWordAttrs]);
+        $this->storage->shouldNotReceive('create')->withArgs([WordRepository::TABLE, $bloggsWordAttrs]);
 
         // Make term for 'bloggs' in name
         $bloggsTermCriteria = [
-            TrmRepo::SCHEMA_ID => $this->schema->getId(),
-            TrmRepo::WORD_ID => $bloggsWordRecord->getId()
+            TermRepository::SCHEMA_ID => $this->schema->getId(),
+            TermRepository::WORD_ID => $bloggsWordRecord->getId()
         ];
-        $bloggsTermAttrs = array_merge($bloggsTermCriteria, [TrmRepo::FIELD_COUNT => 1]);
+        $bloggsTermAttrs = array_merge($bloggsTermCriteria, [TermRepository::FIELD_COUNT => 1]);
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([TrmRepo::TABLE, $bloggsTermCriteria])
+            ->withArgs([TermRepository::TABLE, $bloggsTermCriteria])
             ->andReturnNull();
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([TrmRepo::TABLE, $bloggsTermAttrs])
+            ->withArgs([TermRepository::TABLE, $bloggsTermAttrs])
             ->andReturn($bloggsTermRecord = new Record(2, $bloggsTermAttrs));
 
         // Make occurrence for 'bloggs' in name
         $bloggsOccurrenceAttrs = [
-            OccRepo::FIELD_ID => $nameFieldRecord->getId(),
-            OccRepo::TERM_ID => $bloggsTermRecord->getId(),
-            OccRepo::FREQUENCY => 1
+            OccurrenceRepository::FIELD_ID => $nameFieldRecord->getId(),
+            OccurrenceRepository::TERM_ID => $bloggsTermRecord->getId(),
+            OccurrenceRepository::FREQUENCY => 1
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([OccRepo::TABLE, $bloggsOccurrenceAttrs])
+            ->withArgs([OccurrenceRepository::TABLE, $bloggsOccurrenceAttrs])
             ->andReturn($bloggsOccurrenceRecord = new Record(2, $bloggsOccurrenceAttrs));
 
         // Make position for 'bloggs' in name
         $bloggsPositionAttrs = [
-            PosRepo::OCCURRENCE_ID => $bloggsOccurrenceRecord->getId(),
-            PosRepo::POSITION => $bloggsToken->getPosition()
+            PositionRepository::OCCURRENCE_ID => $bloggsOccurrenceRecord->getId(),
+            PositionRepository::POSITION => $bloggsToken->getPosition()
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([PosRepo::TABLE, $bloggsPositionAttrs])
+            ->withArgs([PositionRepository::TABLE, $bloggsPositionAttrs])
             ->andReturn($bloggsPositionRecord = new Record(2, $bloggsPositionAttrs));
 
         // Make field for age (Value IS stored)
         // Age is not indexed so we don't bother going any further
         $ageFieldAttrs = [
-            FldRepo::DOCUMENT_ID => $documentRecord->getId(),
-            FldRepo::COLUMN_ID => $this->ageColumn->getId(),
-            FldRepo::VALUE => 23
+            FieldRepository::DOCUMENT_ID => $documentRecord->getId(),
+            FieldRepository::COLUMN_ID => $this->ageColumn->getId(),
+            FieldRepository::VALUE => 23
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([FldRepo::TABLE, $ageFieldAttrs])
+            ->withArgs([FieldRepository::TABLE, $ageFieldAttrs])
             ->andReturn($ageFieldRecord = new Record(1, $ageFieldAttrs));
 
         $document = new Indexable(123);
@@ -518,26 +512,26 @@ class IndexTest extends TestCase
         $this->makeIndexForPeopleSchemaWithNameAndAgeColumns();
 
         // Find document by its schema ID and key, returns null (doesn't exist). Create new document.
-        $documentCriteria = [DocRepo::SCHEMA_ID => $this->schema->getId(), DocRepo::KEY => 123];
+        $documentCriteria = [DocumentRepository::SCHEMA_ID => $this->schema->getId(), DocumentRepository::KEY => 123];
         $documentAttrs = $documentCriteria;
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([DocRepo::TABLE, $documentCriteria])
+            ->withArgs([DocumentRepository::TABLE, $documentCriteria])
             ->andReturnNull();
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([DocRepo::TABLE, $documentAttrs])
+            ->withArgs([DocumentRepository::TABLE, $documentAttrs])
             ->andReturn($documentRecord = new Record(1, $documentAttrs));
 
         // Make field for name (Value is NOT stored)
         $nameFieldAttrs = [
-            FldRepo::DOCUMENT_ID => $documentRecord->getId(),
-            FldRepo::COLUMN_ID => $this->nameColumn->getId(),
-            FldRepo::VALUE => null
+            FieldRepository::DOCUMENT_ID => $documentRecord->getId(),
+            FieldRepository::COLUMN_ID => $this->nameColumn->getId(),
+            FieldRepository::VALUE => null
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([FldRepo::TABLE, $nameFieldAttrs])
+            ->withArgs([FieldRepository::TABLE, $nameFieldAttrs])
             ->andReturn($nameFieldRecord = new Record(1, $nameFieldAttrs));
 
         // Tokenize name field
@@ -550,109 +544,109 @@ class IndexTest extends TestCase
             ]));
 
         // Make word for 'joe' in name
-        $joeWordCriteria = [WrdRepo::WORD => 'joe'];
+        $joeWordCriteria = [WordRepository::WORD => 'joe'];
         $joeWordAttrs = $joeWordCriteria;
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([WrdRepo::TABLE, $joeWordCriteria])
+            ->withArgs([WordRepository::TABLE, $joeWordCriteria])
             ->andReturn($joeWordRecord = new Record(1, $joeWordAttrs));
-        $this->storage->shouldNotReceive('create')->withArgs([WrdRepo::TABLE, $joeWordAttrs]);
+        $this->storage->shouldNotReceive('create')->withArgs([WordRepository::TABLE, $joeWordAttrs]);
 
         // Make term for 'joe' in name
         $joeTermCriteria = [
-            TrmRepo::SCHEMA_ID => $this->schema->getId(),
-            TrmRepo::WORD_ID => $joeWordRecord->getId()
+            TermRepository::SCHEMA_ID => $this->schema->getId(),
+            TermRepository::WORD_ID => $joeWordRecord->getId()
         ];
-        $joeTermAttrs = array_merge($joeTermCriteria, [TrmRepo::FIELD_COUNT => 1]);
+        $joeTermAttrs = array_merge($joeTermCriteria, [TermRepository::FIELD_COUNT => 1]);
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([TrmRepo::TABLE, $joeTermCriteria])
+            ->withArgs([TermRepository::TABLE, $joeTermCriteria])
             ->andReturn($joeTermRecord = new Record(1, $joeTermAttrs));
-        $this->storage->shouldNotReceive('create')->withArgs([TrmRepo::TABLE, $joeTermAttrs]);
-        $updatedJoeTermAttrs = array_merge($joeTermAttrs, [TrmRepo::FIELD_COUNT => 2]);
+        $this->storage->shouldNotReceive('create')->withArgs([TermRepository::TABLE, $joeTermAttrs]);
+        $updatedJoeTermAttrs = array_merge($joeTermAttrs, [TermRepository::FIELD_COUNT => 2]);
         $this->storage->shouldReceive('update')
             ->once()
-            ->withArgs([TrmRepo::TABLE, $joeTermRecord->getId(), $updatedJoeTermAttrs])
+            ->withArgs([TermRepository::TABLE, $joeTermRecord->getId(), $updatedJoeTermAttrs])
             ->andReturn($updatedJoeTermRecord = new Record($joeTermRecord->getId(), $updatedJoeTermAttrs));
 
         // Make occurrence for 'joe' in name
         $joeOccurrenceAttrs = [
-            OccRepo::FIELD_ID => $nameFieldRecord->getId(),
-            OccRepo::TERM_ID => $updatedJoeTermRecord->getId(),
-            OccRepo::FREQUENCY => 1
+            OccurrenceRepository::FIELD_ID => $nameFieldRecord->getId(),
+            OccurrenceRepository::TERM_ID => $updatedJoeTermRecord->getId(),
+            OccurrenceRepository::FREQUENCY => 1
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([OccRepo::TABLE, $joeOccurrenceAttrs])
+            ->withArgs([OccurrenceRepository::TABLE, $joeOccurrenceAttrs])
             ->andReturn($joeOccurrenceRecord = new Record(1, $joeOccurrenceAttrs));
 
         // Make position for 'joe' in name
         $joePositionAttrs = [
-            PosRepo::OCCURRENCE_ID => $joeOccurrenceRecord->getId(),
-            PosRepo::POSITION => $joeToken->getPosition()
+            PositionRepository::OCCURRENCE_ID => $joeOccurrenceRecord->getId(),
+            PositionRepository::POSITION => $joeToken->getPosition()
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([PosRepo::TABLE, $joePositionAttrs])
+            ->withArgs([PositionRepository::TABLE, $joePositionAttrs])
             ->andReturn($joePositionRecord = new Record(1, $joePositionAttrs));
 
         // Make word for 'bloggs' in name
-        $bloggsWordCriteria = [WrdRepo::WORD => 'bloggs'];
+        $bloggsWordCriteria = [WordRepository::WORD => 'bloggs'];
         $bloggsWordAttrs = $bloggsWordCriteria;
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([WrdRepo::TABLE, $bloggsWordCriteria])
+            ->withArgs([WordRepository::TABLE, $bloggsWordCriteria])
             ->andReturn($bloggsWordRecord = new Record(2, $bloggsWordAttrs));
-        $this->storage->shouldNotReceive('create')->withArgs([WrdRepo::TABLE, $bloggsWordAttrs]);
+        $this->storage->shouldNotReceive('create')->withArgs([WordRepository::TABLE, $bloggsWordAttrs]);
 
         // Make term for 'bloggs' in name
         $bloggsTermCriteria = [
-            TrmRepo::SCHEMA_ID => $this->schema->getId(),
-            TrmRepo::WORD_ID => $bloggsWordRecord->getId()
+            TermRepository::SCHEMA_ID => $this->schema->getId(),
+            TermRepository::WORD_ID => $bloggsWordRecord->getId()
         ];
-        $bloggsTermAttrs = array_merge($bloggsTermCriteria, [TrmRepo::FIELD_COUNT => 1]);
+        $bloggsTermAttrs = array_merge($bloggsTermCriteria, [TermRepository::FIELD_COUNT => 1]);
         $this->storage->shouldReceive('findBy')
             ->once()
-            ->withArgs([TrmRepo::TABLE, $bloggsTermCriteria])
+            ->withArgs([TermRepository::TABLE, $bloggsTermCriteria])
             ->andReturn($bloggsTermRecord = new Record(2, $bloggsTermAttrs));
-        $this->storage->shouldNotReceive('create')->withArgs([TrmRepo::TABLE, $bloggsTermAttrs]);
-        $updatedBloggsTermAttrs = array_merge($bloggsTermAttrs, [TrmRepo::FIELD_COUNT => 2]);
+        $this->storage->shouldNotReceive('create')->withArgs([TermRepository::TABLE, $bloggsTermAttrs]);
+        $updatedBloggsTermAttrs = array_merge($bloggsTermAttrs, [TermRepository::FIELD_COUNT => 2]);
         $this->storage->shouldReceive('update')
             ->once()
-            ->withArgs([TrmRepo::TABLE, $bloggsTermRecord->getId(), $updatedBloggsTermAttrs])
+            ->withArgs([TermRepository::TABLE, $bloggsTermRecord->getId(), $updatedBloggsTermAttrs])
             ->andReturn($updatedBloggsTermRecord = new Record($bloggsTermRecord->getId(), $updatedBloggsTermAttrs));
 
         // Make occurrence for 'bloggs' in name
         $bloggsOccurrenceAttrs = [
-            OccRepo::FIELD_ID => $nameFieldRecord->getId(),
-            OccRepo::TERM_ID => $updatedBloggsTermRecord->getId(),
-            OccRepo::FREQUENCY => 1
+            OccurrenceRepository::FIELD_ID => $nameFieldRecord->getId(),
+            OccurrenceRepository::TERM_ID => $updatedBloggsTermRecord->getId(),
+            OccurrenceRepository::FREQUENCY => 1
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([OccRepo::TABLE, $bloggsOccurrenceAttrs])
+            ->withArgs([OccurrenceRepository::TABLE, $bloggsOccurrenceAttrs])
             ->andReturn($bloggsOccurrenceRecord = new Record(2, $bloggsOccurrenceAttrs));
 
         // Make position for 'bloggs' in name
         $bloggsPositionAttrs = [
-            PosRepo::OCCURRENCE_ID => $bloggsOccurrenceRecord->getId(),
-            PosRepo::POSITION => $bloggsToken->getPosition()
+            PositionRepository::OCCURRENCE_ID => $bloggsOccurrenceRecord->getId(),
+            PositionRepository::POSITION => $bloggsToken->getPosition()
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([PosRepo::TABLE, $bloggsPositionAttrs])
+            ->withArgs([PositionRepository::TABLE, $bloggsPositionAttrs])
             ->andReturn($bloggsPositionRecord = new Record(2, $bloggsPositionAttrs));
 
         // Make field for age (Value IS stored)
         // Age is not indexed so we don't bother going any further
         $ageFieldAttrs = [
-            FldRepo::DOCUMENT_ID => $documentRecord->getId(),
-            FldRepo::COLUMN_ID => $this->ageColumn->getId(),
-            FldRepo::VALUE => 23
+            FieldRepository::DOCUMENT_ID => $documentRecord->getId(),
+            FieldRepository::COLUMN_ID => $this->ageColumn->getId(),
+            FieldRepository::VALUE => 23
         ];
         $this->storage->shouldReceive('create')
             ->once()
-            ->withArgs([FldRepo::TABLE, $ageFieldAttrs])
+            ->withArgs([FieldRepository::TABLE, $ageFieldAttrs])
             ->andReturn($ageFieldRecord = new Record(1, $ageFieldAttrs));
 
         $document = new Indexable(123);
@@ -710,195 +704,211 @@ class IndexTest extends TestCase
         ]));
 
         $expectedPeopleJoeBloggs = [
-            SmaRepo::TABLE => [
-                1 => [SmaRepo::NAME => 'people']
+            SchemaRepository::TABLE => [
+                1 => [SchemaRepository::NAME => 'people']
             ],
-            ColRepo::TABLE => [
+            ColumnRepository::TABLE => [
                 1 => [
-                    ColRepo::SCHEMA_ID => 1,
-                    ColRepo::NAME => 'name',
-                    ColRepo::IS_INDEXED => true,
-                    ColRepo::IS_STORED => false
+                    ColumnRepository::SCHEMA_ID => 1,
+                    ColumnRepository::NAME => 'name',
+                    ColumnRepository::IS_INDEXED => true,
+                    ColumnRepository::IS_STORED => false
                 ],
                 2 => [
-                    ColRepo::SCHEMA_ID => 1,
-                    ColRepo::NAME => 'age',
-                    ColRepo::IS_INDEXED => false,
-                    ColRepo::IS_STORED => true
+                    ColumnRepository::SCHEMA_ID => 1,
+                    ColumnRepository::NAME => 'age',
+                    ColumnRepository::IS_INDEXED => false,
+                    ColumnRepository::IS_STORED => true
                 ]
             ],
-            WrdRepo::TABLE => [
+            WordRepository::TABLE => [
                 1 => [
-                    WrdRepo::WORD => 'joe'
+                    WordRepository::WORD => 'joe'
                 ],
                 2 => [
-                    WrdRepo::WORD => 'bloggs'
+                    WordRepository::WORD => 'bloggs'
                 ]
             ],
-            TrmRepo::TABLE => [
+            TermRepository::TABLE => [
                 1 => [
-                    TrmRepo::SCHEMA_ID => 1,
-                    TrmRepo::WORD_ID => 1,
-                    TrmRepo::FIELD_COUNT => 1
+                    TermRepository::SCHEMA_ID => 1,
+                    TermRepository::WORD_ID => 1,
+                    TermRepository::FIELD_COUNT => 1
                 ],
                 2 => [
-                    TrmRepo::SCHEMA_ID => 1,
-                    TrmRepo::WORD_ID => 2,
-                    TrmRepo::FIELD_COUNT => 1
+                    TermRepository::SCHEMA_ID => 1,
+                    TermRepository::WORD_ID => 2,
+                    TermRepository::FIELD_COUNT => 1
                 ]
             ],
-            DocRepo::TABLE => [
+            DocumentRepository::TABLE => [
                 1 => [
-                    DocRepo::SCHEMA_ID => 1,
-                    DocRepo::KEY => 1
+                    DocumentRepository::SCHEMA_ID => 1,
+                    DocumentRepository::KEY => 1
                 ]
             ],
-            FldRepo::TABLE => [
+            FieldRepository::TABLE => [
                 1 => [
-                    FldRepo::DOCUMENT_ID => 1,
-                    FldRepo::COLUMN_ID => 1,
-                    FldRepo::VALUE => null
+                    FieldRepository::DOCUMENT_ID => 1,
+                    FieldRepository::COLUMN_ID => 1,
+                    FieldRepository::VALUE => null
                 ],
                 2 => [
-                    FldRepo::DOCUMENT_ID => 1,
-                    FldRepo::COLUMN_ID => 2,
-                    FldRepo::VALUE => 30
+                    FieldRepository::DOCUMENT_ID => 1,
+                    FieldRepository::COLUMN_ID => 2,
+                    FieldRepository::VALUE => 30
                 ]
             ],
-            OccRepo::TABLE => [
+            OccurrenceRepository::TABLE => [
                 1 => [
-                    OccRepo::FIELD_ID => 1,
-                    OccRepo::TERM_ID => 1,
-                    OccRepo::FREQUENCY => 1
+                    OccurrenceRepository::FIELD_ID => 1,
+                    OccurrenceRepository::TERM_ID => 1,
+                    OccurrenceRepository::FREQUENCY => 1
                 ],
                 2 => [
-                    OccRepo::FIELD_ID => 1,
-                    OccRepo::TERM_ID => 2,
-                    OccRepo::FREQUENCY => 1
+                    OccurrenceRepository::FIELD_ID => 1,
+                    OccurrenceRepository::TERM_ID => 2,
+                    OccurrenceRepository::FREQUENCY => 1
                 ]
             ],
-            PosRepo::TABLE => [
+            PositionRepository::TABLE => [
                 1 => [
-                    PosRepo::OCCURRENCE_ID => 1,
-                    PosRepo::POSITION => 0
+                    PositionRepository::OCCURRENCE_ID => 1,
+                    PositionRepository::POSITION => 0
                 ],
                 2 => [
-                    PosRepo::OCCURRENCE_ID => 2,
-                    PosRepo::POSITION => 1
+                    PositionRepository::OCCURRENCE_ID => 2,
+                    PositionRepository::POSITION => 1
                 ]
             ]
         ];
 
         $expectedPeopleJoeBloggsJaneDoe = [
-            SmaRepo::TABLE => [
+            SchemaRepository::TABLE => [
                 1 => [
-                    SmaRepo::NAME => 'people'
+                    SchemaRepository::NAME => 'people'
                 ]
             ],
-            ColRepo::TABLE => [
+            ColumnRepository::TABLE => [
                 1 => [
-                    ColRepo::SCHEMA_ID => 1,
-                    ColRepo::NAME => 'name',
-                    ColRepo::IS_INDEXED => true,
-                    ColRepo::IS_STORED => false
+                    ColumnRepository::SCHEMA_ID => 1,
+                    ColumnRepository::NAME => 'name',
+                    ColumnRepository::IS_INDEXED => true,
+                    ColumnRepository::IS_STORED => false
                 ],
                 2 => [
-                    ColRepo::SCHEMA_ID => 1,
-                    ColRepo::NAME => 'age',
-                    ColRepo::IS_INDEXED => false,
-                    ColRepo::IS_STORED => true
+                    ColumnRepository::SCHEMA_ID => 1,
+                    ColumnRepository::NAME => 'age',
+                    ColumnRepository::IS_INDEXED => false,
+                    ColumnRepository::IS_STORED => true
                 ]
             ],
-            WrdRepo::TABLE => [
+            WordRepository::TABLE => [
                 1 => [
-                    WrdRepo::WORD => 'joe'
+                    WordRepository::WORD => 'joe'
                 ],
                 2 => [
-                    WrdRepo::WORD => 'bloggs'
+                    WordRepository::WORD => 'bloggs'
                 ],
                 3 => [
-                    WrdRepo::WORD => 'jane'
+                    WordRepository::WORD => 'jane'
                 ],
                 4 => [
-                    WrdRepo::WORD => 'doe'
+                    WordRepository::WORD => 'doe'
                 ]
             ],
-            TrmRepo::TABLE => [
-                1 => [TrmRepo::SCHEMA_ID => 1, TrmRepo::WORD_ID => 1, TrmRepo::FIELD_COUNT => 1],
-                2 => [TrmRepo::SCHEMA_ID => 1, TrmRepo::WORD_ID => 2, TrmRepo::FIELD_COUNT => 1],
-                3 => [TrmRepo::SCHEMA_ID => 1, TrmRepo::WORD_ID => 3, TrmRepo::FIELD_COUNT => 1],
-                4 => [TrmRepo::SCHEMA_ID => 1, TrmRepo::WORD_ID => 4, TrmRepo::FIELD_COUNT => 1]
-            ],
-            DocRepo::TABLE => [
+            TermRepository::TABLE => [
                 1 => [
-                    DocRepo::SCHEMA_ID => 1,
-                    DocRepo::KEY => 1
+                    TermRepository::SCHEMA_ID => 1,
+                    TermRepository::WORD_ID => 1,
+                    TermRepository::FIELD_COUNT => 1
                 ],
                 2 => [
-                    DocRepo::SCHEMA_ID => 1,
-                    DocRepo::KEY => 2
-                ]
-            ],
-            FldRepo::TABLE => [
-                1 => [
-                    FldRepo::DOCUMENT_ID => 1,
-                    FldRepo::COLUMN_ID => 1,
-                    FldRepo::VALUE => null
-                ],
-                2 => [
-                    FldRepo::DOCUMENT_ID => 1,
-                    FldRepo::COLUMN_ID => 2,
-                    FldRepo::VALUE => 30
+                    TermRepository::SCHEMA_ID => 1,
+                    TermRepository::WORD_ID => 2,
+                    TermRepository::FIELD_COUNT => 1
                 ],
                 3 => [
-                    FldRepo::DOCUMENT_ID => 2,
-                    FldRepo::COLUMN_ID => 1,
-                    FldRepo::VALUE => null
+                    TermRepository::SCHEMA_ID => 1,
+                    TermRepository::WORD_ID => 3,
+                    TermRepository::FIELD_COUNT => 1
                 ],
                 4 => [
-                    FldRepo::DOCUMENT_ID => 2,
-                    FldRepo::COLUMN_ID => 2,
-                    FldRepo::VALUE => 28
+                    TermRepository::SCHEMA_ID => 1,
+                    TermRepository::WORD_ID => 4,
+                    TermRepository::FIELD_COUNT => 1
                 ]
             ],
-            OccRepo::TABLE => [
+            DocumentRepository::TABLE => [
                 1 => [
-                    OccRepo::FIELD_ID => 1,
-                    OccRepo::TERM_ID => 1,
-                    OccRepo::FREQUENCY => 1
+                    DocumentRepository::SCHEMA_ID => 1,
+                    DocumentRepository::KEY => 1
                 ],
                 2 => [
-                    OccRepo::FIELD_ID => 1,
-                    OccRepo::TERM_ID => 2,
-                    OccRepo::FREQUENCY => 1
-                ],
-                3 => [
-                    OccRepo::FIELD_ID => 3,
-                    OccRepo::TERM_ID => 3,
-                    OccRepo::FREQUENCY => 1
-                ],
-                4 => [
-                    OccRepo::FIELD_ID => 3,
-                    OccRepo::TERM_ID => 4,
-                    OccRepo::FREQUENCY => 1
+                    DocumentRepository::SCHEMA_ID => 1,
+                    DocumentRepository::KEY => 2
                 ]
             ],
-            PosRepo::TABLE => [
+            FieldRepository::TABLE => [
                 1 => [
-                    PosRepo::OCCURRENCE_ID => 1,
-                    PosRepo::POSITION => 0
+                    FieldRepository::DOCUMENT_ID => 1,
+                    FieldRepository::COLUMN_ID => 1,
+                    FieldRepository::VALUE => null
                 ],
                 2 => [
-                    PosRepo::OCCURRENCE_ID => 2,
-                    PosRepo::POSITION => 1
+                    FieldRepository::DOCUMENT_ID => 1,
+                    FieldRepository::COLUMN_ID => 2,
+                    FieldRepository::VALUE => 30
                 ],
                 3 => [
-                    PosRepo::OCCURRENCE_ID => 3,
-                    PosRepo::POSITION => 0
+                    FieldRepository::DOCUMENT_ID => 2,
+                    FieldRepository::COLUMN_ID => 1,
+                    FieldRepository::VALUE => null
                 ],
                 4 => [
-                    PosRepo::OCCURRENCE_ID => 4,
-                    PosRepo::POSITION => 1
+                    FieldRepository::DOCUMENT_ID => 2,
+                    FieldRepository::COLUMN_ID => 2,
+                    FieldRepository::VALUE => 28
+                ]
+            ],
+            OccurrenceRepository::TABLE => [
+                1 => [
+                    OccurrenceRepository::FIELD_ID => 1,
+                    OccurrenceRepository::TERM_ID => 1,
+                    OccurrenceRepository::FREQUENCY => 1
+                ],
+                2 => [
+                    OccurrenceRepository::FIELD_ID => 1,
+                    OccurrenceRepository::TERM_ID => 2,
+                    OccurrenceRepository::FREQUENCY => 1
+                ],
+                3 => [
+                    OccurrenceRepository::FIELD_ID => 3,
+                    OccurrenceRepository::TERM_ID => 3,
+                    OccurrenceRepository::FREQUENCY => 1
+                ],
+                4 => [
+                    OccurrenceRepository::FIELD_ID => 3,
+                    OccurrenceRepository::TERM_ID => 4,
+                    OccurrenceRepository::FREQUENCY => 1
+                ]
+            ],
+            PositionRepository::TABLE => [
+                1 => [
+                    PositionRepository::OCCURRENCE_ID => 1,
+                    PositionRepository::POSITION => 0
+                ],
+                2 => [
+                    PositionRepository::OCCURRENCE_ID => 2,
+                    PositionRepository::POSITION => 1
+                ],
+                3 => [
+                    PositionRepository::OCCURRENCE_ID => 3,
+                    PositionRepository::POSITION => 0
+                ],
+                4 => [
+                    PositionRepository::OCCURRENCE_ID => 4,
+                    PositionRepository::POSITION => 1
                 ]
             ]
         ];
