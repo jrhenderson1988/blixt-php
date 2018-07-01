@@ -29,23 +29,13 @@ class ColumnRepository extends Repository
     public const IS_STORED = 'is_stored';
 
     /**
-     * Get the name of the table that this repository represents.
-     *
-     * @return string
-     */
-    protected function table(): string
-    {
-        return static::TABLE;
-    }
-
-    /**
      * Get the attributes from the given entity.
      *
      * @param \Blixt\Persistence\Entities\Column|\Blixt\Persistence\Entities\Entity $entity
      *
      * @return array
      */
-    public function getAttributes(Entity $entity): array
+    public static function getAttributes(Entity $entity): array
     {
         return [
             static::SCHEMA_ID => $entity->getSchemaId(),
@@ -63,7 +53,7 @@ class ColumnRepository extends Repository
      *
      * @return \Blixt\Persistence\Entities\Column|\Blixt\Persistence\Entities\Entity
      */
-    public function toEntity(int $id, array $attributes): Entity
+    public static function toEntity(int $id, array $attributes): Entity
     {
         return Column::make(
             $id,

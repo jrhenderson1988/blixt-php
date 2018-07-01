@@ -26,23 +26,13 @@ class FieldRepository extends Repository
     public const VALUE = 'value';
 
     /**
-     * Get the name of the table that this repository represents.
-     *
-     * @return string
-     */
-    protected function table(): string
-    {
-        return static::TABLE;
-    }
-
-    /**
      * Get the attributes from the given entity.
      *
      * @param \Blixt\Persistence\Entities\Field|\Blixt\Persistence\Entities\Entity $entity
      *
      * @return array
      */
-    public function getAttributes(Entity $entity): array
+    public static function getAttributes(Entity $entity): array
     {
         return [
             static::DOCUMENT_ID => $entity->getDocumentId(),
@@ -59,7 +49,7 @@ class FieldRepository extends Repository
      *
      * @return \Blixt\Persistence\Entities\Field|\Blixt\Persistence\Entities\Entity
      */
-    public function toEntity(int $id, array $attributes): Entity
+    public static function toEntity(int $id, array $attributes): Entity
     {
         return Field::make(
             $id,

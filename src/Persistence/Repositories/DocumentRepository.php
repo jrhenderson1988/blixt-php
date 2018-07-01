@@ -4,6 +4,7 @@ namespace Blixt\Persistence\Repositories;
 
 use Blixt\Persistence\Entities\Document;
 use Blixt\Persistence\Entities\Entity;
+use Blixt\Persistence\Entities\Schema;
 
 /**
  * DocumentRepository.
@@ -25,23 +26,13 @@ class DocumentRepository extends Repository
     public const KEY = 'key';
 
     /**
-     * Get the name of the table that this repository represents.
-     *
-     * @return string
-     */
-    protected function table(): string
-    {
-        return static::TABLE;
-    }
-
-    /**
      * Get the attributes from the given entity.
      *
      * @param \Blixt\Persistence\Entities\Document|\Blixt\Persistence\Entities\Entity $entity
      *
      * @return array
      */
-    public function getAttributes(Entity $entity): array
+    public static function getAttributes(Entity $entity): array
     {
         return [
             static::SCHEMA_ID => $entity->getSchemaId(),
@@ -57,7 +48,7 @@ class DocumentRepository extends Repository
      *
      * @return \Blixt\Persistence\Entities\Document|\Blixt\Persistence\Entities\Entity
      */
-    public function toEntity(int $id, array $attributes): Entity
+    public static function toEntity(int $id, array $attributes): Entity
     {
         return Document::make(
             $id,
@@ -69,12 +60,16 @@ class DocumentRepository extends Repository
     /**
      * Find a document by its given key.
      *
+     * @param \Blixt\Persistence\Entities\Schema $schema
      * @param mixed $key
      *
      * @return \Blixt\Persistence\Entities\Document|\Blixt\Persistence\Entities\Entity|null
      */
-    public function findByKey($key): ?Entity
+    public function findBySchemaAndKey(Schema $schema, $key): ?Entity
     {
-        return $this->findBy([static::KEY => $key]);
+        return $this->findBy([
+            static::SCHEMA_ID => $schema->getId(),
+            static::KEY => $key
+        ]);
     }
 }

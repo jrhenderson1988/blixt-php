@@ -2,7 +2,6 @@
 
 namespace Blixt\Persistence\Repositories;
 
-use Blixt\Exceptions\StorageException;
 use Blixt\Persistence\Drivers\Driver;
 use Blixt\Persistence\Entities\Entity;
 use Blixt\Persistence\Record;
@@ -11,6 +10,8 @@ use InvalidArgumentException;
 
 abstract class Repository
 {
+    public const TABLE = '';
+
     /**
      * @var \Blixt\Persistence\Drivers\Driver
      */
@@ -41,7 +42,10 @@ abstract class Repository
      *
      * @return string
      */
-    protected abstract function table(): string;
+    public static function table(): string
+    {
+        return static::TABLE;
+    }
 
     /**
      * Get the attributes from the given entity.
@@ -50,7 +54,7 @@ abstract class Repository
      *
      * @return array
      */
-    protected abstract function getAttributes(Entity $entity): array;
+    public abstract static function getAttributes(Entity $entity): array;
 
     /**
      * Create a relevant entity from the given ID and set of attributes.
@@ -60,7 +64,7 @@ abstract class Repository
      *
      * @return \Blixt\Persistence\Entities\Entity
      */
-    protected abstract function toEntity(int $id, array $attributes): Entity;
+    public abstract static function toEntity(int $id, array $attributes): Entity;
 
     /**
      * Get the ID from the given entity.
@@ -69,7 +73,7 @@ abstract class Repository
      *
      * @return int
      */
-    protected function getId(Entity $entity): int
+    protected static function getId(Entity $entity): int
     {
         return $entity->getId();
     }
@@ -81,9 +85,9 @@ abstract class Repository
      *
      * @return \Blixt\Persistence\Entities\Entity
      */
-    protected function fromRecord(Record $record): Entity
+    protected static function fromRecord(Record $record): Entity
     {
-        return $this->toEntity($record->getId(), $record->getAttributes());
+        return static::toEntity($record->getId(), $record->getAttributes());
     }
 
     /**
@@ -93,10 +97,10 @@ abstract class Repository
      *
      * @return \Illuminate\Support\Collection
      */
-    protected function toCollection(array $items): Collection
+    protected static function toCollection(array $items): Collection
     {
         return Collection::make($items)->map(function (Record $record) {
-            return $this->fromRecord($record);
+            return static::fromRecord($record);
         });
     }
 
@@ -112,8 +116,8 @@ abstract class Repository
      */
     public function getWhere(array $conditions, int $offset = 0, ?int $limit = null): Collection
     {
-        return $this->toCollection(
-            $this->driver()->getWhere($this->table(), $conditions, $offset, $limit)
+        return static::toCollection(
+            $this->driver()->getWhere(static::table(), $conditions, $offset, $limit)
         );
     }
 
@@ -139,9 +143,9 @@ abstract class Repository
      */
     public function findBy(array $conditions): ?Entity
     {
-        $record = $this->driver()->findBy($this->table(), $conditions);
+        $record = $this->driver()->findBy(static::table(), $conditions);
 
-        return $record !== null ? $this->fromRecord($record) : null;
+        return $record !== null ? static::fromRecord($record) : null;
     }
 
     /**
@@ -153,9 +157,9 @@ abstract class Repository
      */
     public function find(int $id): ?Entity
     {
-        $record = $this->driver()->find($this->table(), $id);
+        $record = $this->driver()->find(static::table(), $id);
 
-        return $record !== null ? $this->fromRecord($record) : null;
+        return $record !== null ? static::fromRecord($record) : null;
     }
 
     /**
@@ -175,8 +179,8 @@ abstract class Repository
             throw new InvalidArgumentException("That entity already exists.");
         }
 
-        return $this->fromRecord(
-            $this->driver()->create($this->table(), $this->getAttributes($entity))
+        return static::fromRecord(
+            $this->driver()->create(static::table(), static::getAttributes($entity))
         );
     }
 
@@ -197,8 +201,8 @@ abstract class Repository
             throw new InvalidArgumentException("That entity does not exist.");
         }
 
-        return $this->fromRecord(
-            $this->driver()->update($this->table(), $this->getId($entity), $this->getAttributes($entity))
+        return static::fromRecord(
+            $this->driver()->update(static::table(), static::getId($entity), static::getAttributes($entity))
         );
     }
 

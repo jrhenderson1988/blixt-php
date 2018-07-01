@@ -24,23 +24,13 @@ class SchemaRepository extends Repository
     public const NAME = 'name';
 
     /**
-     * Get the name of the table that this repository represents.
-     *
-     * @return string
-     */
-    protected function table(): string
-    {
-        return static::TABLE;
-    }
-
-    /**
      * Get the attributes from the given entity.
      *
      * @param \Blixt\Persistence\Entities\Schema|\Blixt\Persistence\Entities\Entity $entity
      *
      * @return array
      */
-    protected function getAttributes(Entity $entity): array
+    public static function getAttributes(Entity $entity): array
     {
         return [
             static::NAME => $entity->getName()
@@ -55,7 +45,7 @@ class SchemaRepository extends Repository
      *
      * @return \Blixt\Persistence\Entities\Schema|\Blixt\Persistence\Entities\Entity
      */
-    protected function toEntity(int $id, array $attributes): Entity
+    public static function toEntity(int $id, array $attributes): Entity
     {
         return Schema::make(
             $id,
