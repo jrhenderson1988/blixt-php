@@ -121,7 +121,7 @@ class Index
      */
     protected function assertDocumentDoesNotExist(Indexable $indexable): void
     {
-        if ($document = $this->storage->documents()->findByKey($indexable->getKey())) {
+        if ($document = $this->storage->documents()->findBySchemaAndKey($this->schema, $indexable->getKey())) {
             throw new DocumentAlreadyExistsException(
                 "Document '{$document->getKey()}' already exists in schema '{$this->schema->getName()}'."
             );
