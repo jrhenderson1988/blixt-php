@@ -1,5 +1,7 @@
 # Blixt
 
+[![Build Status](https://www.travis-ci.com/jrhenderson1988/blixt.svg?branch=master)](https://www.travis-ci.com/jrhenderson1988/blixt)
+
 ## Structure
 
 - **schemas:** id, name
