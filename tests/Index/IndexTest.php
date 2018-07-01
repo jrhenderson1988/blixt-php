@@ -6,7 +6,10 @@ use Blixt\Blixt;
 use Blixt\Document\Indexable;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
+use Blixt\Index\Blueprint\Blueprint;
+use Blixt\Index\Blueprint\Definition;
 use Blixt\Persistence\Drivers\Driver as StorageDriver;
+use Blixt\Persistence\Drivers\MemoryDriver;
 use Blixt\Persistence\Entities\Column;
 use Blixt\Persistence\Entities\Schema;
 use Blixt\Persistence\Record;
@@ -659,127 +662,256 @@ class IndexTest extends TestCase
         $this->assertTrue($this->index->add($document));
     }
 
-//    /**
-//     * @dataProvider documentsIndexedCorrectlyProvider
-//     * @test
-//     */
-//    public function testDocumentsAreCorrectlyIndexed($blueprint, $indexables, $expected)
-//    {
-//        $storage = new MemoryStorage();
-//        $storage->create();
-//        $blixt = new Blixt($storage, $tokenizer = new DummyTokenizer(new DummyStemmer()));
-//        $index = $blixt->create($blueprint);
-//        $indexables = is_array($indexables) ? $indexables : [$indexables];
-//        foreach ($indexables as $indexable) {
-//            $index->add($indexable);
-//        }
-//        $data = $this->getInaccessibleProperty($storage, 'data');
-//        $this->assertEquals($expected, $data);
-//    }
+    /**
+     * @dataProvider documentsIndexedCorrectlyProvider
+     * @test
+     *
+     * @param $blueprint
+     * @param $indexables
+     * @param $expected
+     *
+     * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
+     * @throws \Blixt\Exceptions\IndexAlreadyExistsException
+     * @throws \Blixt\Exceptions\InvalidBlueprintException
+     * @throws \Blixt\Exceptions\InvalidDocumentException
+     * @throws \Blixt\Exceptions\InvalidSchemaException
+     * @throws \Blixt\Exceptions\StorageException
+     */
+    public function testDocumentsAreCorrectlyIndexed($blueprint, $indexables, $expected)
+    {
+        $storage = new MemoryDriver();
+        $storage->install();
+        $tokenizer = new DummyTokenizer(new DummyStemmer());
+        $blixt = new Blixt($storage, $tokenizer);
 
-//    public function documentsIndexedCorrectlyProvider()
-//    {
-//        $peopleBlueprint = new Blueprint('people', Collection::make([
-//            new Definition('name', true, false),
-//            new Definition('age', false, true)
-//        ]));
-//
-//        $joeBloggsIndexable = new Indexable(1, Collection::make([
-//            'name' => 'Joe Bloggs',
-//            'age' => 30
-//        ]));
-//
-//        $janeDoeIndexable = new Indexable(2, Collection::make([
-//            'name' => 'Jane Doe',
-//            'age' => 28
-//        ]));
-//
-//        $expectedPeopleJoeBloggs = [
-//            'schemas' => [
-//                1 => ['name' => 'people']
-//            ],
-//            'columns' => [
-//                1 => ['schema_id' => 1, 'name' => 'name', 'is_indexed' => true, 'is_stored' => false],
-//                2 => ['schema_id' => 1, 'name' => 'age', 'is_indexed' => false, 'is_stored' => true]
-//            ],
-//            'words' => [
-//                1 => ['word' => 'joe'],
-//                2 => ['word' => 'bloggs']
-//            ],
-//            'terms' => [
-//                1 => ['schema_id' => 1, 'word_id' => 1, 'field_count' => 1],
-//                2 => ['schema_id' => 1, 'word_id' => 2, 'field_count' => 1]
-//            ],
-//            'documents' => [
-//                1 => ['schema_id' => 1, 'key' => 1]
-//            ],
-//            'fields' => [
-//                1 => ['document_id' => 1, 'column_id' => 1, 'value' => null],
-//                2 => ['document_id' => 1, 'column_id' => 2, 'value' => 30]
-//            ],
-//            'occurrences' => [
-//                1 => ['field_id' => 1, 'term_id' => 1, 'frequency' => 1],
-//                2 => ['field_id' => 1, 'term_id' => 2, 'frequency' => 1]
-//            ],
-//            'positions' => [
-//                1 => ['occurrence_id' => 1, 'position' => 0],
-//                2 => ['occurrence_id' => 2, 'position' => 1]
-//            ]
-//        ];
-//
-//        $expectedPeopleJoeBloggsJaneDoe = [
-//            'schemas' => [
-//                1 => ['name' => 'people']
-//            ],
-//            'columns' => [
-//                1 => ['schema_id' => 1, 'name' => 'name', 'is_indexed' => true, 'is_stored' => false],
-//                2 => ['schema_id' => 1, 'name' => 'age', 'is_indexed' => false, 'is_stored' => true]
-//            ],
-//            'words' => [
-//                1 => ['word' => 'joe'],
-//                2 => ['word' => 'bloggs'],
-//                3 => ['word' => 'jane'],
-//                4 => ['word' => 'doe']
-//            ],
-//            'terms' => [
-//                1 => ['schema_id' => 1, 'word_id' => 1, 'field_count' => 1],
-//                2 => ['schema_id' => 1, 'word_id' => 2, 'field_count' => 1],
-//                3 => ['schema_id' => 1, 'word_id' => 3, 'field_count' => 1],
-//                4 => ['schema_id' => 1, 'word_id' => 4, 'field_count' => 1]
-//            ],
-//            'documents' => [
-//                1 => ['schema_id' => 1, 'key' => 1],
-//                2 => ['schema_id' => 1, 'key' => 2]
-//            ],
-//            'fields' => [
-//                1 => ['document_id' => 1, 'column_id' => 1, 'value' => null],
-//                2 => ['document_id' => 1, 'column_id' => 2, 'value' => 30],
-//                3 => ['document_id' => 2, 'column_id' => 1, 'value' => null],
-//                4 => ['document_id' => 2, 'column_id' => 2, 'value' => 28]
-//            ],
-//            'occurrences' => [
-//                1 => ['field_id' => 1, 'term_id' => 1, 'frequency' => 1],
-//                2 => ['field_id' => 1, 'term_id' => 2, 'frequency' => 1],
-//                3 => ['field_id' => 3, 'term_id' => 3, 'frequency' => 1],
-//                4 => ['field_id' => 3, 'term_id' => 4, 'frequency' => 1]
-//            ],
-//            'positions' => [
-//                1 => ['occurrence_id' => 1, 'position' => 0],
-//                2 => ['occurrence_id' => 2, 'position' => 1],
-//                3 => ['occurrence_id' => 3, 'position' => 0],
-//                4 => ['occurrence_id' => 4, 'position' => 1]
-//            ]
-//        ];
-//
-//        return [
-//            'people schema, joe bloggs' => [
-//                $peopleBlueprint, [$joeBloggsIndexable], $expectedPeopleJoeBloggs
-//            ],
-//            'people schema, joe bloggs and jane doe' => [
-//                $peopleBlueprint, [$joeBloggsIndexable, $janeDoeIndexable], $expectedPeopleJoeBloggsJaneDoe
-//            ],
-//        ];
-//    }
+        $index = $blixt->create($blueprint);
+        foreach (is_array($indexables) ? $indexables : [$indexables] as $indexable) {
+            $index->add($indexable);
+        }
+
+        $this->assertEquals($expected, $this->getInaccessibleProperty($storage, 'data'));
+    }
+
+    public function documentsIndexedCorrectlyProvider()
+    {
+        $peopleBlueprint = new Blueprint('people', Collection::make([
+            new Definition('name', true, false),
+            new Definition('age', false, true)
+        ]));
+
+        $joeBloggsIndexable = new Indexable(1, Collection::make([
+            'name' => 'Joe Bloggs',
+            'age' => 30
+        ]));
+
+        $janeDoeIndexable = new Indexable(2, Collection::make([
+            'name' => 'Jane Doe',
+            'age' => 28
+        ]));
+
+        $expectedPeopleJoeBloggs = [
+            SmaRepo::TABLE => [
+                1 => [SmaRepo::NAME => 'people']
+            ],
+            ColRepo::TABLE => [
+                1 => [
+                    ColRepo::SCHEMA_ID => 1,
+                    ColRepo::NAME => 'name',
+                    ColRepo::IS_INDEXED => true,
+                    ColRepo::IS_STORED => false
+                ],
+                2 => [
+                    ColRepo::SCHEMA_ID => 1,
+                    ColRepo::NAME => 'age',
+                    ColRepo::IS_INDEXED => false,
+                    ColRepo::IS_STORED => true
+                ]
+            ],
+            WrdRepo::TABLE => [
+                1 => [
+                    WrdRepo::WORD => 'joe'
+                ],
+                2 => [
+                    WrdRepo::WORD => 'bloggs'
+                ]
+            ],
+            TrmRepo::TABLE => [
+                1 => [
+                    TrmRepo::SCHEMA_ID => 1,
+                    TrmRepo::WORD_ID => 1,
+                    TrmRepo::FIELD_COUNT => 1
+                ],
+                2 => [
+                    TrmRepo::SCHEMA_ID => 1,
+                    TrmRepo::WORD_ID => 2,
+                    TrmRepo::FIELD_COUNT => 1
+                ]
+            ],
+            DocRepo::TABLE => [
+                1 => [
+                    DocRepo::SCHEMA_ID => 1,
+                    DocRepo::KEY => 1
+                ]
+            ],
+            FldRepo::TABLE => [
+                1 => [
+                    FldRepo::DOCUMENT_ID => 1,
+                    FldRepo::COLUMN_ID => 1,
+                    FldRepo::VALUE => null
+                ],
+                2 => [
+                    FldRepo::DOCUMENT_ID => 1,
+                    FldRepo::COLUMN_ID => 2,
+                    FldRepo::VALUE => 30
+                ]
+            ],
+            OccRepo::TABLE => [
+                1 => [
+                    OccRepo::FIELD_ID => 1,
+                    OccRepo::TERM_ID => 1,
+                    OccRepo::FREQUENCY => 1
+                ],
+                2 => [
+                    OccRepo::FIELD_ID => 1,
+                    OccRepo::TERM_ID => 2,
+                    OccRepo::FREQUENCY => 1
+                ]
+            ],
+            PosRepo::TABLE => [
+                1 => [
+                    PosRepo::OCCURRENCE_ID => 1,
+                    PosRepo::POSITION => 0
+                ],
+                2 => [
+                    PosRepo::OCCURRENCE_ID => 2,
+                    PosRepo::POSITION => 1
+                ]
+            ]
+        ];
+
+        $expectedPeopleJoeBloggsJaneDoe = [
+            SmaRepo::TABLE => [
+                1 => [
+                    SmaRepo::NAME => 'people'
+                ]
+            ],
+            ColRepo::TABLE => [
+                1 => [
+                    ColRepo::SCHEMA_ID => 1,
+                    ColRepo::NAME => 'name',
+                    ColRepo::IS_INDEXED => true,
+                    ColRepo::IS_STORED => false
+                ],
+                2 => [
+                    ColRepo::SCHEMA_ID => 1,
+                    ColRepo::NAME => 'age',
+                    ColRepo::IS_INDEXED => false,
+                    ColRepo::IS_STORED => true
+                ]
+            ],
+            WrdRepo::TABLE => [
+                1 => [
+                    WrdRepo::WORD => 'joe'
+                ],
+                2 => [
+                    WrdRepo::WORD => 'bloggs'
+                ],
+                3 => [
+                    WrdRepo::WORD => 'jane'
+                ],
+                4 => [
+                    WrdRepo::WORD => 'doe'
+                ]
+            ],
+            TrmRepo::TABLE => [
+                1 => [TrmRepo::SCHEMA_ID => 1, TrmRepo::WORD_ID => 1, TrmRepo::FIELD_COUNT => 1],
+                2 => [TrmRepo::SCHEMA_ID => 1, TrmRepo::WORD_ID => 2, TrmRepo::FIELD_COUNT => 1],
+                3 => [TrmRepo::SCHEMA_ID => 1, TrmRepo::WORD_ID => 3, TrmRepo::FIELD_COUNT => 1],
+                4 => [TrmRepo::SCHEMA_ID => 1, TrmRepo::WORD_ID => 4, TrmRepo::FIELD_COUNT => 1]
+            ],
+            DocRepo::TABLE => [
+                1 => [
+                    DocRepo::SCHEMA_ID => 1,
+                    DocRepo::KEY => 1
+                ],
+                2 => [
+                    DocRepo::SCHEMA_ID => 1,
+                    DocRepo::KEY => 2
+                ]
+            ],
+            FldRepo::TABLE => [
+                1 => [
+                    FldRepo::DOCUMENT_ID => 1,
+                    FldRepo::COLUMN_ID => 1,
+                    FldRepo::VALUE => null
+                ],
+                2 => [
+                    FldRepo::DOCUMENT_ID => 1,
+                    FldRepo::COLUMN_ID => 2,
+                    FldRepo::VALUE => 30
+                ],
+                3 => [
+                    FldRepo::DOCUMENT_ID => 2,
+                    FldRepo::COLUMN_ID => 1,
+                    FldRepo::VALUE => null
+                ],
+                4 => [
+                    FldRepo::DOCUMENT_ID => 2,
+                    FldRepo::COLUMN_ID => 2,
+                    FldRepo::VALUE => 28
+                ]
+            ],
+            OccRepo::TABLE => [
+                1 => [
+                    OccRepo::FIELD_ID => 1,
+                    OccRepo::TERM_ID => 1,
+                    OccRepo::FREQUENCY => 1
+                ],
+                2 => [
+                    OccRepo::FIELD_ID => 1,
+                    OccRepo::TERM_ID => 2,
+                    OccRepo::FREQUENCY => 1
+                ],
+                3 => [
+                    OccRepo::FIELD_ID => 3,
+                    OccRepo::TERM_ID => 3,
+                    OccRepo::FREQUENCY => 1
+                ],
+                4 => [
+                    OccRepo::FIELD_ID => 3,
+                    OccRepo::TERM_ID => 4,
+                    OccRepo::FREQUENCY => 1
+                ]
+            ],
+            PosRepo::TABLE => [
+                1 => [
+                    PosRepo::OCCURRENCE_ID => 1,
+                    PosRepo::POSITION => 0
+                ],
+                2 => [
+                    PosRepo::OCCURRENCE_ID => 2,
+                    PosRepo::POSITION => 1
+                ],
+                3 => [
+                    PosRepo::OCCURRENCE_ID => 3,
+                    PosRepo::POSITION => 0
+                ],
+                4 => [
+                    PosRepo::OCCURRENCE_ID => 4,
+                    PosRepo::POSITION => 1
+                ]
+            ]
+        ];
+
+        return [
+            'people schema, joe bloggs' => [
+                $peopleBlueprint, [$joeBloggsIndexable], $expectedPeopleJoeBloggs
+            ],
+            'people schema, joe bloggs and jane doe' => [
+                $peopleBlueprint, [$joeBloggsIndexable, $janeDoeIndexable], $expectedPeopleJoeBloggsJaneDoe
+            ],
+        ];
+    }
 }
 
 class DummyStemmer implements Stemmer
