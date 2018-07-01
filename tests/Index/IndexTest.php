@@ -659,11 +659,6 @@ class IndexTest extends TestCase
         $this->assertTrue($this->index->add($document));
     }
 
-    public function testExtraFieldsAreIgnoredWhenIndexingDocument()
-    {
-        $this->markTestSkipped('TODO');
-    }
-
 //    /**
 //     * @dataProvider documentsIndexedCorrectlyProvider
 //     * @test
