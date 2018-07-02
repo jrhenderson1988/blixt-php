@@ -2,7 +2,8 @@
 
 namespace BlixtTests\Persistence\Entities;
 
-use Blixt\Storage\Entities\Position;
+use Blixt\Persistence\Entities\Occurrence;
+use Blixt\Persistence\Entities\Position;
 use BlixtTests\TestCase;
 
 class PositionTest extends TestCase
@@ -60,6 +61,16 @@ class PositionTest extends TestCase
     public function testSetOccurrenceId()
     {
         $this->entity->setOccurrenceId(3);
+        $this->assertEquals(3, $this->entity->getOccurrenceId());
+    }
+
+    /**
+     * @test
+     * @covers \Blixt\Persistence\Entities\Position::setOccurrenceIdFromOccurrence()
+     */
+    public function testSetOccurrenceIdFromOccurrence()
+    {
+        $this->entity->setOccurrenceIdFromOccurrence(new Occurrence(3, 2, 1, 4));
         $this->assertEquals(3, $this->entity->getOccurrenceId());
     }
 

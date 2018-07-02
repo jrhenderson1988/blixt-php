@@ -2,7 +2,9 @@
 
 namespace BlixtTests\Persistence\Entities;
 
+use Blixt\Persistence\Entities\Field;
 use Blixt\Persistence\Entities\Occurrence;
+use Blixt\Persistence\Entities\Term;
 use BlixtTests\TestCase;
 
 class OccurrenceTest extends TestCase
@@ -65,6 +67,16 @@ class OccurrenceTest extends TestCase
 
     /**
      * @test
+     * @covers \Blixt\Persistence\Entities\Occurrence::setFieldIdFromField()
+     */
+    public function testSetFieldIdFromField()
+    {
+        $this->entity->setFieldIdFromField(new Field(3, 2, 1, 'test'));
+        $this->assertEquals(3, $this->entity->getFieldId());
+    }
+
+    /**
+     * @test
      * @covers \Blixt\Persistence\Entities\Occurrence::getTermId()
      */
     public function testGetTermId()
@@ -79,6 +91,16 @@ class OccurrenceTest extends TestCase
     public function testSetTermId()
     {
         $this->entity->setTermId(4);
+        $this->assertEquals(4, $this->entity->getTermId());
+    }
+
+    /**
+     * @test
+     * @covers \Blixt\Persistence\Entities\Occurrence::setTermIdFromTerm()
+     */
+    public function testSetTermIdFromTerm()
+    {
+        $this->entity->setTermIdFromTerm(new Term(4, 3, 2, 1));
         $this->assertEquals(4, $this->entity->getTermId());
     }
 

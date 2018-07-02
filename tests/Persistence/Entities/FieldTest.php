@@ -2,6 +2,8 @@
 
 namespace BlixtTests\Persistence\Entities;
 
+use Blixt\Persistence\Entities\Column;
+use Blixt\Persistence\Entities\Document;
 use Blixt\Persistence\Entities\Field;
 use BlixtTests\TestCase;
 
@@ -65,6 +67,16 @@ class FieldTest extends TestCase
 
     /**
      * @test
+     * @covers \Blixt\Persistence\Entities\Field::setDocumentIdFromDocument()
+     */
+    public function testSetDocumentIdFromDocument()
+    {
+        $this->entity->setDocumentIdFromDocument(new Document(3, 2, 1));
+        $this->assertEquals(3, $this->entity->getDocumentId());
+    }
+
+    /**
+     * @test
      * @covers \Blixt\Persistence\Entities\Field::getColumnId()
      */
     public function testGetColumnId()
@@ -79,6 +91,16 @@ class FieldTest extends TestCase
     public function testSetColumnId()
     {
         $this->entity->setColumnId(1);
+        $this->assertEquals(1, $this->entity->getColumnId());
+    }
+
+    /**
+     * @test
+     * @covers \Blixt\Persistence\Entities\Field::setColumnIdFromColumn()
+     */
+    public function testSetColumnIdFromColumn()
+    {
+        $this->entity->setColumnIdFromColumn(new Column(1, 2, 'test', true, false));
         $this->assertEquals(1, $this->entity->getColumnId());
     }
 

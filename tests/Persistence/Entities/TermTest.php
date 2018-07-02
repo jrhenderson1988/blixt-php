@@ -2,7 +2,9 @@
 
 namespace BlixtTests\Persistence\Entities;
 
+use Blixt\Persistence\Entities\Schema;
 use Blixt\Persistence\Entities\Term;
+use Blixt\Persistence\Entities\Word;
 use BlixtTests\TestCase;
 
 class TermTest extends TestCase
@@ -65,6 +67,16 @@ class TermTest extends TestCase
 
     /**
      * @test
+     * @covers \Blixt\Persistence\Entities\Term::setSchemaIdFromSchema()
+     */
+    public function testSetSchemaIdFromSchema()
+    {
+        $this->entity->setSchemaIdFromSchema(new Schema(3, 'foobar'));
+        $this->assertEquals(3, $this->entity->getSchemaId());
+    }
+
+    /**
+     * @test
      * @covers \Blixt\Persistence\Entities\Term::getWordId()
      */
     public function testGetWordId()
@@ -79,6 +91,16 @@ class TermTest extends TestCase
     public function testSetWordId()
     {
         $this->entity->setWordId(4);
+        $this->assertEquals(4, $this->entity->getWordId());
+    }
+
+    /**
+     * @test
+     * @covers \Blixt\Persistence\Entities\Term::setWordIdFromWord()
+     */
+    public function testSetWordIdFromWord()
+    {
+        $this->entity->setWordIdFromWord(new Word(4, 'test'));
         $this->assertEquals(4, $this->entity->getWordId());
     }
 

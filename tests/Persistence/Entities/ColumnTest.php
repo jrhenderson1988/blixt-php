@@ -3,6 +3,7 @@
 namespace BlixtTests\Persistence\Entities;
 
 use Blixt\Persistence\Entities\Column;
+use Blixt\Persistence\Entities\Schema;
 use BlixtTests\TestCase;
 
 class ColumnTest extends TestCase
@@ -60,6 +61,16 @@ class ColumnTest extends TestCase
     public function testSetSchemaId()
     {
         $this->entity->setSchemaId(3);
+        $this->assertEquals(3, $this->entity->getSchemaId());
+    }
+
+    /**
+     * @test
+     * @covers \Blixt\Persistence\Entities\Column::setSchemaIdFromSchema()
+     */
+    public function testSetSchemaIdFromSchema()
+    {
+        $this->entity->setSchemaIdFromSchema(new Schema(3, 'foobar'));
         $this->assertEquals(3, $this->entity->getSchemaId());
     }
 
