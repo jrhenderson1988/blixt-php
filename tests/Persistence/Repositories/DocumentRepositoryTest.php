@@ -7,9 +7,10 @@ use Blixt\Persistence\Entities\Document;
 use Blixt\Persistence\Entities\Schema;
 use Blixt\Persistence\Record;
 use Blixt\Persistence\Repositories\DocumentRepository;
+use BlixtTests\TestCase;
 use Mockery as m;
 
-class DocumentRepositoryTest extends RepositoryTestCase
+class DocumentRepositoryTest extends TestCase
 {
     /**
      * @var \Mockery\MockInterface|\Blixt\Persistence\Drivers\Driver

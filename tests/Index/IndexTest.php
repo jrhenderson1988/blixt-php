@@ -31,12 +31,12 @@ use Mockery as m;
 class IndexTest extends TestCase
 {
     /**
-     * @var \Mockery\MockInterface
+     * @var \Mockery\MockInterface|\Blixt\Persistence\Drivers\Driver
      */
     protected $storage;
 
     /**
-     * @var \Mockery\MockInterface
+     * @var \Mockery\MockInterface|\Blixt\Tokenization\Tokenizer
      */
     protected $tokenizer;
 
@@ -67,9 +67,12 @@ class IndexTest extends TestCase
 
     public function setUp()
     {
+        $this->storage = m::mock(StorageDriver::class);
+        $this->tokenizer = m::mock(Tokenizer::class);
+
         $this->blixt = new Blixt(
-            $this->storage = m::mock(StorageDriver::class),
-            $this->tokenizer = m::mock(Tokenizer::class)
+            $this->storage,
+            $this->tokenizer
         );
     }
 
@@ -86,10 +89,10 @@ class IndexTest extends TestCase
     {
         $this->schema = $schema;
 
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => $schema->getName()]])
-            ->andReturn(new Record($schema->getId(), [SchemaRepository::NAME => $schema->getName()]));
+            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => $schema->getName()], 0, 1])
+            ->andReturn([new Record($schema->getId(), [SchemaRepository::NAME => $schema->getName()])]);
 
         $this->storage->shouldReceive('getWhere')
             ->once()
@@ -142,16 +145,16 @@ class IndexTest extends TestCase
 
         $indexable = new Indexable(1);
 
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
             ->withArgs([DocumentRepository::TABLE, [
                 DocumentRepository::SCHEMA_ID => $this->schema->getId(),
                 DocumentRepository::KEY => $indexable->getKey()
-            ]])
-            ->andReturn(new Record($indexable->getKey(), [
+            ], 0, 1])
+            ->andReturn([new Record($indexable->getKey(), [
                 DocumentRepository::SCHEMA_ID => $this->schema->getId(),
                 DocumentRepository::KEY => $indexable->getKey()
-            ]));
+            ])]);
 
         $this->expectException(DocumentAlreadyExistsException::class);
         $this->index->add($indexable);
@@ -173,13 +176,13 @@ class IndexTest extends TestCase
         $indexable = new Indexable(123);
         $indexable->setField('name', 'Joe Bloggs');
 
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
             ->withArgs([DocumentRepository::TABLE, [
                 DocumentRepository::SCHEMA_ID => $this->schema->getId(),
                 DocumentRepository::KEY => $indexable->getKey()
-            ]])
-            ->andReturnNull();
+            ], 0, 1])
+            ->andReturn([]);
 
         $this->expectException(InvalidDocumentException::class);
         $this->index->add($indexable);
@@ -201,10 +204,10 @@ class IndexTest extends TestCase
         // Find document by its schema ID and key, returns null (doesn't exist). Create new document.
         $documentCriteria = [DocumentRepository::SCHEMA_ID => $this->schema->getId(), DocumentRepository::KEY => 123];
         $documentAttrs = $documentCriteria;
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([DocumentRepository::TABLE, $documentCriteria])
-            ->andReturnNull();
+            ->withArgs([DocumentRepository::TABLE, $documentCriteria, 0, 1])
+            ->andReturn([]);
         $this->storage->shouldReceive('create')
             ->once()
             ->withArgs([DocumentRepository::TABLE, $documentAttrs])
@@ -233,10 +236,10 @@ class IndexTest extends TestCase
         // Make word for 'joe' in name
         $joeWordCriteria = [WordRepository::WORD => 'joe'];
         $joeWordAttrs = $joeWordCriteria;
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([WordRepository::TABLE, $joeWordCriteria])
-            ->andReturnNull();
+            ->withArgs([WordRepository::TABLE, $joeWordCriteria, 0, 1])
+            ->andReturn([]);
         $this->storage->shouldReceive('create')
             ->once()
             ->withArgs([WordRepository::TABLE, $joeWordAttrs])
@@ -248,10 +251,10 @@ class IndexTest extends TestCase
             TermRepository::WORD_ID => $joeWordRecord->getId()
         ];
         $joeTermAttrs = array_merge($joeTermCriteria, [TermRepository::FIELD_COUNT => 1]);
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([TermRepository::TABLE, $joeTermCriteria])
-            ->andReturnNull();
+            ->withArgs([TermRepository::TABLE, $joeTermCriteria, 0, 1])
+            ->andReturn([]);
         $this->storage->shouldReceive('create')
             ->once()
             ->withArgs([TermRepository::TABLE, $joeTermAttrs])
@@ -281,10 +284,10 @@ class IndexTest extends TestCase
         // Make word for 'bloggs' in name
         $bloggsWordCriteria = [WordRepository::WORD => 'bloggs'];
         $bloggsWordAttrs = $bloggsWordCriteria;
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([WordRepository::TABLE, $bloggsWordCriteria])
-            ->andReturnNull();
+            ->withArgs([WordRepository::TABLE, $bloggsWordCriteria, 0, 1])
+            ->andReturn([]);
         $this->storage->shouldReceive('create')
             ->once()
             ->withArgs([WordRepository::TABLE, $bloggsWordAttrs])
@@ -296,10 +299,10 @@ class IndexTest extends TestCase
             TermRepository::WORD_ID => $bloggsWordRecord->getId()
         ];
         $bloggsTermAttrs = array_merge($bloggsTermCriteria, [TermRepository::FIELD_COUNT => 1]);
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([TermRepository::TABLE, $bloggsTermCriteria])
-            ->andReturnNull();
+            ->withArgs([TermRepository::TABLE, $bloggsTermCriteria, 0, 1])
+            ->andReturn([]);
         $this->storage->shouldReceive('create')
             ->once()
             ->withArgs([TermRepository::TABLE, $bloggsTermAttrs])
@@ -361,10 +364,10 @@ class IndexTest extends TestCase
         // Find document by its schema ID and key, returns null (doesn't exist). Create new document.
         $documentCriteria = [DocumentRepository::SCHEMA_ID => $this->schema->getId(), DocumentRepository::KEY => 123];
         $documentAttrs = $documentCriteria;
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([DocumentRepository::TABLE, $documentCriteria])
-            ->andReturnNull();
+            ->withArgs([DocumentRepository::TABLE, $documentCriteria, 0, 1])
+            ->andReturn([]);
         $this->storage->shouldReceive('create')
             ->once()
             ->withArgs([DocumentRepository::TABLE, $documentAttrs])
@@ -393,10 +396,10 @@ class IndexTest extends TestCase
         // Make word for 'joe' in name
         $joeWordCriteria = [WordRepository::WORD => 'joe'];
         $joeWordAttrs = $joeWordCriteria;
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([WordRepository::TABLE, $joeWordCriteria])
-            ->andReturn($joeWordRecord = new Record(1, $joeWordAttrs));
+            ->withArgs([WordRepository::TABLE, $joeWordCriteria, 0, 1])
+            ->andReturn([$joeWordRecord = new Record(1, $joeWordAttrs)]);
         $this->storage->shouldNotReceive('create')->withArgs([WordRepository::TABLE, $joeWordAttrs]);
 
         // Make term for 'joe' in name
@@ -405,10 +408,10 @@ class IndexTest extends TestCase
             TermRepository::WORD_ID => $joeWordRecord->getId()
         ];
         $joeTermAttrs = array_merge($joeTermCriteria, [TermRepository::FIELD_COUNT => 1]);
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([TermRepository::TABLE, $joeTermCriteria])
-            ->andReturnNull();
+            ->withArgs([TermRepository::TABLE, $joeTermCriteria, 0, 1])
+            ->andReturn([]);
         $this->storage->shouldReceive('create')
             ->once()
             ->withArgs([TermRepository::TABLE, $joeTermAttrs])
@@ -438,10 +441,10 @@ class IndexTest extends TestCase
         // Make word for 'bloggs' in name
         $bloggsWordCriteria = [WordRepository::WORD => 'bloggs'];
         $bloggsWordAttrs = $bloggsWordCriteria;
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([WordRepository::TABLE, $bloggsWordCriteria])
-            ->andReturn($bloggsWordRecord = new Record(2, $bloggsWordAttrs));
+            ->withArgs([WordRepository::TABLE, $bloggsWordCriteria, 0, 1])
+            ->andReturn([$bloggsWordRecord = new Record(2, $bloggsWordAttrs)]);
         $this->storage->shouldNotReceive('create')->withArgs([WordRepository::TABLE, $bloggsWordAttrs]);
 
         // Make term for 'bloggs' in name
@@ -450,10 +453,10 @@ class IndexTest extends TestCase
             TermRepository::WORD_ID => $bloggsWordRecord->getId()
         ];
         $bloggsTermAttrs = array_merge($bloggsTermCriteria, [TermRepository::FIELD_COUNT => 1]);
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([TermRepository::TABLE, $bloggsTermCriteria])
-            ->andReturnNull();
+            ->withArgs([TermRepository::TABLE, $bloggsTermCriteria, 0, 1])
+            ->andReturn([]);
         $this->storage->shouldReceive('create')
             ->once()
             ->withArgs([TermRepository::TABLE, $bloggsTermAttrs])
@@ -514,10 +517,10 @@ class IndexTest extends TestCase
         // Find document by its schema ID and key, returns null (doesn't exist). Create new document.
         $documentCriteria = [DocumentRepository::SCHEMA_ID => $this->schema->getId(), DocumentRepository::KEY => 123];
         $documentAttrs = $documentCriteria;
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([DocumentRepository::TABLE, $documentCriteria])
-            ->andReturnNull();
+            ->withArgs([DocumentRepository::TABLE, $documentCriteria, 0, 1])
+            ->andReturn([]);
         $this->storage->shouldReceive('create')
             ->once()
             ->withArgs([DocumentRepository::TABLE, $documentAttrs])
@@ -546,10 +549,10 @@ class IndexTest extends TestCase
         // Make word for 'joe' in name
         $joeWordCriteria = [WordRepository::WORD => 'joe'];
         $joeWordAttrs = $joeWordCriteria;
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([WordRepository::TABLE, $joeWordCriteria])
-            ->andReturn($joeWordRecord = new Record(1, $joeWordAttrs));
+            ->withArgs([WordRepository::TABLE, $joeWordCriteria, 0, 1])
+            ->andReturn([$joeWordRecord = new Record(1, $joeWordAttrs)]);
         $this->storage->shouldNotReceive('create')->withArgs([WordRepository::TABLE, $joeWordAttrs]);
 
         // Make term for 'joe' in name
@@ -558,10 +561,10 @@ class IndexTest extends TestCase
             TermRepository::WORD_ID => $joeWordRecord->getId()
         ];
         $joeTermAttrs = array_merge($joeTermCriteria, [TermRepository::FIELD_COUNT => 1]);
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([TermRepository::TABLE, $joeTermCriteria])
-            ->andReturn($joeTermRecord = new Record(1, $joeTermAttrs));
+            ->withArgs([TermRepository::TABLE, $joeTermCriteria, 0, 1])
+            ->andReturn([$joeTermRecord = new Record(1, $joeTermAttrs)]);
         $this->storage->shouldNotReceive('create')->withArgs([TermRepository::TABLE, $joeTermAttrs]);
         $updatedJoeTermAttrs = array_merge($joeTermAttrs, [TermRepository::FIELD_COUNT => 2]);
         $this->storage->shouldReceive('update')
@@ -593,10 +596,10 @@ class IndexTest extends TestCase
         // Make word for 'bloggs' in name
         $bloggsWordCriteria = [WordRepository::WORD => 'bloggs'];
         $bloggsWordAttrs = $bloggsWordCriteria;
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([WordRepository::TABLE, $bloggsWordCriteria])
-            ->andReturn($bloggsWordRecord = new Record(2, $bloggsWordAttrs));
+            ->withArgs([WordRepository::TABLE, $bloggsWordCriteria, 0, 1])
+            ->andReturn([$bloggsWordRecord = new Record(2, $bloggsWordAttrs)]);
         $this->storage->shouldNotReceive('create')->withArgs([WordRepository::TABLE, $bloggsWordAttrs]);
 
         // Make term for 'bloggs' in name
@@ -605,10 +608,10 @@ class IndexTest extends TestCase
             TermRepository::WORD_ID => $bloggsWordRecord->getId()
         ];
         $bloggsTermAttrs = array_merge($bloggsTermCriteria, [TermRepository::FIELD_COUNT => 1]);
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([TermRepository::TABLE, $bloggsTermCriteria])
-            ->andReturn($bloggsTermRecord = new Record(2, $bloggsTermAttrs));
+            ->withArgs([TermRepository::TABLE, $bloggsTermCriteria, 0, 1])
+            ->andReturn([$bloggsTermRecord = new Record(2, $bloggsTermAttrs)]);
         $this->storage->shouldNotReceive('create')->withArgs([TermRepository::TABLE, $bloggsTermAttrs]);
         $updatedBloggsTermAttrs = array_merge($bloggsTermAttrs, [TermRepository::FIELD_COUNT => 2]);
         $this->storage->shouldReceive('update')

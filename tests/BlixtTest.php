@@ -104,10 +104,10 @@ class BlixtTest extends TestCase
             Column::make(1, 1, 'test', false, false)
         ]));
 
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => 'test']])
-            ->andReturn(new Record(1, [SchemaRepository::NAME => 'test']));
+            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => 'test'], 0, 1])
+            ->andReturn([new Record(1, [SchemaRepository::NAME => 'test'])]);
 
         $this->storage->shouldReceive('getWhere')
             ->once()
@@ -136,10 +136,10 @@ class BlixtTest extends TestCase
      */
     public function testOpeningNonExistentSchemaThrowsException()
     {
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => 'test']])
-            ->andReturnNull();
+            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => 'test'], 0, 1])
+            ->andReturn([]);
 
         $this->expectException(SchemaDoesNotExistException::class);
         $this->blixt->open('test');
@@ -159,10 +159,10 @@ class BlixtTest extends TestCase
             $expectedColumn = Column::make(1, 1, 'columns', true, false)
         ]));
 
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => $expectedSchema->getName()]])
-            ->andReturnNull();
+            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => $expectedSchema->getName()], 0, 1])
+            ->andReturn([]);
 
         $this->storage->shouldReceive('create')
             ->once()
@@ -215,10 +215,10 @@ class BlixtTest extends TestCase
             $expectedColumn = Column::make(1, 1, 'columns', true, false)
         ]));
 
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => $expectedSchema->getName()]])
-            ->andReturnNull();
+            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => $expectedSchema->getName()], 0, 1])
+            ->andReturn([]);
 
         $this->storage->shouldReceive('create')
             ->once()
@@ -264,12 +264,12 @@ class BlixtTest extends TestCase
     {
         $schema = $schema = new Schema(1, 'test');
 
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => $schema->getName()]])
-            ->andReturn(new Record($schema->getId(), [
+            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => $schema->getName()], 0, 1])
+            ->andReturn([new Record($schema->getId(), [
                 SchemaRepository::NAME => $schema->getName()
-            ]));
+            ])]);
 
         $this->expectException(IndexAlreadyExistsException::class);
         $this->blixt->create(new Blueprint('test', new Collection([
@@ -288,10 +288,10 @@ class BlixtTest extends TestCase
     {
         $name = 'test';
 
-        $this->storage->shouldReceive('findBy')
+        $this->storage->shouldReceive('getWhere')
             ->once()
-            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => $name]])
-            ->andReturnNull();
+            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => $name], 0, 1])
+            ->andReturn([]);
 
         $this->expectException(InvalidBlueprintException::class);
         $this->blixt->create(new Blueprint($name));
