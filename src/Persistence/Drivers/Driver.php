@@ -41,16 +41,6 @@ interface Driver
     public function find(string $table, int $id): ?Record;
 
     /**
-     * Find a single entity in the storage by the given conditions. Returns a record with an ID and its attributes.
-     *
-     * @param string $table
-     * @param array $conditions
-     *
-     * @return \Blixt\Persistence\Record|null
-     */
-    public function findBy(string $table, array $conditions): ?Record;
-
-    /**
      * Get one or more entities from the storage with the given conditions. Always returns an array of Record objects.
      *
      * @param string $table
