@@ -92,7 +92,7 @@ class TermRepository extends Repository
             static::SCHEMA_ID => $schema->getId(),
             static::WORD_ID => $words->map(function (Word $word) {
                 return $word->getId();
-            })
+            })->all()
         ]);
     }
 }

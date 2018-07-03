@@ -78,7 +78,7 @@ class WordRepository extends Repository
     public function getByWords(Collection $words): Collection
     {
         return $this->getWhere([
-            static::WORD => $words
+            static::WORD => $words->all()
         ]);
     }
 }
