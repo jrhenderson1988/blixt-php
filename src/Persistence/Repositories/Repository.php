@@ -129,7 +129,7 @@ abstract class Repository
      *
      * @return \Illuminate\Support\Collection
      */
-    public function all(int $offset, ?int $limit): Collection
+    public function all(int $offset = 0, ?int $limit = null): Collection
     {
         return $this->getWhere([], $offset, $limit);
     }
@@ -143,9 +143,13 @@ abstract class Repository
      */
     public function findBy(array $conditions): ?Entity
     {
-        $record = $this->driver()->findBy(static::table(), $conditions);
+        $items = $this->getWhere($conditions, 0, 1);
 
-        return $record !== null ? static::fromRecord($record) : null;
+        if ($items->isNotEmpty() && ($record = $items->first()) instanceof Entity) {
+            return $record;
+        }
+
+        return null;
     }
 
     /**
