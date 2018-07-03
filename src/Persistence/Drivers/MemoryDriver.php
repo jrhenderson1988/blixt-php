@@ -100,26 +100,6 @@ class MemoryDriver extends AbstractDriver implements Driver
     }
 
     /**
-     * Find a single entity in the storage by the given conditions. Returns a record with an ID and its attributes.
-     *
-     * @param string $table
-     * @param array $conditions
-     *
-     * @return \Blixt\Persistence\Record|null
-     * @throws \Blixt\Exceptions\StorageException
-     */
-    public function findBy(string $table, array $conditions): ?Record
-    {
-        $items = $this->getWhere($table, $conditions, 0, 1);
-
-        if (count($items) > 0 && ($record = reset($items)) instanceof Record) {
-            return $record;
-        }
-
-        return null;
-    }
-
-    /**
      * Get one or more entities from the storage with the given conditions. Always returns an array of Record objects.
      *
      * @param string $table
