@@ -32,7 +32,7 @@ class OccurrenceRepository extends Repository
      *
      * @return array
      */
-    public static function getAttributes(Entity $entity): array
+    public static function toAttributes(Entity $entity): array
     {
         return [
             static::FIELD_ID => $entity->getFieldId(),

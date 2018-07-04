@@ -54,7 +54,7 @@ abstract class Repository
      *
      * @return array
      */
-    public abstract static function getAttributes(Entity $entity): array;
+    public abstract static function toAttributes(Entity $entity): array;
 
     /**
      * Create a relevant entity from the given ID and set of attributes.
@@ -184,7 +184,7 @@ abstract class Repository
         }
 
         return static::fromRecord(
-            $this->driver()->create(static::table(), static::getAttributes($entity))
+            $this->driver()->create(static::table(), static::toAttributes($entity))
         );
     }
 
@@ -206,7 +206,7 @@ abstract class Repository
         }
 
         return static::fromRecord(
-            $this->driver()->update(static::table(), static::getId($entity), static::getAttributes($entity))
+            $this->driver()->update(static::table(), static::getId($entity), static::toAttributes($entity))
         );
     }
 
