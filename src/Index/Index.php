@@ -79,7 +79,8 @@ class Index
      */
     public function search(string $search)
     {
-
+        // Tokenize the input and build a relevant Query object
+        // Call the query method with that Query object and return the result.
     }
 
     /**
@@ -87,6 +88,8 @@ class Index
      */
     public function query(Query $query)
     {
+        // Create an object responsible for running queries
+
 //        $query->setSchema($this->schema);
 //        $query->setStorage($this->storage);
 //        $query->setTokenizer($this->tokenizer);
