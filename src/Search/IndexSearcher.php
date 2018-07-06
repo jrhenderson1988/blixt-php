@@ -41,6 +41,5 @@ class IndexSearcher
 
     public function query(Query $query): ResultSet
     {
-
     }
 }

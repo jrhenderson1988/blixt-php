@@ -54,7 +54,7 @@ abstract class Repository
      *
      * @return array
      */
-    public abstract static function toAttributes(Entity $entity): array;
+    abstract public static function toAttributes(Entity $entity): array;
 
     /**
      * Create a relevant entity from the given ID and set of attributes.
@@ -64,7 +64,7 @@ abstract class Repository
      *
      * @return \Blixt\Persistence\Entities\Entity
      */
-    public abstract static function toEntity(int $id, array $attributes): Entity;
+    abstract public static function toEntity(int $id, array $attributes): Entity;
 
     /**
      * Get the ID from the given entity.
