@@ -115,6 +115,5 @@ class BooleanQuery extends AbstractQuery implements Query
 
     public static function parse(string $query): BooleanQuery
     {
-
     }
 }

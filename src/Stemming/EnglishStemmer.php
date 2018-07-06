@@ -88,19 +88,15 @@ class EnglishStemmer implements Stemmer
         if (mb_substr($word, -2, 1) != 'e' || !$this->replace($word, 'eed', 'ee', 0)) {
             if ((preg_match("#" . self::VOWEL . "+#", mb_substr($word, 0, -3)) && $this->replace($word, 'ing', ''))
                 || (preg_match("#" . self::VOWEL . "+#", mb_substr($word, 0, -2)) && $this->replace($word, 'ed', ''))) {
-
                 if (!$this->replace($word, 'at', 'ate')
                     && !$this->replace($word, 'bl', 'ble')
                     && !$this->replace($word, 'iz', 'ize')) {
-
                     if ($this->doubleConsonant($word)
                         && mb_substr($word, -2) != 'll'
                         && mb_substr($word, -2) != 'ss'
                         && mb_substr($word, -2) != 'zz') {
-
                         $word = mb_substr($word, 0, -1);
-
-                    } else if ($this->m($word) == 1 && $this->cvc($word)) {
+                    } elseif ($this->m($word) == 1 && $this->cvc($word)) {
                         $word .= 'e';
                     }
                 }
@@ -243,7 +239,7 @@ class EnglishStemmer implements Stemmer
 
             case 'c':
                 $this->replace($word, 'ance', '', 1)
-                OR $this->replace($word, 'ence', '', 1);
+                or $this->replace($word, 'ence', '', 1);
                 break;
 
             case 'e':
@@ -312,8 +308,7 @@ class EnglishStemmer implements Stemmer
         if (mb_substr($word, -1) == 'e') {
             if ($this->m(mb_substr($word, 0, -1)) > 1) {
                 $this->replace($word, 'e', '');
-            } else if ($this->m(mb_substr($word, 0, -1)) == 1) {
-
+            } elseif ($this->m(mb_substr($word, 0, -1)) == 1) {
                 if (!$this->cvc(mb_substr($word, 0, -1))) {
                     $this->replace($word, 'e', '');
                 }
