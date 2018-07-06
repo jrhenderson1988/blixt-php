@@ -6,6 +6,7 @@ use Blixt\Document\Indexable;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
 use Blixt\Exceptions\InvalidSchemaException;
+use Blixt\Search\IndexSearcher;
 use Blixt\Search\Query\Query;
 use Blixt\Persistence\Entities\Column;
 use Blixt\Persistence\Entities\Document;
@@ -15,7 +16,9 @@ use Blixt\Persistence\Entities\Position;
 use Blixt\Persistence\Entities\Schema;
 use Blixt\Persistence\Entities\Term;
 use Blixt\Persistence\Entities\Word;
-use Blixt\Persistence\Storage;
+use Blixt\Persistence\StorageManager;
+use Blixt\Search\Query\QueryParser;
+use Blixt\Search\Results\ResultSet;
 use Blixt\Tokenization\Token;
 use Blixt\Tokenization\Tokenizer;
 use Illuminate\Support\Collection;
@@ -28,7 +31,7 @@ class Index
     protected $schema;
 
     /**
-     * @var \Blixt\Persistence\Storage
+     * @var \Blixt\Persistence\StorageManager
      */
     protected $storage;
 
@@ -38,15 +41,25 @@ class Index
     protected $tokenizer;
 
     /**
+     * @var \Blixt\Search\IndexSearcher|null
+     */
+    protected $searcher;
+
+    /**
+     * @var \Blixt\Search\Query\QueryParser|null
+     */
+    protected $parser;
+
+    /**
      * Index constructor.
      *
      * @param \Blixt\Persistence\Entities\Schema $schema
-     * @param \Blixt\Persistence\Storage $storage
+     * @param \Blixt\Persistence\StorageManager $storage
      * @param \Blixt\Tokenization\Tokenizer $tokenizer
      *
      * @throws \Blixt\Exceptions\InvalidSchemaException
      */
-    public function __construct(Schema $schema, Storage $storage, Tokenizer $tokenizer)
+    public function __construct(Schema $schema, StorageManager $storage, Tokenizer $tokenizer)
     {
         $this->storage = $storage;
         $this->tokenizer = $tokenizer;
@@ -76,25 +89,30 @@ class Index
      * Translate the given search string into a query object and run it.
      *
      * @param string $search
+     *
+     * @return \Blixt\Search\Results\ResultSet
      */
-    public function search(string $search)
+    public function search(string $search): ResultSet
     {
-        // Tokenize the input and build a relevant Query object
-        // Call the query method with that Query object and return the result.
+        if (! $this->parser) {
+            $this->parser = new QueryParser($this->tokenizer);
+        }
+
+        return $this->query($this->parser->parse($search));
     }
 
     /**
      * @param \Blixt\Search\Query\Query $query
+     *
+     * @return \Blixt\Search\Results\ResultSet
      */
-    public function query(Query $query)
+    public function query(Query $query): ResultSet
     {
-        // Create an object responsible for running queries
+        if (! $this->searcher) {
+            $this->searcher = new IndexSearcher($this->schema, $this->storage, $this->tokenizer);
+        }
 
-//        $query->setSchema($this->schema);
-//        $query->setStorage($this->storage);
-//        $query->setTokenizer($this->tokenizer);
-//
-//        return $query->execute();
+        return $this->searcher->query($query);
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace BlixtTests\Index;
+namespace BlixtTests\Document;
 
 use Blixt\Document\Indexable;
 use BlixtTests\TestCase;

@@ -2,7 +2,7 @@
 
 namespace BlixtTests\Persistence\Repositories;
 
-use Blixt\Persistence\Drivers\Driver;
+use Blixt\Persistence\Drivers\Storage;
 use Blixt\Persistence\Entities\Column;
 use Blixt\Persistence\Entities\Schema;
 use Blixt\Persistence\Record;
@@ -14,7 +14,7 @@ use Mockery as m;
 class ColumnRepositoryTest extends TestCase
 {
     /**
-     * @var \Blixt\Persistence\Drivers\Driver|\Mockery\MockInterface
+     * @var \Blixt\Persistence\Drivers\Storage|\Mockery\MockInterface
      */
     protected $storage;
 
@@ -25,7 +25,7 @@ class ColumnRepositoryTest extends TestCase
 
     public function setUp()
     {
-        $this->storage = m::mock(Driver::class);
+        $this->storage = m::mock(Storage::class);
         $this->repository = new ColumnRepository($this->storage);
     }
 

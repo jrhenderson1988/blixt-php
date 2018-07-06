@@ -2,7 +2,7 @@
 
 namespace Blixt\Persistence\Drivers;
 
-abstract class AbstractDriver
+abstract class AbstractStorage
 {
 
 }

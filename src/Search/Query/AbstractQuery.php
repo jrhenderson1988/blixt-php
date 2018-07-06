@@ -2,14 +2,14 @@
 
 namespace Blixt\Search\Query;
 
-use Blixt\Storage\Entities\Schema;
-use Blixt\Storage\Storage;
+use Blixt\Persistence\Entities\Schema;
+use Blixt\Persistence\StorageManager;
 use Blixt\Tokenization\Tokenizer;
 
 abstract class AbstractQuery
 {
     /**
-     * @var \Blixt\Storage\Storage
+     * @var \Blixt\Persistence\StorageManager
      */
     protected $storage;
 
@@ -19,14 +19,14 @@ abstract class AbstractQuery
     protected $tokenizer;
 
     /**
-     * @var \Blixt\Storage\Entities\Schema
+     * @var \Blixt\Persistence\Entities\Schema
      */
     protected $schema;
 
     /**
-     * @param \Blixt\Storage\Storage $storage
+     * @param \Blixt\Persistence\StorageManager $storage
      */
-    public function setStorage(Storage $storage): void
+    public function setStorage(StorageManager $storage): void
     {
         $this->storage = $storage;
     }
@@ -40,7 +40,7 @@ abstract class AbstractQuery
     }
 
     /**
-     * @param \Blixt\Storage\Entities\Schema $schema
+     * @param \Blixt\Persistence\Entities\Schema $schema
      */
     public function setSchema(Schema $schema): void
     {

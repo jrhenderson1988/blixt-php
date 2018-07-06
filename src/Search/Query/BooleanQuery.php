@@ -26,6 +26,11 @@ class BooleanQuery extends AbstractQuery implements Query
     {
         // Initialisation --
         // - Look up words related to each clause
+        $words = $this->storage->words()->getByWords($this->clauses->map(function (Clause $clause) {
+            return $clause->getValue();
+        }));
+
+        dd($words);
         // - Look up corresponding terms in that schema
 
         // Build up candidates --

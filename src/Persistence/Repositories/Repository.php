@@ -2,7 +2,7 @@
 
 namespace Blixt\Persistence\Repositories;
 
-use Blixt\Persistence\Drivers\Driver;
+use Blixt\Persistence\Drivers\Storage;
 use Blixt\Persistence\Entities\Entity;
 use Blixt\Persistence\Record;
 use Illuminate\Support\Collection;
@@ -13,16 +13,16 @@ abstract class Repository
     public const TABLE = '';
 
     /**
-     * @var \Blixt\Persistence\Drivers\Driver
+     * @var \Blixt\Persistence\Drivers\Storage
      */
     protected $driver;
 
     /**
      * Repository constructor.
      *
-     * @param \Blixt\Persistence\Drivers\Driver $driver
+     * @param \Blixt\Persistence\Drivers\Storage $driver
      */
-    public function __construct(Driver $driver)
+    public function __construct(Storage $driver)
     {
         $this->driver = $driver;
     }
@@ -30,9 +30,9 @@ abstract class Repository
     /**
      * Get the driver.
      *
-     * @return \Blixt\Persistence\Drivers\Driver
+     * @return \Blixt\Persistence\Drivers\Storage
      */
-    protected function driver(): Driver
+    protected function driver(): Storage
     {
         return $this->driver;
     }

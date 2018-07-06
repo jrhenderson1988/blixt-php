@@ -13,7 +13,7 @@ use Blixt\Persistence\Repositories\SchemaRepository;
 use Blixt\Persistence\Repositories\TermRepository;
 use Blixt\Persistence\Repositories\WordRepository;
 
-class MemoryDriver extends AbstractDriver implements Driver
+class MemoryStorage extends AbstractStorage implements Storage
 {
     /**
      * The tables that this driver must maintain.

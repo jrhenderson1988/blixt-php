@@ -9,9 +9,9 @@ use Blixt\Exceptions\InvalidBlueprintException;
 use Blixt\Index\Blueprint\Definition;
 use Blixt\Index\Index;
 use Blixt\Index\Blueprint\Blueprint;
+use Blixt\Persistence\Drivers\Storage;
 use Blixt\Persistence\Entities\Column;
 use Blixt\Persistence\Entities\Schema;
-use Blixt\Persistence\Drivers\Driver as StorageDriver;
 use Blixt\Persistence\Record;
 use Blixt\Persistence\Repositories\ColumnRepository;
 use Blixt\Persistence\Repositories\SchemaRepository;
@@ -39,7 +39,7 @@ class BlixtTest extends TestCase
     public function setUp()
     {
         $this->blixt = new Blixt(
-            $this->storage = m::mock(StorageDriver::class),
+            $this->storage = m::mock(Storage::class),
             $this->tokenizer = m::mock(Tokenizer::class)
         );
     }

@@ -2,7 +2,7 @@
 
 namespace BlixtTests\Persistence\Repositories;
 
-use Blixt\Persistence\Drivers\Driver;
+use Blixt\Persistence\Drivers\Storage;
 use Blixt\Persistence\Entities\Word;
 use Blixt\Persistence\Record;
 use Blixt\Persistence\Repositories\WordRepository;
@@ -13,7 +13,7 @@ use Mockery as m;
 class WordRepositoryTest extends TestCase
 {
     /**
-     * @var \Mockery\MockInterface|\Blixt\Persistence\Drivers\Driver
+     * @var \Mockery\MockInterface|\Blixt\Persistence\Drivers\Storage
      */
     protected $storage;
 
@@ -24,7 +24,7 @@ class WordRepositoryTest extends TestCase
 
     public function setUp()
     {
-        $this->storage = m::mock(Driver::class);
+        $this->storage = m::mock(Storage::class);
         $this->repository = new WordRepository($this->storage);
     }
 

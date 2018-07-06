@@ -8,8 +8,8 @@ use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
 use Blixt\Index\Blueprint\Blueprint;
 use Blixt\Index\Blueprint\Definition;
-use Blixt\Persistence\Drivers\Driver as StorageDriver;
-use Blixt\Persistence\Drivers\MemoryDriver;
+use Blixt\Persistence\Drivers\MemoryStorage;
+use Blixt\Persistence\Drivers\Storage;
 use Blixt\Persistence\Entities\Column;
 use Blixt\Persistence\Entities\Schema;
 use Blixt\Persistence\Record;
@@ -31,7 +31,7 @@ use Mockery as m;
 class IndexTest extends TestCase
 {
     /**
-     * @var \Mockery\MockInterface|\Blixt\Persistence\Drivers\Driver
+     * @var \Mockery\MockInterface|\Blixt\Persistence\Drivers\Storage
      */
     protected $storage;
 
@@ -67,7 +67,7 @@ class IndexTest extends TestCase
 
     public function setUp()
     {
-        $this->storage = m::mock(StorageDriver::class);
+        $this->storage = m::mock(Storage::class);
         $this->tokenizer = m::mock(Tokenizer::class);
 
         $this->blixt = new Blixt(
@@ -676,7 +676,7 @@ class IndexTest extends TestCase
      */
     public function testDocumentsAreCorrectlyIndexed($blueprint, $indexables, $expected)
     {
-        $storage = new MemoryDriver();
+        $storage = new MemoryStorage();
         $storage->install();
         $tokenizer = new DummyTokenizer(new DummyStemmer());
         $blixt = new Blixt($storage, $tokenizer);

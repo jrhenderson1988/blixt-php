@@ -14,7 +14,7 @@ use Blixt\Persistence\Record;
  *
  * @package Blixt\Persistence\Drivers
  */
-interface Driver
+interface Storage
 {
     /**
      * Tell if the storage represented by the engine exists.

@@ -2,8 +2,8 @@
 
 namespace Blixt\Search\Query;
 
-use Blixt\Storage\Entities\Schema;
-use Blixt\Storage\Storage;
+use Blixt\Persistence\Entities\Schema;
+use Blixt\Persistence\StorageManager;
 use Blixt\Tokenization\Tokenizer;
 
 interface Query
@@ -16,9 +16,9 @@ interface Query
     /**
      * Set the storage engine.
      *
-     * @param \Blixt\Storage\Storage $storage
+     * @param \Blixt\Persistence\StorageManager $storage
      */
-    public function setStorage(Storage $storage): void;
+    public function setStorage(StorageManager $storage): void;
 
     /**
      * Set the tokenizer.
@@ -30,7 +30,7 @@ interface Query
     /**
      * Set the schema.
      *
-     * @param \Blixt\Storage\Entities\Schema $schema
+     * @param \Blixt\Persistence\Entities\Schema $schema
      */
     public function setSchema(Schema $schema): void;
 }

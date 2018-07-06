@@ -2,7 +2,7 @@
 
 namespace Blixt\Persistence;
 
-use Blixt\Persistence\Drivers\Driver;
+use Blixt\Persistence\Drivers\Storage;
 use Blixt\Persistence\Entities\Column;
 use Blixt\Persistence\Entities\Document;
 use Blixt\Persistence\Entities\Field;
@@ -22,10 +22,10 @@ use Blixt\Persistence\Repositories\TermRepository;
 use Blixt\Persistence\Repositories\WordRepository;
 use InvalidArgumentException;
 
-class Storage
+class StorageManager
 {
     /**
-     * @var \Blixt\Persistence\Drivers\Driver
+     * @var \Blixt\Persistence\Drivers\Storage
      */
     protected $driver;
 
@@ -53,9 +53,9 @@ class Storage
     /**
      * StorageFactory constructor.
      *
-     * @param \Blixt\Persistence\Drivers\Driver $driver
+     * @param \Blixt\Persistence\Drivers\Storage $driver
      */
-    public function __construct(Driver $driver)
+    public function __construct(Storage $driver)
     {
         $this->driver = $driver;
     }
@@ -63,7 +63,7 @@ class Storage
     /**
      * Get the driver.
      *
-     * @return \Blixt\Persistence\Drivers\Driver
+     * @return \Blixt\Persistence\Drivers\Storage
      */
     public function getDriver()
     {

@@ -9,8 +9,8 @@ use Blixt\Exceptions\StorageException;
 use Blixt\Index\Index;
 use Blixt\Index\Blueprint\Blueprint;
 use Blixt\Index\Blueprint\Definition;
-use Blixt\Persistence\Drivers\Driver as StorageDriver;
-use Blixt\Persistence\Storage;
+use Blixt\Persistence\Drivers\Storage;
+use Blixt\Persistence\StorageManager;
 use Blixt\Persistence\Entities\Column;
 use Blixt\Persistence\Entities\Schema;
 use Blixt\Tokenization\Tokenizer;
@@ -20,7 +20,7 @@ use Illuminate\Support\Collection;
 class Blixt
 {
     /**
-     * @var \Blixt\Persistence\Storage
+     * @var \Blixt\Persistence\StorageManager
      */
     protected $storage;
 
@@ -37,12 +37,12 @@ class Blixt
     /**
      * Blixt constructor.
      *
-     * @param \Blixt\Persistence\Drivers\Driver $storage
+     * @param \Blixt\Persistence\Drivers\Storage $storage
      * @param \Blixt\Tokenization\Tokenizer     $tokenizer
      */
-    public function __construct(StorageDriver $storage, Tokenizer $tokenizer)
+    public function __construct(Storage $storage, Tokenizer $tokenizer)
     {
-        $this->storage = new Storage($storage);
+        $this->storage = new StorageManager($storage);
         $this->tokenizer = $tokenizer;
     }
 
@@ -62,9 +62,9 @@ class Blixt
     }
 
     /**
-     * @return \Blixt\Persistence\Storage
+     * @return \Blixt\Persistence\StorageManager
      */
-    public function getStorage(): Storage
+    public function getStorage(): StorageManager
     {
         return $this->storage;
     }

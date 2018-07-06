@@ -3,22 +3,22 @@
 namespace BlixtTests\Persistence\Drivers;
 
 use Blixt\Exceptions\StorageException;
-use Blixt\Persistence\Drivers\MemoryDriver;
+use Blixt\Persistence\Drivers\MemoryStorage;
 use Blixt\Persistence\Record;
 use Blixt\Persistence\Repositories\ColumnRepository;
 use Blixt\Persistence\Repositories\SchemaRepository;
 use BlixtTests\TestCase;
 
-class MemoryDriverTest extends TestCase
+class MemoryStorageTest extends TestCase
 {
     /**
-     * @var \Blixt\Persistence\Drivers\MemoryDriver
+     * @var \Blixt\Persistence\Drivers\MemoryStorage
      */
     protected $driver;
 
     public function setUp()
     {
-        $this->driver = new MemoryDriver();
+        $this->driver = new MemoryStorage();
         $this->driver->install();
     }
 
@@ -27,7 +27,7 @@ class MemoryDriverTest extends TestCase
      */
     public function testItCanBeInstantiated()
     {
-        $this->assertInstanceOf(MemoryDriver::class, $this->driver);
+        $this->assertInstanceOf(MemoryStorage::class, $this->driver);
     }
 
     /**
@@ -35,7 +35,7 @@ class MemoryDriverTest extends TestCase
      */
     public function testItDoesNotInitiallyExist()
     {
-        $driver = new MemoryDriver();
+        $driver = new MemoryStorage();
         $this->assertFalse($driver->exists());
     }
 
@@ -44,7 +44,7 @@ class MemoryDriverTest extends TestCase
      */
     public function testCreateMethodCausesItToExist()
     {
-        $driver = new MemoryDriver();
+        $driver = new MemoryStorage();
         $this->assertFalse($driver->exists());
         $this->assertTrue($driver->install());
         $this->assertTrue($driver->exists());
