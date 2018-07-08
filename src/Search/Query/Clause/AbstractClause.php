@@ -44,7 +44,7 @@ abstract class AbstractClause implements Clause
      */
     public function isRequired(): bool
     {
-        return $this->getType() === static::REQUIRED;
+        return $this->getType() === static::MUST;
     }
 
     /**
@@ -55,6 +55,6 @@ abstract class AbstractClause implements Clause
      */
     public function isProhibited(): bool
     {
-        return $this->getType() === static::PROHIBITED;
+        return $this->getType() === static::MUST_NOT;
     }
 }

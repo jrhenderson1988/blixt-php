@@ -5,8 +5,8 @@ namespace Blixt\Search\Query\Clause;
 interface Clause
 {
     public const SHOULD = 1;
-    public const REQUIRED = 2;
-    public const PROHIBITED = 3;
+    public const MUST = 2;
+    public const MUST_NOT = 3;
 
     /**
      * Get the type of the clause, which should refer to one of the above constants.

@@ -21,6 +21,6 @@ class MustNotClause extends AbstractClause
      */
     public function getType(): int
     {
-        return Clause::PROHIBITED;
+        return Clause::MUST_NOT;
     }
 }

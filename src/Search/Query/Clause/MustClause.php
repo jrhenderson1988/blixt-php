@@ -21,6 +21,6 @@ class MustClause extends AbstractClause
      */
     public function getType(): int
     {
-        return Clause::REQUIRED;
+        return Clause::MUST;
     }
 }
