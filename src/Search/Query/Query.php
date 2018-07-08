@@ -2,35 +2,30 @@
 
 namespace Blixt\Search\Query;
 
-use Blixt\Persistence\Entities\Schema;
-use Blixt\Persistence\StorageManager;
-use Blixt\Tokenization\Tokenizer;
+use Blixt\Search\Query\Scorer\Scorer;
+use Illuminate\Support\Collection;
 
 interface Query
 {
     /**
-     * @return mixed
+     * Get the query's scorer to allow us to calculate a score for each candidate document.
+     *
+     * @return \Blixt\Search\Query\Scorer\Scorer
      */
-    public function execute();
+    public function getScorer(): Scorer;
 
     /**
-     * Set the storage engine.
+     * Get the collection of clauses that form the query.
      *
-     * @param \Blixt\Persistence\StorageManager $storage
+     * @return \Illuminate\Support\Collection
      */
-    public function setStorage(StorageManager $storage): void;
+    public function getClauses(): Collection;
 
     /**
-     * Set the tokenizer.
+     * Implement the logic required to get a list of identifiers for documents that are considered candidates and will
+     * be subsequently scored in order to build up a set of search results.
      *
-     * @param \Blixt\Tokenization\Tokenizer $tokenizer
+     * @return \Illuminate\Support\Collection
      */
-    public function setTokenizer(Tokenizer $tokenizer): void;
-
-    /**
-     * Set the schema.
-     *
-     * @param \Blixt\Persistence\Entities\Schema $schema
-     */
-    public function setSchema(Schema $schema): void;
+    public function getCandidateDocumentIds(): Collection;
 }

@@ -2,48 +2,50 @@
 
 namespace Blixt\Search\Query;
 
-use Blixt\Persistence\Entities\Schema;
-use Blixt\Persistence\StorageManager;
-use Blixt\Tokenization\Tokenizer;
+use Blixt\Search\Query\Scorer\Scorer;
+use Illuminate\Support\Collection;
 
-abstract class AbstractQuery
+abstract class AbstractQuery implements Query
 {
     /**
-     * @var \Blixt\Persistence\StorageManager
+     * @var \Blixt\Search\Query\Scorer\Scorer
      */
-    protected $storage;
+    protected $scorer;
 
     /**
-     * @var \Blixt\Tokenization\Tokenizer
+     * Get the query's scorer to allow us to calculate a score for each candidate document. Calls the abstract
+     * createScorer() method to create an instance of the relevant scorer and caches it in the $scorer property.
+     *
+     * @return \Blixt\Search\Query\Scorer\Scorer
      */
-    protected $tokenizer;
-
-    /**
-     * @var \Blixt\Persistence\Entities\Schema
-     */
-    protected $schema;
-
-    /**
-     * @param \Blixt\Persistence\StorageManager $storage
-     */
-    public function setStorage(StorageManager $storage): void
+    public function getScorer(): Scorer
     {
-        $this->storage = $storage;
+        if (! $this->scorer) {
+            $this->scorer = $this->createScorer();
+        }
+
+        return $this->scorer;
     }
 
     /**
-     * @param \Blixt\Tokenization\Tokenizer $tokenizer
+     * Create a relevant scorer for the query.
+     *
+     * @return \Blixt\Search\Query\Scorer\Scorer
      */
-    public function setTokenizer(Tokenizer $tokenizer): void
-    {
-        $this->tokenizer = $tokenizer;
-    }
+    abstract protected function createScorer(): Scorer;
 
     /**
-     * @param \Blixt\Persistence\Entities\Schema $schema
+     * Get the collection of clauses that form the query.
+     *
+     * @return \Illuminate\Support\Collection
      */
-    public function setSchema(Schema $schema): void
-    {
-        $this->schema = $schema;
-    }
+    abstract public function getClauses(): Collection;
+
+    /**
+     * Implement the logic required to get a list of identifiers for documents that are considered candidates and will
+     * be subsequently scored in order to build up a set of search results.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    abstract public function getCandidateDocumentIds(): Collection;
 }
