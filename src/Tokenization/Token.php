@@ -88,7 +88,7 @@ class Token
      *
      * @param string $prefix
      */
-    public function setPrefix(string $prefix)
+    public function setPrefix(string $prefix): void
     {
         $this->prefix = $prefix;
     }
