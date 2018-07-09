@@ -19,6 +19,7 @@ use Blixt\Persistence\Entities\Word;
 use Blixt\Persistence\StorageManager;
 use Blixt\Search\Query\QueryParser;
 use Blixt\Search\Results\ResultSet;
+use Blixt\Stemming\Stemmer;
 use Blixt\Tokenization\Token;
 use Blixt\Tokenization\Tokenizer;
 use Illuminate\Support\Collection;
@@ -41,6 +42,11 @@ class Index
     protected $tokenizer;
 
     /**
+     * @var \Blixt\Stemming\Stemmer
+     */
+    protected $stemmer;
+
+    /**
      * @var \Blixt\Search\IndexSearcher|null
      */
     protected $searcher;
@@ -56,14 +62,16 @@ class Index
      * @param \Blixt\Persistence\Entities\Schema $schema
      * @param \Blixt\Persistence\StorageManager $storage
      * @param \Blixt\Tokenization\Tokenizer $tokenizer
+     * @param \Blixt\Stemming\Stemmer $stemmer
      *
      * @throws \Blixt\Exceptions\InvalidSchemaException
      */
-    public function __construct(Schema $schema, StorageManager $storage, Tokenizer $tokenizer)
+    public function __construct(Schema $schema, StorageManager $storage, Tokenizer $tokenizer, Stemmer $stemmer)
     {
+        $this->schema = $schema;
         $this->storage = $storage;
         $this->tokenizer = $tokenizer;
-        $this->schema = $schema;
+        $this->stemmer = $stemmer;
 
         $this->loadColumns();
     }
@@ -228,7 +236,7 @@ class Index
         $positions = new Collection();
 
         $this->tokenizer->tokenize($content)->each(function (Token $token) use (&$positions) {
-            $text = $token->getText();
+            $text = $this->stemmer->stem($token->getText());
 
             $positions->put(
                 $text, array_merge($positions->get($text, []), [$token->getPosition()])

@@ -41,6 +41,11 @@ class IndexTest extends TestCase
     protected $tokenizer;
 
     /**
+     * @var \Blixt\Stemming\Stemmer|\Mockery\MockInterface
+     */
+    protected $stemmer;
+
+    /**
      * @var \Blixt\Blixt
      */
     protected $blixt;
@@ -69,11 +74,9 @@ class IndexTest extends TestCase
     {
         $this->storage = m::mock(Storage::class);
         $this->tokenizer = m::mock(Tokenizer::class);
+        $this->stemmer = m::mock(Stemmer::class);
 
-        $this->blixt = new Blixt(
-            $this->storage,
-            $this->tokenizer
-        );
+        $this->blixt = new Blixt($this->storage, $this->tokenizer, $this->stemmer);
     }
 
     /**
@@ -232,6 +235,16 @@ class IndexTest extends TestCase
                 $joeToken = new Token('joe', 0),
                 $bloggsToken = new Token('bloggs', 1)
             ]));
+
+        // Stem the text of each returned token
+        $this->stemmer->shouldReceive('stem')
+            ->once()
+            ->withArgs(['joe'])
+            ->andReturn('joe');
+        $this->stemmer->shouldReceive('stem')
+            ->once()
+            ->withArgs(['bloggs'])
+            ->andReturn('bloggs');
 
         // Make word for 'joe' in name
         $joeWordCriteria = [WordRepository::WORD => 'joe'];
@@ -393,6 +406,16 @@ class IndexTest extends TestCase
                 $bloggsToken = new Token('bloggs', 1)
             ]));
 
+        // Stem the text of each returned token
+        $this->stemmer->shouldReceive('stem')
+            ->once()
+            ->withArgs(['joe'])
+            ->andReturn('joe');
+        $this->stemmer->shouldReceive('stem')
+            ->once()
+            ->withArgs(['bloggs'])
+            ->andReturn('bloggs');
+
         // Make word for 'joe' in name
         $joeWordCriteria = [WordRepository::WORD => 'joe'];
         $joeWordAttrs = $joeWordCriteria;
@@ -546,6 +569,16 @@ class IndexTest extends TestCase
                 $bloggsToken = new Token('bloggs', 1)
             ]));
 
+        // Stem the text of each returned token
+        $this->stemmer->shouldReceive('stem')
+            ->once()
+            ->withArgs(['joe'])
+            ->andReturn('joe');
+        $this->stemmer->shouldReceive('stem')
+            ->once()
+            ->withArgs(['bloggs'])
+            ->andReturn('bloggs');
+
         // Make word for 'joe' in name
         $joeWordCriteria = [WordRepository::WORD => 'joe'];
         $joeWordAttrs = $joeWordCriteria;
@@ -678,8 +711,9 @@ class IndexTest extends TestCase
     {
         $storage = new MemoryStorage();
         $storage->install();
-        $tokenizer = new DummyTokenizer(new DummyStemmer());
-        $blixt = new Blixt($storage, $tokenizer);
+        $stemmer = new DummyStemmer();
+        $tokenizer = new DummyTokenizer();
+        $blixt = new Blixt($storage, $tokenizer, $stemmer);
 
         $index = $blixt->create($blueprint);
         foreach (is_array($indexables) ? $indexables : [$indexables] as $indexable) {
@@ -937,20 +971,13 @@ class DummyStemmer implements Stemmer
 
 class DummyTokenizer implements Tokenizer
 {
-    protected $stemmer;
-
-    public function __construct(Stemmer $stemmer)
-    {
-        $this->stemmer = $stemmer;
-    }
-
-    public function tokenize(string $text): Collection
+    public function tokenize(string $text, array $prefixes = []): Collection
     {
         $tokens = new Collection();
 
         $i = 0;
         foreach (explode(' ', mb_strtolower(trim($text))) as $word) {
-            $tokens->push(new Token($this->stemmer->stem($word), $i++));
+            $tokens->push(new Token($word, $i++));
         }
 
         return $tokens;
