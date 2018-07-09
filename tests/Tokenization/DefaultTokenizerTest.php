@@ -2,35 +2,30 @@
 
 namespace BlixtTests\Tokenization;
 
-use Blixt\Stemming\Stemmer;
 use Blixt\Tokenization\DefaultTokenizer;
 use Blixt\Tokenization\Token;
 use BlixtTests\TestCase;
-use Faker\Factory;
 use Illuminate\Support\Collection;
 
 class DefaultTokenizerTest extends TestCase
 {
     /**
-     * @var \Faker\Generator
+     * @var \Blixt\Tokenization\DefaultTokenizer
      */
-    protected $faker;
+    protected $tokenizer;
 
     public function setUp()
     {
-        $this->faker = Factory::create();
+        $this->tokenizer = new DefaultTokenizer();
     }
 
-    public function getTokenizer()
-    {
-        return new DefaultTokenizer(new DummyStemmer());
-    }
-
-    /** @test  */
+    /**
+     * @test
+     * @covers \Blixt\Tokenization\DefaultTokenizer::tokenize()
+     */
     public function testTokenizerReturnsCollectionOfTokens()
     {
-        $tokenizer = $this->getTokenizer();
-        $tokenized = $tokenizer->tokenize($this->faker->sentence(10));
+        $tokenized = $this->tokenizer->tokenize('this is a test');
 
         $this->assertInstanceOf(Collection::class, $tokenized);
 
@@ -41,46 +36,70 @@ class DefaultTokenizerTest extends TestCase
 
     /**
      * @test
-     * @dataProvider basicSentencesProvider
+     * @covers \Blixt\Tokenization\DefaultTokenizer::tokenize()
      */
-    public function testTokenizationOfBasicSentences($sentence, $tokens)
+    public function testTokenizationOfABasicSentence()
     {
-        $tokenizer = $this->getTokenizer();
-        $this->assertEquals($tokens, $tokenizer->tokenize($sentence));
-    }
+        $expected = new Collection([
+            new Token('this', 0),
+            new Token('is', 1),
+            new Token('a', 2),
+            new Token('basic', 3),
+            new Token('test', 4)
+        ]);
 
-    public function basicSentencesProvider()
-    {
-        return [
-            ['This is a basic test', new Collection([new Token('this', 0), new Token('is', 1), new Token('a', 2), new Token('basic', 3), new Token('test', 4)])],
-            ['RandOmly capitaLiseD lettErs', new Collection([new Token('randomly', 0), new Token('capitalised', 1), new Token('letters', 2)])],
-            ['w0rds with numb3rs', new Collection([new Token('w0rds', 0), new Token('with', 1), new Token('numb3rs', 2)])]
-        ];
+        $this->assertEquals($expected, $this->tokenizer->tokenize('This is a basic test'));
     }
 
     /**
      * @test
-     * @dataProvider sentencesWithPunctuationProvider
+     * @covers \Blixt\Tokenization\DefaultTokenizer::tokenize()
      */
-    public function testTokenizationOfSentencesWithPunctuation($sentence, $tokens)
+    public function testTokenizationOfABasicSentenceWithRandomlyCapitalisedLetters()
     {
-        $tokenizer = $this->getTokenizer();
-        $this->assertEquals($tokens, $tokenizer->tokenize($sentence));
+        $expected = new Collection([
+            new Token('randomly', 0),
+            new Token('capitalised', 1),
+            new Token('letters', 2)
+        ]);
+
+        $this->assertEquals($expected, $this->tokenizer->tokenize('RandOmly capitaLiseD lettErs'));
     }
 
-    public function sentencesWithPunctuationProvider()
+    /**
+     * @test
+     * @covers \Blixt\Tokenization\DefaultTokenizer::tokenize()
+     */
+    public function testTokenizationOfABasicSentenceWithRandomlyPlacedNumbers()
     {
-        return [
-            ['Don\'t blame me!', new Collection([new Token('dont', 0), new Token('blame', 1), new Token('me', 2)])],
-            ['Well, this is fun.', new Collection([new Token('well', 0), new Token('this', 1), new Token('is', 2), new Token('fun', 3)])],
-        ];
-    }
-}
+        $expected = new Collection([
+            new Token('w0rds', 0),
+            new Token('with', 1),
+            new Token('numb3rs', 2)
+        ]);
 
-class DummyStemmer implements Stemmer
-{
-    public function stem(string $word): string
+        $this->assertEquals($expected, $this->tokenizer->tokenize('w0rds with numb3rs'));
+    }
+
+    public function testTokenizationOfSentencesWithPunctuation()
     {
-        return $word;
+        $expected = new Collection([
+            new Token('dont', 0),
+            new Token('blame', 1),
+            new Token('me', 2)
+        ]);
+
+        $this->assertEquals($expected, $this->tokenizer->tokenize('Don\'t blame me!'));
+    }
+
+    public function testTokenizationOfWordsWithPrefixes()
+    {
+        $expected = Collection::make([
+            new Token('required', 0, '+'),
+            new Token('prohibited', 1, '-'),
+            new Token('optional', 2)
+        ]);
+
+        $this->assertEquals($expected, $this->tokenizer->tokenize('+required -prohibited optional', ['+', '-']));
     }
 }

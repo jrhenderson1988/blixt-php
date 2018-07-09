@@ -2,73 +2,86 @@
 
 namespace Blixt\Tokenization;
 
-use Blixt\Stemming\Stemmer;
 use Illuminate\Support\Collection;
 
 class DefaultTokenizer implements Tokenizer
 {
     /**
-     * @var \Blixt\Stemming\Stemmer
-     */
-    protected $stemmer;
-
-    /**
-     * DefaultTokenizer constructor.
-     *
-     * @param \Blixt\Stemming\Stemmer $stemmer
-     */
-    public function __construct(Stemmer $stemmer)
-    {
-        $this->stemmer = $stemmer;
-    }
-
-    /**
      * Tokenize the given string of text into a token collection.
      *
      * @param string $text
+     * @param array $prefixes
      *
      * @return \Illuminate\Support\Collection
      */
-    public function tokenize(string $text): Collection
+    public function tokenize(string $text, array $prefixes = []): Collection
     {
-        $tokens = new Collection();
+        $prefixes = $this->buildPrefixes($prefixes);
 
         $i = 0;
-        $this->split($text)->each(function ($word) use (&$tokens, &$i) {
-            $tokens->push(
-                new Token($this->stemmer->stem($word), $i++)
-            );
-        });
+        return $this->split($text, $prefixes)
+            ->map(function ($word) use (&$i) {
+                [$prefix, $text] = $word;
 
-        return $tokens;
+                return new Token($text, $i++, $prefix);
+            });
     }
 
     /**
-     * Normalize the given text by converting it to lowercase, trimming whitespace around it and removing all characters
+     * Create a collection of prefixes from the given array. Each prefix is normalized by trimming it and converting it
+     * to lowercase. All invalid filters are conveniently removed.
+     *
+     * @param array $prefixes
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    protected function buildPrefixes(array $prefixes): Collection
+    {
+        return Collection::make($prefixes)
+            ->map(function ($prefix) {
+                return trim(mb_strtolower($prefix));
+            })
+            ->filter();
+    }
+
+    /**
+     * Detect a prefix on and normalize the given word. The given array of prefixes is
+     *
+     * Normalize the given word by converting it to lowercase, trimming whitespace around it and removing all characters
      * that are not alphanumeric or whitespace.
      *
-     * @param string $text
+     * @param string $word
+     * @param \Illuminate\Support\Collection $prefixes
      *
-     * @return string
+     * @return array
      */
-    protected function normalize(string $text): string
+    protected function normalize(string $word, Collection $prefixes): array
     {
-        return preg_replace('/[^\\p{L}\\p{N}\\s]/', '', mb_strtolower(trim($text)));
+        $word = trim(mb_strtolower($word));
+
+        $prefix = $prefixes->first(function ($prefix) use ($word) {
+            return empty($prefix) ? false : mb_strpos($word, $prefix) === 0;
+        }) ?? '';
+
+        $word = empty($prefix) ? $word : mb_substr($word, mb_strlen($prefix));
+
+        return [$prefix, preg_replace('/[^\\p{L}\\p{N}\\s]/', '', $word)];
     }
 
     /**
      * Split the given text into a collection of words.
      *
      * @param string $text
+     * @param \Illuminate\Support\Collection $prefixes
      *
      * @return \Illuminate\Support\Collection
      */
-    protected function split(string $text): Collection
+    protected function split(string $text, Collection $prefixes): Collection
     {
-        $words = new Collection(explode(' ', $this->normalize($text)));
-
-        return $words->filter(function ($word) {
-            return ! empty(trim($word));
-        });
+        return Collection::make(preg_split('/\s+/', $text))
+            ->map(function ($word) use ($prefixes) {
+                return $this->normalize($word, $prefixes);
+            })
+            ->filter();
     }
 }
