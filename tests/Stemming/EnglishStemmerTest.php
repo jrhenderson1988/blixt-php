@@ -7,19 +7,25 @@ use BlixtTests\TestCase;
 
 class EnglishStemmerTest extends TestCase
 {
-    public function getStemmer()
+    /**
+     * @var \Blixt\Stemming\EnglishStemmer
+     */
+    protected $stemmer;
+
+    public function setUp()
     {
-        return new EnglishStemmer();
+        $this->stemmer = new EnglishStemmer();
     }
 
     /**
      * @test
      * @dataProvider getWordsData
+     * @param string $input
+     * @param string $expected
      */
-    public function testStemmingWords($input, $expected)
+    public function testStemmingWords(string $input, string $expected)
     {
-        $stemmer = $this->getStemmer();
-        $this->assertEquals($expected, $stemmer->stem($input));
+        $this->assertEquals($expected, $this->stemmer->stem($input));
     }
 
     public function getWordsData()
