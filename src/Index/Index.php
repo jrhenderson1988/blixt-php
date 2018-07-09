@@ -103,7 +103,7 @@ class Index
     public function search(string $search): ResultSet
     {
         if (! $this->parser) {
-            $this->parser = new QueryParser($this->tokenizer);
+            $this->parser = new QueryParser($this->tokenizer, $this->stemmer);
         }
 
         return $this->query($this->parser->parse($search));
