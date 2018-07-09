@@ -13,6 +13,7 @@ use Blixt\Persistence\Drivers\Storage;
 use Blixt\Persistence\StorageManager;
 use Blixt\Persistence\Entities\Column;
 use Blixt\Persistence\Entities\Schema;
+use Blixt\Stemming\Stemmer;
 use Blixt\Tokenization\Tokenizer;
 use Closure;
 use Illuminate\Support\Collection;
@@ -30,6 +31,11 @@ class Blixt
     protected $tokenizer;
 
     /**
+     * @var \Blixt\Stemming\Stemmer
+     */
+    protected $stemmer;
+
+    /**
      * @var \Illuminate\Support\Collection
      */
     protected $schemas;
@@ -38,12 +44,14 @@ class Blixt
      * Blixt constructor.
      *
      * @param \Blixt\Persistence\Drivers\Storage $storage
-     * @param \Blixt\Tokenization\Tokenizer     $tokenizer
+     * @param \Blixt\Tokenization\Tokenizer $tokenizer
+     * @param \Blixt\Stemming\Stemmer $stemmer
      */
-    public function __construct(Storage $storage, Tokenizer $tokenizer)
+    public function __construct(Storage $storage, Tokenizer $tokenizer, Stemmer $stemmer)
     {
         $this->storage = new StorageManager($storage);
         $this->tokenizer = $tokenizer;
+        $this->stemmer = $stemmer;
     }
 
     /**
@@ -77,6 +85,16 @@ class Blixt
     public function getTokenizer(): Tokenizer
     {
         return $this->tokenizer;
+    }
+
+    /**
+     * Get the stemmer.
+     *
+     * @return \Blixt\Stemming\Stemmer
+     */
+    public function getStemmer(): Stemmer
+    {
+        return $this->stemmer;
     }
 
     /**
@@ -203,6 +221,6 @@ class Blixt
      */
     protected function createIndexForSchema(Schema $schema): Index
     {
-        return new Index($schema, $this->storage, $this->tokenizer);
+        return new Index($schema, $this->getStorage(), $this->getTokenizer(), $this->getStemmer());
     }
 }

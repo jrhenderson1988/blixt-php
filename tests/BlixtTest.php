@@ -15,6 +15,7 @@ use Blixt\Persistence\Entities\Schema;
 use Blixt\Persistence\Record;
 use Blixt\Persistence\Repositories\ColumnRepository;
 use Blixt\Persistence\Repositories\SchemaRepository;
+use Blixt\Stemming\Stemmer;
 use Blixt\Tokenization\Tokenizer;
 use Illuminate\Support\Collection;
 use Mockery as m;
@@ -27,21 +28,26 @@ class BlixtTest extends TestCase
     protected $blixt;
 
     /**
-     * @var \Mockery\MockInterface
+     * @var \Blixt\Persistence\Drivers\Storage|\Mockery\MockInterface
      */
     protected $storage;
 
     /**
-     * @var \Mockery\MockInterface
+     * @var \Blixt\Tokenization\Tokenizer|\Mockery\MockInterface
      */
     protected $tokenizer;
 
+    /**
+     * @var \Blixt\Stemming\Stemmer|\Mockery\MockInterface
+     */
+    protected $stemmer;
+
     public function setUp()
     {
-        $this->blixt = new Blixt(
-            $this->storage = m::mock(Storage::class),
-            $this->tokenizer = m::mock(Tokenizer::class)
-        );
+        $this->storage = m::mock(Storage::class);
+        $this->tokenizer = m::mock(Tokenizer::class);
+        $this->stemmer = m::mock(Stemmer::class);
+        $this->blixt = new Blixt($this->storage, $this->tokenizer, $this->stemmer);
     }
 
     /**
@@ -54,6 +60,7 @@ class BlixtTest extends TestCase
 
     /**
      * @test
+     * @covers \Blixt\Blixt::getStorage()
      */
     public function testGetStorageReturnsStorageContainingSameDriverPassedIntoConstructor()
     {
@@ -62,6 +69,7 @@ class BlixtTest extends TestCase
 
     /**
      * @test
+     * @covers \Blixt\Blixt::getTokenizer()
      */
     public function testGetTokenizerReturnsTokenizer()
     {
@@ -70,6 +78,16 @@ class BlixtTest extends TestCase
 
     /**
      * @test
+     * @covers \Blixt\Blixt::getStemmer()
+     */
+    public function testGetStemmerReturnsStemmer()
+    {
+        $this->assertSame($this->stemmer, $this->blixt->getStemmer());
+    }
+
+    /**
+     * @test
+     * @covers \Blixt\Blixt::install()
      */
     public function testInstallDoesNotCreateStorageWhenItAlreadyExists()
     {
@@ -81,6 +99,7 @@ class BlixtTest extends TestCase
 
     /**
      * @test
+     * @covers \Blixt\Blixt::install()
      */
     public function testInstallCreatesStorageWhenItDoesNotAlreadyExist()
     {
@@ -92,6 +111,7 @@ class BlixtTest extends TestCase
 
     /**
      * @test
+     * @covers \Blixt\Blixt::open()
      * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\InvalidSchemaException
      * @throws \Blixt\Exceptions\SchemaDoesNotExistException
@@ -129,6 +149,7 @@ class BlixtTest extends TestCase
 
     /**
      * @test
+     * @covers \Blixt\Blixt::open()
      * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\InvalidSchemaException
      * @throws \Blixt\Exceptions\SchemaDoesNotExistException
@@ -147,6 +168,7 @@ class BlixtTest extends TestCase
 
     /**
      * @test
+     * @covers \Blixt\Blixt::open()
      * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\InvalidSchemaException
      * @throws \Blixt\Exceptions\SchemaDoesNotExistException
@@ -203,6 +225,7 @@ class BlixtTest extends TestCase
 
     /**
      * @test
+     * @covers \Blixt\Blixt::create()
      * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\InvalidSchemaException
      * @throws \Blixt\Exceptions\StorageException
@@ -255,6 +278,7 @@ class BlixtTest extends TestCase
 
     /**
      * @test
+     * @covers \Blixt\Blixt::create()
      * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\InvalidSchemaException
      * @throws \Blixt\Exceptions\StorageException
@@ -279,6 +303,7 @@ class BlixtTest extends TestCase
 
     /**
      * @test
+     * @covers \Blixt\Blixt::create()
      * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\InvalidSchemaException
      * @throws \Blixt\Exceptions\StorageException
