@@ -2,6 +2,7 @@
 
 namespace Blixt\Search\Query;
 
+use Blixt\Search\Query\Clause\Clause;
 use Blixt\Search\Query\Scorer\Scorer;
 use Illuminate\Support\Collection;
 
@@ -11,6 +12,21 @@ abstract class AbstractQuery implements Query
      * @var \Blixt\Search\Query\Scorer\Scorer
      */
     protected $scorer;
+
+    /**
+     * @var \Illuminate\Support\Collection
+     */
+    protected $clauses;
+
+    /**
+     * AbstractQuery constructor.
+     *
+     * @param \Illuminate\Support\Collection $clauses
+     */
+    public function __construct(Collection $clauses)
+    {
+        $this->setClauses($clauses);
+    }
 
     /**
      * Get the query's scorer to allow us to calculate a score for each candidate document. Calls the abstract
@@ -39,7 +55,22 @@ abstract class AbstractQuery implements Query
      *
      * @return \Illuminate\Support\Collection
      */
-    abstract public function getClauses(): Collection;
+    public function getClauses(): Collection
+    {
+        return $this->clauses;
+    }
+
+    /**
+     * Set the clauses for this query.
+     *
+     * @param \Illuminate\Support\Collection $clauses
+     */
+    public function setClauses(Collection $clauses): void
+    {
+        $this->clauses = $clauses->map(function (Clause $clause) {
+            return $clause;
+        });
+    }
 
     /**
      * Implement the logic required to get a list of identifiers for documents that are considered candidates and will

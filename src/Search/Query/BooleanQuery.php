@@ -44,17 +44,6 @@ class BooleanQuery extends AbstractQuery implements Query
     }
 
     /**
-     * Get the collection of clauses that form the query.
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public function getClauses(): Collection
-    {
-        // TODO: Implement getClauses() method.
-        return null;
-    }
-
-    /**
      * Implement the logic required to get a list of identifiers for documents that are considered candidates and will
      * be subsequently scored in order to build up a set of search results.
      *
