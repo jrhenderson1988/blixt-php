@@ -3,16 +3,19 @@
 namespace Blixt;
 
 use Blixt\Exceptions\IndexAlreadyExistsException;
+use Blixt\Exceptions\InvalidSchemaException;
 use Blixt\Exceptions\SchemaDoesNotExistException;
 use Blixt\Exceptions\InvalidBlueprintException;
 use Blixt\Exceptions\StorageException;
-use Blixt\Index\Index;
-use Blixt\Index\Blueprint\Blueprint;
-use Blixt\Index\Blueprint\Definition;
+use Blixt\Blueprint\Blueprint;
+use Blixt\Blueprint\Definition;
+use Blixt\Indexing\Indexer;
 use Blixt\Persistence\Drivers\Storage;
 use Blixt\Persistence\StorageManager;
 use Blixt\Persistence\Entities\Column;
 use Blixt\Persistence\Entities\Schema;
+use Blixt\Search\IndexSearcher;
+use Blixt\Search\Query\QueryParser;
 use Blixt\Stemming\Stemmer;
 use Blixt\Tokenization\Tokenizer;
 use Closure;
@@ -104,7 +107,7 @@ class Blixt
      * @param string   $name
      * @param \Closure $closure
      *
-     * @return \Blixt\Index\Index
+     * @return \Blixt\Index
      * @throws \Blixt\Exceptions\SchemaDoesNotExistException
      * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\StorageException
@@ -130,13 +133,12 @@ class Blixt
     /**
      * Given a blueprint, create a schema and create an Index object that encapsulates it.
      *
-     * @param \Blixt\Index\Blueprint\Blueprint|string|mixed $blueprint
+     * @param \Blixt\Blueprint\Blueprint|string|mixed $blueprint
      *
-     * @return \Blixt\Index\Index
+     * @return \Blixt\Index
      * @throws \Blixt\Exceptions\IndexAlreadyExistsException
      * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\StorageException
-     * @throws \Blixt\Exceptions\InvalidSchemaException
      */
     public function create(Blueprint $blueprint): Index
     {
@@ -169,7 +171,7 @@ class Blixt
      * @param string   $name
      * @param \Closure $closure
      *
-     * @return \Blixt\Index\Blueprint\Blueprint
+     * @return \Blixt\Blueprint\Blueprint
      */
     protected function buildBlueprint(string $name, Closure $closure): Blueprint
     {
@@ -183,7 +185,7 @@ class Blixt
     /**
      * Create a Schema for the given Blueprint.
      *
-     * @param \Blixt\Index\Blueprint\Blueprint $blueprint
+     * @param \Blixt\Blueprint\Blueprint $blueprint
      *
      * @return \Blixt\Persistence\Entities\Schema
      * @throws \Blixt\Exceptions\InvalidBlueprintException
@@ -216,11 +218,60 @@ class Blixt
      *
      * @param \Blixt\Persistence\Entities\Schema $schema
      *
-     * @return \Blixt\Index\Index
+     * @return \Blixt\Index
      * @throws \Blixt\Exceptions\InvalidSchemaException
      */
     protected function createIndexForSchema(Schema $schema): Index
     {
-        return new Index($schema, $this->getStorage(), $this->getTokenizer(), $this->getStemmer());
+        if (! $schema->hasColumns()) {
+            $columns = $this->storage->columns()->getBySchema($schema);
+
+            if ($columns->isEmpty()) {
+                throw InvalidSchemaException::noColumns();
+            }
+
+            $schema->setColumns($columns);
+        }
+
+        return new Index(
+            $schema,
+            $this->createIndexer($schema),
+            $this->createIndexSearcher($schema),
+            $this->createQueryParser()
+        );
+    }
+
+    /**
+     * Create an Indexer for the given schema.
+     *
+     * @param \Blixt\Persistence\Entities\Schema $schema
+     *
+     * @return \Blixt\Indexing\Indexer
+     */
+    protected function createIndexer(Schema $schema): Indexer
+    {
+        return new Indexer($schema, $this->getStorage(), $this->getTokenizer(), $this->getStemmer());
+    }
+
+    /**
+     * Create an IndexSearcher for the given schema.
+     *
+     * @param \Blixt\Persistence\Entities\Schema $schema
+     *
+     * @return \Blixt\Search\IndexSearcher
+     */
+    protected function createIndexSearcher(Schema $schema): IndexSearcher
+    {
+        return new IndexSearcher($schema, $this->getStorage(), $this->getTokenizer());
+    }
+
+    /**
+     * Create a QueryParser to pass to an Index.
+     *
+     * @return \Blixt\Search\Query\QueryParser
+     */
+    protected function createQueryParser()
+    {
+        return new QueryParser($this->getTokenizer(), $this->getStemmer());
     }
 }

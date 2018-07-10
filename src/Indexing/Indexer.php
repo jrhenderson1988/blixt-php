@@ -1,13 +1,10 @@
 <?php
 
-namespace Blixt\Index;
+namespace Blixt\Indexing;
 
 use Blixt\Document\Indexable;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
-use Blixt\Exceptions\InvalidSchemaException;
-use Blixt\Search\IndexSearcher;
-use Blixt\Search\Query\Query;
 use Blixt\Persistence\Entities\Column;
 use Blixt\Persistence\Entities\Document;
 use Blixt\Persistence\Entities\Field;
@@ -17,14 +14,12 @@ use Blixt\Persistence\Entities\Schema;
 use Blixt\Persistence\Entities\Term;
 use Blixt\Persistence\Entities\Word;
 use Blixt\Persistence\StorageManager;
-use Blixt\Search\Query\QueryParser;
-use Blixt\Search\Results\ResultSet;
 use Blixt\Stemming\Stemmer;
 use Blixt\Tokenization\Token;
 use Blixt\Tokenization\Tokenizer;
 use Illuminate\Support\Collection;
 
-class Index
+class Indexer
 {
     /**
      * @var \Blixt\Persistence\Entities\Schema
@@ -47,24 +42,12 @@ class Index
     protected $stemmer;
 
     /**
-     * @var \Blixt\Search\IndexSearcher|null
-     */
-    protected $searcher;
-
-    /**
-     * @var \Blixt\Search\Query\QueryParser|null
-     */
-    protected $parser;
-
-    /**
-     * Index constructor.
+     * Indexer constructor.
      *
      * @param \Blixt\Persistence\Entities\Schema $schema
      * @param \Blixt\Persistence\StorageManager $storage
      * @param \Blixt\Tokenization\Tokenizer $tokenizer
      * @param \Blixt\Stemming\Stemmer $stemmer
-     *
-     * @throws \Blixt\Exceptions\InvalidSchemaException
      */
     public function __construct(Schema $schema, StorageManager $storage, Tokenizer $tokenizer, Stemmer $stemmer)
     {
@@ -72,11 +55,11 @@ class Index
         $this->storage = $storage;
         $this->tokenizer = $tokenizer;
         $this->stemmer = $stemmer;
-
-        $this->loadColumns();
     }
 
     /**
+     * Add a document to the index.
+     *
      * @param \Blixt\Document\Indexable $indexable
      *
      * @return bool
@@ -91,54 +74,6 @@ class Index
         $this->createDocument($indexable);
 
         return true;
-    }
-
-    /**
-     * Translate the given search string into a query object and run it.
-     *
-     * @param string $search
-     *
-     * @return \Blixt\Search\Results\ResultSet
-     */
-    public function search(string $search): ResultSet
-    {
-        if (! $this->parser) {
-            $this->parser = new QueryParser($this->tokenizer, $this->stemmer);
-        }
-
-        return $this->query($this->parser->parse($search));
-    }
-
-    /**
-     * @param \Blixt\Search\Query\Query $query
-     *
-     * @return \Blixt\Search\Results\ResultSet
-     */
-    public function query(Query $query): ResultSet
-    {
-        if (! $this->searcher) {
-            $this->searcher = new IndexSearcher($this->schema, $this->storage, $this->tokenizer);
-        }
-
-        return $this->searcher->query($query);
-    }
-
-    /**
-     * Load the schema's columns if they've not yet been loaded.
-     *
-     * @throws \Blixt\Exceptions\InvalidSchemaException
-     */
-    protected function loadColumns(): void
-    {
-        if (! $this->schema->hasColumns()) {
-            $columns = $this->storage->columns()->getBySchema($this->schema);
-
-            if ($columns->isEmpty()) {
-                throw InvalidSchemaException::noColumns();
-            }
-
-            $this->schema->setColumns($columns);
-        }
     }
 
     /**
@@ -233,7 +168,7 @@ class Index
      */
     protected function indexField(Field $field, $content): void
     {
-        $positions = new Collection();
+        $positions = Collection::make([]);
 
         $this->tokenizer->tokenize($content)->each(function (Token $token) use (&$positions) {
             $text = $this->stemmer->stem($token->getText());

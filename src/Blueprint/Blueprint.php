@@ -1,6 +1,6 @@
 <?php
 
-namespace Blixt\Index\Blueprint;
+namespace Blixt\Blueprint;
 
 use Illuminate\Support\Collection;
 
@@ -65,7 +65,7 @@ class Blueprint
     /**
      * Add a definition to the blueprint.
      *
-     * @param \Blixt\Index\Blueprint\Definition $definition
+     * @param \Blixt\Blueprint\Definition $definition
      */
     public function addDefinition(Definition $definition): void
     {

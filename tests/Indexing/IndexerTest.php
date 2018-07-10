@@ -1,13 +1,14 @@
 <?php
 
-namespace BlixtTests\Index;
+namespace BlixtTests\Indexing;
 
 use Blixt\Blixt;
+use Blixt\Blueprint\Blueprint;
+use Blixt\Blueprint\Definition;
 use Blixt\Document\Indexable;
 use Blixt\Exceptions\DocumentAlreadyExistsException;
 use Blixt\Exceptions\InvalidDocumentException;
-use Blixt\Index\Blueprint\Blueprint;
-use Blixt\Index\Blueprint\Definition;
+use Blixt\Indexing\Indexer;
 use Blixt\Persistence\Drivers\MemoryStorage;
 use Blixt\Persistence\Drivers\Storage;
 use Blixt\Persistence\Entities\Column;
@@ -21,6 +22,7 @@ use Blixt\Persistence\Repositories\PositionRepository;
 use Blixt\Persistence\Repositories\SchemaRepository;
 use Blixt\Persistence\Repositories\TermRepository;
 use Blixt\Persistence\Repositories\WordRepository;
+use Blixt\Persistence\StorageManager;
 use Blixt\Stemming\Stemmer;
 use Blixt\Tokenization\Token;
 use Blixt\Tokenization\Tokenizer;
@@ -28,8 +30,13 @@ use BlixtTests\TestCase;
 use Illuminate\Support\Collection;
 use Mockery as m;
 
-class IndexTest extends TestCase
+class IndexerTest extends TestCase
 {
+    /**
+     * @var \Blixt\Indexing\Indexer
+     */
+    protected $indexer;
+
     /**
      * @var \Mockery\MockInterface|\Blixt\Persistence\Drivers\Storage
      */
@@ -44,16 +51,6 @@ class IndexTest extends TestCase
      * @var \Blixt\Stemming\Stemmer|\Mockery\MockInterface
      */
     protected $stemmer;
-
-    /**
-     * @var \Blixt\Blixt
-     */
-    protected $blixt;
-
-    /**
-     * @var \Blixt\Index\Index
-     */
-    protected $index;
 
     /**
      * @var \Blixt\Persistence\Entities\Schema
@@ -76,76 +73,29 @@ class IndexTest extends TestCase
         $this->tokenizer = m::mock(Tokenizer::class);
         $this->stemmer = m::mock(Stemmer::class);
 
-        $this->blixt = new Blixt($this->storage, $this->tokenizer, $this->stemmer);
-    }
-
-    /**
-     * @param \Blixt\Persistence\Entities\Schema $schema
-     *
-     * @return \Blixt\Index\Index
-     * @throws \Blixt\Exceptions\InvalidBlueprintException
-     * @throws \Blixt\Exceptions\InvalidSchemaException
-     * @throws \Blixt\Exceptions\SchemaDoesNotExistException
-     * @throws \Blixt\Exceptions\StorageException
-     */
-    public function makeIndexForSchema(Schema $schema)
-    {
-        $this->schema = $schema;
-
-        $this->storage->shouldReceive('getWhere')
-            ->once()
-            ->withArgs([SchemaRepository::TABLE, [SchemaRepository::NAME => $schema->getName()], 0, 1])
-            ->andReturn([new Record($schema->getId(), [SchemaRepository::NAME => $schema->getName()])]);
-
-        $this->storage->shouldReceive('getWhere')
-            ->once()
-            ->withArgs([ColumnRepository::TABLE, [ColumnRepository::SCHEMA_ID => $schema->getId()], 0, null])
-            ->andReturn(
-                $schema->getColumns()->map(function (Column $column) {
-                    return new Record($column->getId(), [
-                        ColumnRepository::SCHEMA_ID => $column->getSchemaId(),
-                        ColumnRepository::NAME => $column->getName(),
-                        ColumnRepository::IS_INDEXED => $column->isIndexed(),
-                        ColumnRepository::IS_STORED => $column->isStored()
-                    ]);
-                })->toArray()
-            );
-
-        return $this->index = $this->blixt->open($schema->getName());
-    }
-
-    /**
-     * @return \Blixt\Index\Index
-     * @throws \Blixt\Exceptions\InvalidBlueprintException
-     * @throws \Blixt\Exceptions\InvalidSchemaException
-     * @throws \Blixt\Exceptions\SchemaDoesNotExistException
-     * @throws \Blixt\Exceptions\StorageException
-     */
-    public function makeIndexForPeopleSchemaWithNameAndAgeColumns()
-    {
         $this->schema = Schema::make(1, 'people');
-
         $this->schema->setColumns(Collection::make([
             $this->nameColumn = Column::make(1, 1, 'name', true, false),
             $this->ageColumn = Column::make(2, 1, 'age', false, true),
         ]));
 
-        return $this->index = $this->makeIndexForSchema($this->schema);
+        $this->indexer = new Indexer(
+            $this->schema,
+            new StorageManager($this->storage),
+            $this->tokenizer,
+            $this->stemmer
+        );
     }
 
     /**
      * @test
+     * @covers \Blixt\Indexing\Indexer::add()
      * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
-     * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\InvalidDocumentException
-     * @throws \Blixt\Exceptions\InvalidSchemaException
-     * @throws \Blixt\Exceptions\SchemaDoesNotExistException
      * @throws \Blixt\Exceptions\StorageException
      */
     public function testIndexingAlreadyExistingDocumentThrowsDocumentAlreadyExistsException()
     {
-        $this->makeIndexForPeopleSchemaWithNameAndAgeColumns();
-
         $indexable = new Indexable(1);
 
         $this->storage->shouldReceive('getWhere')
@@ -160,22 +110,18 @@ class IndexTest extends TestCase
             ])]);
 
         $this->expectException(DocumentAlreadyExistsException::class);
-        $this->index->add($indexable);
+        $this->indexer->add($indexable);
     }
 
     /**
      * @test
+     * @covers \Blixt\Indexing\Indexer::add()
      * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
-     * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\InvalidDocumentException
-     * @throws \Blixt\Exceptions\InvalidSchemaException
-     * @throws \Blixt\Exceptions\SchemaDoesNotExistException
      * @throws \Blixt\Exceptions\StorageException
      */
     public function testIndexingDocumentWithMissingFieldsThrowsInvalidDocumentException()
     {
-        $this->makeIndexForPeopleSchemaWithNameAndAgeColumns();
-
         $indexable = new Indexable(123);
         $indexable->setField('name', 'Joe Bloggs');
 
@@ -188,22 +134,18 @@ class IndexTest extends TestCase
             ->andReturn([]);
 
         $this->expectException(InvalidDocumentException::class);
-        $this->index->add($indexable);
+        $this->indexer->add($indexable);
     }
 
     /**
      * @test
+     * @covers \Blixt\Indexing\Indexer::add()
      * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
-     * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\InvalidDocumentException
-     * @throws \Blixt\Exceptions\InvalidSchemaException
-     * @throws \Blixt\Exceptions\SchemaDoesNotExistException
      * @throws \Blixt\Exceptions\StorageException
      */
     public function testDocumentCanBeIndexed()
     {
-        $this->makeIndexForPeopleSchemaWithNameAndAgeColumns();
-
         // Find document by its schema ID and key, returns null (doesn't exist). Create new document.
         $documentCriteria = [DocumentRepository::SCHEMA_ID => $this->schema->getId(), DocumentRepository::KEY => 123];
         $documentAttrs = $documentCriteria;
@@ -358,22 +300,18 @@ class IndexTest extends TestCase
         $document->setField('name', 'Joe Bloggs');
         $document->setField('age', 23);
 
-        $this->assertTrue($this->index->add($document));
+        $this->assertTrue($this->indexer->add($document));
     }
 
     /**
      * @test
+     * @covers \Blixt\Indexing\Indexer::add()
      * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
-     * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\InvalidDocumentException
-     * @throws \Blixt\Exceptions\InvalidSchemaException
-     * @throws \Blixt\Exceptions\SchemaDoesNotExistException
      * @throws \Blixt\Exceptions\StorageException
      */
     public function testDocumentCanBeIndexedWhenWordsAlreadyExist()
     {
-        $this->makeIndexForPeopleSchemaWithNameAndAgeColumns();
-
         // Find document by its schema ID and key, returns null (doesn't exist). Create new document.
         $documentCriteria = [DocumentRepository::SCHEMA_ID => $this->schema->getId(), DocumentRepository::KEY => 123];
         $documentAttrs = $documentCriteria;
@@ -522,21 +460,19 @@ class IndexTest extends TestCase
         $document->setField('name', 'Joe Bloggs');
         $document->setField('age', 23);
 
-        $this->assertTrue($this->index->add($document));
+        $this->assertTrue($this->indexer->add($document));
     }
 
+
     /**
+     * @test
+     * @covers \Blixt\Indexing\Indexer::add()
      * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
-     * @throws \Blixt\Exceptions\InvalidBlueprintException
      * @throws \Blixt\Exceptions\InvalidDocumentException
-     * @throws \Blixt\Exceptions\InvalidSchemaException
-     * @throws \Blixt\Exceptions\SchemaDoesNotExistException
      * @throws \Blixt\Exceptions\StorageException
      */
     public function testDocumentCanBeIndexedWhenTermsAlreadyExistWithinSchema()
     {
-        $this->makeIndexForPeopleSchemaWithNameAndAgeColumns();
-
         // Find document by its schema ID and key, returns null (doesn't exist). Create new document.
         $documentCriteria = [DocumentRepository::SCHEMA_ID => $this->schema->getId(), DocumentRepository::KEY => 123];
         $documentAttrs = $documentCriteria;
@@ -689,25 +625,21 @@ class IndexTest extends TestCase
         $document->setField('name', 'Joe Bloggs');
         $document->setField('age', 23);
 
-        $this->assertTrue($this->index->add($document));
+        $this->assertTrue($this->indexer->add($document));
     }
 
     /**
      * @dataProvider documentsIndexedCorrectlyProvider
      * @test
      *
-     * @param $blueprint
-     * @param $indexables
-     * @param $expected
+     * @param array $documents
+     * @param array $expected
      *
-     * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
      * @throws \Blixt\Exceptions\IndexAlreadyExistsException
      * @throws \Blixt\Exceptions\InvalidBlueprintException
-     * @throws \Blixt\Exceptions\InvalidDocumentException
-     * @throws \Blixt\Exceptions\InvalidSchemaException
      * @throws \Blixt\Exceptions\StorageException
      */
-    public function testDocumentsAreCorrectlyIndexed($blueprint, $indexables, $expected)
+    public function testDocumentsAreCorrectlyIndexed(array $documents, array $expected)
     {
         $storage = new MemoryStorage();
         $storage->install();
@@ -715,9 +647,15 @@ class IndexTest extends TestCase
         $tokenizer = new DummyTokenizer();
         $blixt = new Blixt($storage, $tokenizer, $stemmer);
 
-        $index = $blixt->create($blueprint);
-        foreach (is_array($indexables) ? $indexables : [$indexables] as $indexable) {
-            $index->add($indexable);
+        $index = $blixt->create(new Blueprint('people', Collection::make([
+            new Definition('name', true, false),
+            new Definition('age', false, true)
+        ])));
+
+        $indexer = $this->getInaccessibleProperty($index, 'indexer');
+
+        foreach (is_array($documents) ? $documents : [$documents] as $document) {
+            $indexer->add($document);
         }
 
         $this->assertEquals($expected, $this->getInaccessibleProperty($storage, 'data'));
@@ -725,17 +663,12 @@ class IndexTest extends TestCase
 
     public function documentsIndexedCorrectlyProvider()
     {
-        $peopleBlueprint = new Blueprint('people', Collection::make([
-            new Definition('name', true, false),
-            new Definition('age', false, true)
-        ]));
-
-        $joeBloggsIndexable = new Indexable(1, Collection::make([
+        $joeBloggsDocument = new Indexable(1, Collection::make([
             'name' => 'Joe Bloggs',
             'age' => 30
         ]));
 
-        $janeDoeIndexable = new Indexable(2, Collection::make([
+        $janeDoeDocument = new Indexable(2, Collection::make([
             'name' => 'Jane Doe',
             'age' => 28
         ]));
@@ -951,11 +884,11 @@ class IndexTest extends TestCase
         ];
 
         return [
-            'people schema, joe bloggs' => [
-                $peopleBlueprint, [$joeBloggsIndexable], $expectedPeopleJoeBloggs
+            'Joe Bloggs' => [
+                [$joeBloggsDocument], $expectedPeopleJoeBloggs
             ],
-            'people schema, joe bloggs and jane doe' => [
-                $peopleBlueprint, [$joeBloggsIndexable, $janeDoeIndexable], $expectedPeopleJoeBloggsJaneDoe
+            'Joe Bloggs and Jane Doe' => [
+                [$joeBloggsDocument, $janeDoeDocument], $expectedPeopleJoeBloggsJaneDoe
             ],
         ];
     }
@@ -973,13 +906,10 @@ class DummyTokenizer implements Tokenizer
 {
     public function tokenize(string $text, array $prefixes = []): Collection
     {
-        $tokens = new Collection();
-
         $i = 0;
-        foreach (explode(' ', mb_strtolower(trim($text))) as $word) {
-            $tokens->push(new Token($word, $i++));
-        }
 
-        return $tokens;
+        return Collection::make(explode(' ', mb_strtolower(trim($text))))->map(function ($word) use (&$i) {
+            return new Token($word, $i++);
+        });
     }
 }
