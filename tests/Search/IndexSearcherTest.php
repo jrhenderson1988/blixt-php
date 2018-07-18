@@ -15,7 +15,6 @@ class IndexSearcherTest extends TestCase
 {
     public function setUp()
     {
-
     }
 
     /**
