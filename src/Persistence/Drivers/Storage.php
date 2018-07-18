@@ -31,14 +31,14 @@ interface Storage
     public function install(): bool;
 
     /**
-     * Find a single entity by its ID in the storage.
+     * Get one or more entities from the storage by the given set of IDs. Always returns an array of Record objects.
      *
      * @param string $table
-     * @param int $id
+     * @param array $ids
      *
-     * @return \Blixt\Persistence\Record|null
+     * @return array
      */
-    public function find(string $table, int $id): ?Record;
+    public function get(string $table, array $ids): array;
 
     /**
      * Get one or more entities from the storage with the given conditions. Always returns an array of Record objects.

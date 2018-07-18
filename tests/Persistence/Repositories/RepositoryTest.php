@@ -139,21 +139,49 @@ class RepositoryTest extends TestCase
 
     /**
      * @test
+     * @covers \Blixt\Persistence\Repositories\Repository::get()
+     */
+    public function testGet()
+    {
+        $this->storage->shouldReceive('get')
+            ->once()
+            ->withArgs([TestRepository::TABLE, [1, 2, 3]])
+            ->andReturn([
+                new Record(1, [TestRepository::NAME => 'one']),
+                new Record(2, [TestRepository::NAME => 'two']),
+                new Record(3, [TestRepository::NAME => 'three']),
+            ]);
+
+        $this->assertEquals(
+            Collection::make([TestEntity::make(1, 'one'), TestEntity::make(2, 'two'), TestEntity::make(3, 'three')]),
+            $this->repository->get([1, 2, 3])
+        );
+
+        $this->storage->shouldReceive('get')
+            ->once()
+            ->withArgs([TestRepository::TABLE, [4]])
+            ->andReturn([]);
+
+        $this->assertEquals(Collection::make([]), $this->repository->get([4]));
+    }
+
+    /**
+     * @test
      * @covers \Blixt\Persistence\Repositories\Repository::find()
      */
     public function testFind()
     {
-        $this->storage->shouldReceive('find')
+        $this->storage->shouldReceive('get')
             ->once()
-            ->withArgs([TestRepository::TABLE, 1])
-            ->andReturn(new Record(1, [TestRepository::NAME => 'test']));
+            ->withArgs([TestRepository::TABLE, [1]])
+            ->andReturn([new Record(1, [TestRepository::NAME => 'test'])]);
 
         $this->assertEquals(TestEntity::make(1, 'test'), $this->repository->find(1));
 
-        $this->storage->shouldReceive('find')
+        $this->storage->shouldReceive('get')
             ->once()
-            ->withArgs([TestRepository::TABLE, 1234])
-            ->andReturnNull();
+            ->withArgs([TestRepository::TABLE, [1234]])
+            ->andReturn([]);
 
         $this->assertNull($this->repository->find(1234));
     }

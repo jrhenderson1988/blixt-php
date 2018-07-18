@@ -100,6 +100,30 @@ class MemoryStorage extends AbstractStorage implements Storage
     }
 
     /**
+     * Get one or more entities from the storage by the given set of IDs.
+     *
+     * @param string $table
+     * @param array $ids
+     *
+     * @return array
+     * @throws \Blixt\Exceptions\StorageException
+     */
+    public function get(string $table, array $ids): array
+    {
+        $this->assertTableExists($table);
+
+        $results = [];
+
+        foreach ($ids as $id) {
+            if (isset($this->data[$table][$id])) {
+                $results[] = new Record($id, $this->data[$table][$id]);
+            }
+        }
+
+        return $results;
+    }
+
+    /**
      * Get one or more entities from the storage with the given conditions. Always returns an array of Record objects.
      *
      * @param string $table

@@ -122,6 +122,20 @@ abstract class Repository
     }
 
     /**
+     * Get a collection of entities by their IDs.
+     *
+     * @param array $ids
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function get(array $ids): Collection
+    {
+        return static::toCollection(
+            $this->driver()->get(static::table(), $ids)
+        );
+    }
+
+    /**
      * Get a collection of entities, represented by this repository. An optional offset and limit may be provided.
      *
      * @param int $offset
@@ -161,9 +175,13 @@ abstract class Repository
      */
     public function find(int $id): ?Entity
     {
-        $record = $this->driver()->find(static::table(), $id);
+        $items = $this->get([$id]);
 
-        return $record !== null ? static::fromRecord($record) : null;
+        if ($items->isNotEmpty() && ($record = $items->first()) instanceof Entity) {
+            return $record;
+        }
+
+        return null;
     }
 
     /**
