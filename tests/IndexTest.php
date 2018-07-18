@@ -8,7 +8,7 @@ use Blixt\Indexing\Indexer;
 use Blixt\Persistence\Entities\Column;
 use Blixt\Persistence\Entities\Schema;
 use Blixt\Search\IndexSearcher;
-use Blixt\Search\Query\BooleanQuery;
+use Blixt\Search\Query\BasicQuery;
 use Blixt\Search\Query\Clause\ShouldClause;
 use Blixt\Search\Query\QueryParser;
 use Blixt\Search\Results\ResultSet;
@@ -87,14 +87,14 @@ class IndexTest extends TestCase
      */
     public function testQuery()
     {
-        $query = new BooleanQuery(Collection::make([
+        $query = new BasicQuery(Collection::make([
             new ShouldClause('this'),
             new ShouldClause('is'),
             new ShouldClause('a'),
             new ShouldClause('test')
         ]));
 
-        $this->searcher->shouldReceive('query')->withArgs([$query])->andReturn($resultSet = new ResultSet());
+        $this->searcher->shouldReceive('search')->withArgs([$query])->andReturn($resultSet = new ResultSet());
 
         $this->assertEquals($resultSet, $this->index->query($query));
     }
@@ -106,7 +106,7 @@ class IndexTest extends TestCase
     public function testSearch()
     {
         $search = 'this is a test';
-        $query = new BooleanQuery(Collection::make([
+        $query = new BasicQuery(Collection::make([
             new ShouldClause('this'),
             new ShouldClause('is'),
             new ShouldClause('a'),
@@ -115,7 +115,7 @@ class IndexTest extends TestCase
         $resultSet = new ResultSet();
 
         $this->parser->shouldReceive('parse')->withArgs([$search])->andReturn($query);
-        $this->searcher->shouldReceive('query')->withArgs([$query])->andReturn($resultSet);
+        $this->searcher->shouldReceive('search')->withArgs([$query])->andReturn($resultSet);
 
         $this->assertEquals($resultSet, $this->index->search($search));
     }

@@ -69,7 +69,7 @@ class QueryParser
                 $prefixes->put($stem, $values);
             });
 
-        return new BooleanQuery($prefixes->map(function ($prefixes, $text) {
+        return new BasicQuery($prefixes->map(function ($prefixes, $text) {
             return $this->createClause($text, $prefixes);
         }));
     }

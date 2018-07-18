@@ -2,7 +2,7 @@
 
 namespace BlixtTests\Search\Query;
 
-use Blixt\Search\Query\BooleanQuery;
+use Blixt\Search\Query\BasicQuery;
 use Blixt\Search\Query\Clause\Clause;
 use Blixt\Search\Query\Clause\MustClause;
 use Blixt\Search\Query\Clause\MustNotClause;
@@ -62,7 +62,7 @@ class QueryParserTest extends TestCase
 
         $result = $this->parser->parse('this is a test');
 
-        $this->assertInstanceOf(BooleanQuery::class, $result);
+        $this->assertInstanceOf(BasicQuery::class, $result);
         $this->assertEquals(4, $result->getClauses()->count());
         $result->getClauses()->each(function ($clause) {
             $this->assertInstanceOf(Clause::class, $clause);
@@ -90,7 +90,7 @@ class QueryParserTest extends TestCase
 
         $result = $this->parser->parse('+one two -three');
 
-        $this->assertInstanceOf(BooleanQuery::class, $result);
+        $this->assertInstanceOf(BasicQuery::class, $result);
         $this->assertEquals(3, $result->getClauses()->count());
         $this->assertInstanceOf(MustClause::class, $result->getClauses()->first(function (Clause $clause) {
             return $clause->getValue() === 'one';
@@ -125,7 +125,7 @@ class QueryParserTest extends TestCase
 
         $result = $this->parser->parse('Test is a test');
 
-        $this->assertInstanceOf(BooleanQuery::class, $result);
+        $this->assertInstanceOf(BasicQuery::class, $result);
         $this->assertEquals(3, $result->getClauses()->count());
         $this->assertInstanceOf(ShouldClause::class, $result->getClauses()->first(function (Clause $clause) {
             return $clause->getValue() === 'test';
@@ -159,7 +159,7 @@ class QueryParserTest extends TestCase
 
         $result = $this->parser->parse('+one one two -two');
 
-        $this->assertInstanceOf(BooleanQuery::class, $result);
+        $this->assertInstanceOf(BasicQuery::class, $result);
         $this->assertEquals(2, $result->getClauses()->count());
         $this->assertInstanceOf(MustClause::class, $result->getClauses()->first(function (Clause $clause) {
             return $clause->getValue() === 'one';
@@ -191,7 +191,7 @@ class QueryParserTest extends TestCase
 
         $result = $this->parser->parse('+test -test +test');
 
-        $this->assertInstanceOf(BooleanQuery::class, $result);
+        $this->assertInstanceOf(BasicQuery::class, $result);
         $this->assertEquals(1, $result->getClauses()->count());
         $this->assertInstanceOf(ShouldClause::class, $result->getClauses()->first());
     }

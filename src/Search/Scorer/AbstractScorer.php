@@ -1,6 +1,6 @@
 <?php
 
-namespace Blixt\Search\Query\Scorer;
+namespace Blixt\Search\Scorer;
 
 abstract class AbstractScorer
 {

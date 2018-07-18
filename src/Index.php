@@ -62,15 +62,17 @@ class Index
     }
 
     /**
-     * Translate the given search string into a query object and run it.
+     * Translate the given string of search terms into a query object and run it.
      *
-     * @param string $search
+     * @param string $terms
      *
      * @return \Blixt\Search\Results\ResultSet
      */
-    public function search(string $search): ResultSet
+    public function search(string $terms): ResultSet
     {
-        return $this->query($this->queryParser->parse($search));
+        return $this->query(
+            $this->queryParser->parse($terms)
+        );
     }
 
     /**
@@ -80,6 +82,6 @@ class Index
      */
     public function query(Query $query): ResultSet
     {
-        return $this->searcher->query($query);
+        return $this->searcher->search($query);
     }
 }
