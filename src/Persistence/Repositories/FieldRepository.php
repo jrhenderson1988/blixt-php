@@ -4,6 +4,7 @@ namespace Blixt\Persistence\Repositories;
 
 use Blixt\Persistence\Entities\Entity;
 use Blixt\Persistence\Entities\Field;
+use Illuminate\Support\Collection;
 
 /**
  * FieldRepository.
@@ -57,5 +58,11 @@ class FieldRepository extends Repository
             $attributes[static::COLUMN_ID],
             $attributes[static::VALUE]
         );
+    }
+
+    public function getByOccurrences(Collection $occurrences): Collection
+    {
+        // TODO
+        return null;
     }
 }

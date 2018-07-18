@@ -4,9 +4,11 @@ namespace Blixt\Search;
 
 use Blixt\Persistence\Entities\Schema;
 use Blixt\Persistence\StorageManager;
+use Blixt\Search\Query\Clause\Clause;
 use Blixt\Search\Query\Query;
 use Blixt\Search\Results\ResultSet;
 use Blixt\Tokenization\Tokenizer;
+use Illuminate\Support\Collection;
 
 class IndexSearcher
 {
@@ -46,7 +48,10 @@ class IndexSearcher
         // - IndexSearcher carries out all the logic for searching, filtering and using scorer to score each document.
         // - A scorer class is responsible for scoring each document and different scorers can alter the ordering of
         //   results and how each document is placed.
-
+        $words = $this->getMatchingWords($query->getClauses());
+        $terms = $this->getTermsFromWords($words);
+        $occurrences = $this->getOccurrencesFromTerms($terms);
+        dd($occurrences);
 
 
         // Initialisation --
@@ -74,5 +79,27 @@ class IndexSearcher
         // - Consider using a configurable cache that stores documents with all the required entities for quick lookups
         // - Consider chunking when evaluating documents, loading X at once with all the required entities in a few
         //   queries instead of doing single queries for each document.
+    }
+
+    protected function getMatchingWords(Collection $clauses)
+    {
+        return $this->storage->words()->getByWords($clauses->map(function (Clause $clause) {
+            return $clause->getValue();
+        }));
+    }
+
+    protected function getTermsFromWords(Collection $words)
+    {
+        return $this->storage->terms()->getBySchemaAndWords($this->schema, $words);
+    }
+
+    protected function getOccurrencesFromTerms(Collection $terms)
+    {
+        return $this->storage->occurrences()->getByTerms($terms);
+    }
+
+    protected function getFieldsFromOccurrences(Collection $occurrences)
+    {
+        return $this->storage->fields()->getByOccurrences($occurrences);
     }
 }

@@ -4,6 +4,8 @@ namespace Blixt\Persistence\Repositories;
 
 use Blixt\Persistence\Entities\Entity;
 use Blixt\Persistence\Entities\Occurrence;
+use Blixt\Persistence\Entities\Term;
+use Illuminate\Support\Collection;
 
 /**
  * OccurrenceRepository.
@@ -57,5 +59,14 @@ class OccurrenceRepository extends Repository
             $attributes[static::TERM_ID],
             $attributes[static::FREQUENCY]
         );
+    }
+
+    public function getByTerms(Collection $terms): Collection
+    {
+        return $this->getWhere([
+            static::TERM_ID => $terms->map(function (Term $term) {
+                return $term->getId();
+            })->all()
+        ]);
     }
 }
