@@ -2,7 +2,9 @@
 
 namespace Blixt\Search;
 
+use Blixt\Persistence\Entities\Field;
 use Blixt\Persistence\Entities\Schema;
+use Blixt\Persistence\Entities\Word;
 use Blixt\Persistence\StorageManager;
 use Blixt\Search\Query\Clause\Clause;
 use Blixt\Search\Query\Query;
@@ -48,10 +50,8 @@ class IndexSearcher
         // - IndexSearcher carries out all the logic for searching, filtering and using scorer to score each document.
         // - A scorer class is responsible for scoring each document and different scorers can alter the ordering of
         //   results and how each document is placed.
-        $words = $this->getMatchingWords($query->getClauses());
-        $terms = $this->getTermsFromWords($words);
-        $occurrences = $this->getOccurrencesFromTerms($terms);
-        dd($occurrences);
+
+        dd($this->getCandidateDocumentIds($query));
 
 
         // Initialisation --
@@ -81,12 +81,129 @@ class IndexSearcher
         //   queries instead of doing single queries for each document.
     }
 
-    protected function getMatchingWords(Collection $clauses)
+    protected function getCandidateDocumentIds(Query $query): Collection
     {
-        return $this->storage->words()->getByWords($clauses->map(function (Clause $clause) {
-            return $clause->getValue();
-        }));
+        $clauses = $query->getClauses();
+
+        $requiredClauses = $this->getRequiredClauses($clauses);
+
+        // Load the words from storage as given by the set of clauses. If any of the required clause values are not
+        // present in the set of words returned, we can't go any further so we should return an empty collection.
+        $words = $this->storage->words()->getByWords($this->getClauseValues($clauses));
+        if (! $this->wordsContainAllRequiredClauses($words, $requiredClauses)) {
+            return Collection::make([]);
+        }
+
+        // Load the terms from storage by the given schema and set of words. If any of the required words are not
+        // represented in the set of returned terms, we can't go any further so should return an empty collection.
+        $terms = $this->storage->terms()->getBySchemaAndWords($this->schema, $words);
+
+        dd($words, $clauses);
+
+
+
+
+
+
+
+//        $prohibitedWordIds = collect([]);
+//        $requiredWordIds = collect([]);
+//
+//        $words = $this->getMatchingWords($query->getClauses());
+//        $words->each(function (Word $word) {
+//
+//        });
+//
+//        $terms = $this->getTermsFromWords($words);
+//
+//        $occurrences = $this->getOccurrencesFromTerms($terms);
+//        // TODO - Filter out occurrences that
+//        $fields = $this->getFieldsFromOccurrences($occurrences);
+//
+//        return $fields->map(function (Field $field) {
+//            return $field->getDocumentId();
+//        })->unique();
     }
+
+    /**
+     * Get a collection of all the values of the given clauses, i.e. the word strings they represent.
+     *
+     * @param \Illuminate\Support\Collection $clauses
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    protected function getClauseValues(Collection $clauses): Collection
+    {
+        return $clauses->map(function (Clause $clause) {
+            return $clause->getValue();
+        });
+    }
+
+    /**
+     * Extract a collection of clauses that are considered prohibited from the given set of clauses.
+     *
+     * @param \Illuminate\Support\Collection $clauses
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    protected function getProhibitedClauses(Collection $clauses): Collection
+    {
+        return $clauses->filter(function (Clause $clause) {
+            return $clause->isProhibited();
+        });
+    }
+
+    /**
+     * Extract a collection of clauses that are considered required from the given set of clauses.
+     *
+     * @param \Illuminate\Support\Collection $clauses
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    protected function getRequiredClauses(Collection $clauses): Collection
+    {
+        return $clauses->filter(function (Clause $clause) {
+            return $clause->isRequired();
+        });
+    }
+
+    /**
+     * Tell if the given Collection of Words contains all of the required clauses present in the given set.
+     *
+     * @param \Illuminate\Support\Collection $words
+     * @param \Illuminate\Support\Collection $clauses
+     *
+     * @return bool
+     */
+    protected function wordsContainAllRequiredClauses(Collection $words, Collection $clauses): bool
+    {
+        // Convert the collection of Word objects to a collection of word strings for easy lookup.
+        $words = $words->map(function (Word $word) {
+            return $word->getWord();
+        });
+
+        // The idea here is to find a required clause that is missing from the collection of words. If we find such a
+        // clause it is returned. If $missing is null, then it means we were unable to find a clause that was missing a
+        // required word, so we can be sure that
+        return $clauses->first(function (Clause $clause) use ($words) {
+            return $clause->isRequired() && ! $words->contains($clause->getValue());
+        }) === null;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     protected function getTermsFromWords(Collection $words)
     {

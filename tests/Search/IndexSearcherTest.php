@@ -25,7 +25,7 @@ class IndexSearcherTest extends TestCase
      */
     public function testSomething()
     {
-        $this->markTestSkipped('In progress');
+//        $this->markTestSkipped('In progress');
         $blixt = new Blixt(new MemoryStorage(), new DefaultTokenizer(), new EnglishStemmer());
         $blixt->install();
         $index = $blixt->open('test', function (Blueprint $blueprint) {
@@ -40,6 +40,6 @@ class IndexSearcherTest extends TestCase
             'name' => 'Jane Doe',
             'age' => 25
         ])));
-        $index->search('jane');
+        $index->search('jane +doe');
     }
 }

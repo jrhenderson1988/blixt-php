@@ -8,6 +8,7 @@ use Blixt\Persistence\Entities\Position;
 /**
  * PositionRepository.
  *
+ * @method \Illuminate\Support\Collection get(array $ids)
  * @method \Illuminate\Support\Collection getWhere(array $conditions, int $offset = 0, int $limit = null)
  * @method \Illuminate\Support\Collection all(int $offset = 0, int $limit = null)
  * @method Position|null findBy(array $conditions)

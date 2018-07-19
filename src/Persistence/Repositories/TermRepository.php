@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 /**
  * TermRepository.
  *
+ * @method Collection get(array $ids)
  * @method Collection getWhere(array $conditions, int $offset = 0, int $limit = null)
  * @method Collection all(int $offset = 0, int $limit = null)
  * @method Term|null findBy(array $conditions)
@@ -82,9 +83,9 @@ class TermRepository extends Repository
      * Find a collection of terms by the given schema and collection of words.
      *
      * @param \Blixt\Persistence\Entities\Schema $schema
-     * @param \Illuminate\Support\Collection $words
+     * @param Collection $words
      *
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function getBySchemaAndWords(Schema $schema, Collection $words): Collection
     {

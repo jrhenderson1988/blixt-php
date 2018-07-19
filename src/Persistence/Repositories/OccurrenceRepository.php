@@ -10,8 +10,9 @@ use Illuminate\Support\Collection;
 /**
  * OccurrenceRepository.
  *
- * @method \Illuminate\Support\Collection getWhere(array $conditions, int $offset = 0, int $limit = null)
- * @method \Illuminate\Support\Collection all(int $offset = 0, int $limit = null)
+ * @method Collection get(array $ids)
+ * @method Collection getWhere(array $conditions, int $offset = 0, int $limit = null)
+ * @method Collection all(int $offset = 0, int $limit = null)
  * @method Occurrence|null findBy(array $conditions)
  * @method Occurrence|null find(int $id)
  * @method Occurrence create(Occurrence $entity)
@@ -61,6 +62,13 @@ class OccurrenceRepository extends Repository
         );
     }
 
+    /**
+     * Get a collection of Occurrences by the given set of terms.
+     *
+     * @param Collection $terms
+     *
+     * @return Collection
+     */
     public function getByTerms(Collection $terms): Collection
     {
         return $this->getWhere([

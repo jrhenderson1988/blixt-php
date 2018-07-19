@@ -9,6 +9,7 @@ use Illuminate\Support\Collection;
 /**
  * WordRepository.
  *
+ * @method Collection get(array $ids)
  * @method Collection getWhere(array $conditions, int $offset = 0, int $limit = null)
  * @method Collection all(int $offset = 0, int $limit = null)
  * @method Word|null findBy(array $conditions)
@@ -71,9 +72,9 @@ class WordRepository extends Repository
     /**
      * Get a collection of Word entities by the given collection of word strings.
      *
-     * @param \Illuminate\Support\Collection $words
+     * @param Collection $words
      *
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function getByWords(Collection $words): Collection
     {

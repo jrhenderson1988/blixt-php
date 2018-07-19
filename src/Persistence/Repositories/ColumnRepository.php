@@ -10,6 +10,7 @@ use Illuminate\Support\Collection;
 /**
  * ColumnRepository.
  *
+ * @method Collection get(array $ids)
  * @method Collection getWhere(array $conditions, int $offset = 0, int $limit = null)
  * @method Collection all(int $offset = 0, int $limit = null)
  * @method Column|null findBy(array $conditions)

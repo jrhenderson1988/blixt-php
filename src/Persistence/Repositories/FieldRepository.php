@@ -4,13 +4,15 @@ namespace Blixt\Persistence\Repositories;
 
 use Blixt\Persistence\Entities\Entity;
 use Blixt\Persistence\Entities\Field;
+use Blixt\Persistence\Entities\Occurrence;
 use Illuminate\Support\Collection;
 
 /**
  * FieldRepository.
  *
- * @method \Illuminate\Support\Collection getWhere(array $conditions, int $offset = 0, int $limit = null)
- * @method \Illuminate\Support\Collection all(int $offset = 0, int $limit = null)
+ * @method Collection get(array $ids)
+ * @method Collection getWhere(array $conditions, int $offset = 0, int $limit = null)
+ * @method Collection all(int $offset = 0, int $limit = null)
  * @method Field|null findBy(array $conditions)
  * @method Field|null find(int $id)
  * @method Field create(Field $entity)
@@ -60,9 +62,17 @@ class FieldRepository extends Repository
         );
     }
 
+    /**
+     * Get a collection of fields that are referred to by the given collection of occurrences.
+     *
+     * @param Collection $occurrences
+     *
+     * @return Collection
+     */
     public function getByOccurrences(Collection $occurrences): Collection
     {
-        // TODO
-        return null;
+        return $this->get($occurrences->map(function (Occurrence $occurrence) {
+            return $occurrence->getFieldId();
+        })->unique()->all());
     }
 }
