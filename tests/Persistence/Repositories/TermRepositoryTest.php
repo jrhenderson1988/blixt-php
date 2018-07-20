@@ -83,10 +83,10 @@ class TermRepositoryTest extends TestCase
             ])]);
 
         $this->assertEquals(
-            Collection::make([Term::make(1, 1, 2, 3), Term::make(2, 1, 3, 5)]),
+            Collection::make([1 => Term::make(1, 1, 2, 3), 2 => Term::make(2, 1, 3, 5)]),
             $this->repository->getBySchemaAndWords(
                 new Schema(1, 'test'),
-                Collection::make([new Word(2, 'foo'), new Word(3, 'bar')])
+                Collection::make([Word::make(2, 'foo'), Word::make(3, 'bar')])
             )
         );
 

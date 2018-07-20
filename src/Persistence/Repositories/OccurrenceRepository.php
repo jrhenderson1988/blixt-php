@@ -21,7 +21,7 @@ use Illuminate\Support\Collection;
  *
  * @package Blixt\Persistence\Repositories
  */
-class OccurrenceRepository extends Repository
+class OccurrenceRepository extends AbstractRepository
 {
     public const TABLE = 'occurrences';
     public const FIELD_ID = 'field_id';

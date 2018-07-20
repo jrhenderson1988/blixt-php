@@ -19,7 +19,7 @@ use Blixt\Persistence\Entities\Position;
  *
  * @package Blixt\Persistence\Repositories
  */
-class PositionRepository extends Repository
+class PositionRepository extends AbstractRepository
 {
     public const TABLE = 'positions';
     public const OCCURRENCE_ID = 'occurrence_id';

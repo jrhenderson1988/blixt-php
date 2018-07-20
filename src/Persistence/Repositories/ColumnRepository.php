@@ -21,7 +21,7 @@ use Illuminate\Support\Collection;
  *
  * @package Blixt\Persistence\Repositories
  */
-class ColumnRepository extends Repository
+class ColumnRepository extends AbstractRepository
 {
     public const TABLE = 'columns';
     public const SCHEMA_ID = 'schema_id';

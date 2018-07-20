@@ -5,12 +5,12 @@ namespace BlixtTests\Persistence\Repositories;
 use Blixt\Persistence\Drivers\Storage;
 use Blixt\Persistence\Entities\Entity;
 use Blixt\Persistence\Record;
-use Blixt\Persistence\Repositories\Repository;
+use Blixt\Persistence\Repositories\AbstractRepository;
 use BlixtTests\TestCase;
 use Illuminate\Support\Collection;
 use Mockery as m;
 
-class RepositoryTest extends TestCase
+class AbstractRepositoryTest extends TestCase
 {
     /**
      * @var \Mockery\MockInterface|\Blixt\Persistence\Drivers\Storage
@@ -18,7 +18,7 @@ class RepositoryTest extends TestCase
     protected $storage;
 
     /**
-     * @var \Blixt\Persistence\Repositories\Repository
+     * @var \Blixt\Persistence\Repositories\AbstractRepository
      */
     protected $repository;
 
@@ -30,7 +30,7 @@ class RepositoryTest extends TestCase
 
     /**
      * @test
-     * @covers \Blixt\Persistence\Repositories\Repository::toAttributes()
+     * @covers \Blixt\Persistence\Repositories\AbstractRepository::toAttributes()
      */
     public function testToAttributes()
     {
@@ -42,7 +42,7 @@ class RepositoryTest extends TestCase
 
     /**
      * @test
-     * @covers \Blixt\Persistence\Repositories\Repository::toEntity()
+     * @covers \Blixt\Persistence\Repositories\AbstractRepository::toEntity()
      */
     public function testToEntity()
     {
@@ -54,7 +54,7 @@ class RepositoryTest extends TestCase
 
     /**
      * @test
-     * @covers \Blixt\Persistence\Repositories\Repository::create()
+     * @covers \Blixt\Persistence\Repositories\AbstractRepository::create()
      * @throws \Blixt\Exceptions\StorageException
      */
     public function testCreate()
@@ -69,7 +69,7 @@ class RepositoryTest extends TestCase
 
     /**
      * @test
-     * @covers \Blixt\Persistence\Repositories\Repository::update()
+     * @covers \Blixt\Persistence\Repositories\AbstractRepository::update()
      * @throws \Blixt\Exceptions\StorageException
      */
     public function testUpdate()
@@ -84,7 +84,7 @@ class RepositoryTest extends TestCase
 
     /**
      * @test
-     * @covers \Blixt\Persistence\Repositories\Repository::save()
+     * @covers \Blixt\Persistence\Repositories\AbstractRepository::save()
      * @throws \Blixt\Exceptions\StorageException
      */
     public function testSaveOnExistingRecord()
@@ -101,7 +101,7 @@ class RepositoryTest extends TestCase
 
     /**
      * @test
-     * @covers \Blixt\Persistence\Repositories\Repository::save()
+     * @covers \Blixt\Persistence\Repositories\AbstractRepository::save()
      * @throws \Blixt\Exceptions\StorageException
      */
     public function testSaveOnNewRecord()
@@ -118,7 +118,7 @@ class RepositoryTest extends TestCase
 
     /**
      * @test
-     * @covers \Blixt\Persistence\Repositories\Repository::findBy()
+     * @covers \Blixt\Persistence\Repositories\AbstractRepository::findBy()
      */
     public function testFindBy()
     {
@@ -139,7 +139,7 @@ class RepositoryTest extends TestCase
 
     /**
      * @test
-     * @covers \Blixt\Persistence\Repositories\Repository::get()
+     * @covers \Blixt\Persistence\Repositories\AbstractRepository::get()
      */
     public function testGet()
     {
@@ -153,7 +153,11 @@ class RepositoryTest extends TestCase
             ]);
 
         $this->assertEquals(
-            Collection::make([TestEntity::make(1, 'one'), TestEntity::make(2, 'two'), TestEntity::make(3, 'three')]),
+            Collection::make([
+                1 => TestEntity::make(1, 'one'),
+                2 => TestEntity::make(2, 'two'),
+                3 => TestEntity::make(3, 'three')
+            ]),
             $this->repository->get([1, 2, 3])
         );
 
@@ -167,7 +171,7 @@ class RepositoryTest extends TestCase
 
     /**
      * @test
-     * @covers \Blixt\Persistence\Repositories\Repository::find()
+     * @covers \Blixt\Persistence\Repositories\AbstractRepository::find()
      */
     public function testFind()
     {
@@ -188,7 +192,7 @@ class RepositoryTest extends TestCase
 
     /**
      * @test
-     * @covers \Blixt\Persistence\Repositories\Repository::getWhere()
+     * @covers \Blixt\Persistence\Repositories\AbstractRepository::getWhere()
      */
     public function testGetWhere()
     {
@@ -198,7 +202,7 @@ class RepositoryTest extends TestCase
             ->andReturn([new Record(1, [TestRepository::NAME => 'test'])]);
 
         $this->assertEquals(
-            Collection::make([TestEntity::make(1, 'test')]),
+            Collection::make([1 => TestEntity::make(1, 'test')]),
             $this->repository->getWhere([TestRepository::NAME => 1], 0, 1)
         );
 
@@ -215,7 +219,7 @@ class RepositoryTest extends TestCase
 
     /**
      * @test
-     * @covers \Blixt\Persistence\Repositories\Repository::all()
+     * @covers \Blixt\Persistence\Repositories\AbstractRepository::all()
      */
     public function testAll()
     {
@@ -224,7 +228,7 @@ class RepositoryTest extends TestCase
             ->withArgs([TestRepository::TABLE, [], 0, null])
             ->andReturn([new Record(1, [TestRepository::NAME => 'test'])]);
 
-        $this->assertEquals(Collection::make([TestEntity::make(1, 'test')]), $this->repository->all());
+        $this->assertEquals(Collection::make([1 => TestEntity::make(1, 'test')]), $this->repository->all());
 
         $this->storage->shouldReceive('getWhere')
             ->once()
@@ -235,7 +239,7 @@ class RepositoryTest extends TestCase
     }
 }
 
-class TestRepository extends Repository
+class TestRepository extends AbstractRepository
 {
     public const TABLE = 'tests';
     public const NAME = 'name';

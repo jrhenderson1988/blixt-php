@@ -52,7 +52,7 @@ class IndexSearcher
         // - A scorer class is responsible for scoring each document and different scorers can alter the ordering of
         //   results and how each document is placed.
 
-        dd($this->getCandidateDocumentIds($query));
+        $this->getCandidateDocumentIds($query);
 
 
         // Initialisation --
@@ -80,6 +80,8 @@ class IndexSearcher
         // - Consider using a configurable cache that stores documents with all the required entities for quick lookups
         // - Consider chunking when evaluating documents, loading X at once with all the required entities in a few
         //   queries instead of doing single queries for each document.
+
+        return new ResultSet();
     }
 
     protected function getCandidateDocumentIds(Query $query): Collection
@@ -114,7 +116,7 @@ class IndexSearcher
         $optionalTerms = $this->filterTermsForWords($terms, $optionalWords);
 
 
-        dd($optionalTerms, $optionalWords);
+//        dd($optionalTerms, $optionalWords);
 
         // TODO - Continue by extracting occurrences and then fields...
         // TODO - Make sure that we keep track of any occurrences and fields we want to reject so we can ultimately reject associated documents.
@@ -141,6 +143,8 @@ class IndexSearcher
 //        return $fields->map(function (Field $field) {
 //            return $field->getDocumentId();
 //        })->unique();
+
+        return Collection::make([]);
     }
 
     /**

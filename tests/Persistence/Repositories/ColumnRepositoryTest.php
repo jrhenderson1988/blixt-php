@@ -46,7 +46,7 @@ class ColumnRepositoryTest extends TestCase
             ])]);
 
         $this->assertEquals(
-            Collection::make([Column::make(1, 1, 'test', true, false)]),
+            Collection::make([1 => Column::make(1, 1, 'test', true, false)]),
             $this->repository->getBySchema(new Schema(1, 'test'))
         );
 

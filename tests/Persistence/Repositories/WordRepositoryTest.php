@@ -62,7 +62,7 @@ class WordRepositoryTest extends TestCase
             ]);
 
         $this->assertEquals(
-            Collection::make([Word::make(1, 'foo'), Word::make(2, 'bar')]),
+            Collection::make([1 => Word::make(1, 'foo'), 2 => Word::make(2, 'bar')]),
             $this->repository->getByWords(Collection::make(['foo', 'bar']))
         );
 

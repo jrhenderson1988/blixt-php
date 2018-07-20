@@ -22,7 +22,7 @@ use Illuminate\Support\Collection;
  *
  * @package Blixt\Persistence\Repositories
  */
-class TermRepository extends Repository
+class TermRepository extends AbstractRepository
 {
     public const TABLE = 'terms';
     public const SCHEMA_ID = 'schema_id';

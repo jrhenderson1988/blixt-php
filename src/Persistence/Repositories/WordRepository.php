@@ -20,7 +20,7 @@ use Illuminate\Support\Collection;
  *
  * @package Blixt\Persistence\Repositories
  */
-class WordRepository extends Repository
+class WordRepository extends AbstractRepository
 {
     public const TABLE = 'words';
     public const WORD = 'word';

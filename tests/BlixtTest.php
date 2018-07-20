@@ -121,7 +121,7 @@ class BlixtTest extends TestCase
     {
         $schema = Schema::make(1, 'test');
         $schema->setColumns(Collection::make([
-            Column::make(1, 1, 'test', false, false)
+            1 => Column::make(1, 1, 'test', false, false)
         ]));
 
         $this->storage->shouldReceive('getWhere')

@@ -20,7 +20,7 @@ use Blixt\Persistence\Entities\Schema;
  *
  * @package Blixt\Persistence\Repositories
  */
-class DocumentRepository extends Repository
+class DocumentRepository extends AbstractRepository
 {
     public const TABLE = 'documents';
     public const SCHEMA_ID = 'schema_id';

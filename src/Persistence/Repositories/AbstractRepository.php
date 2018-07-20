@@ -8,7 +8,7 @@ use Blixt\Persistence\Record;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
-abstract class Repository
+abstract class AbstractRepository
 {
     public const TABLE = '';
 
@@ -18,7 +18,7 @@ abstract class Repository
     protected $driver;
 
     /**
-     * Repository constructor.
+     * AbstractRepository constructor.
      *
      * @param \Blixt\Persistence\Drivers\Storage $driver
      */

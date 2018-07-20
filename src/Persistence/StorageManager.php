@@ -11,12 +11,12 @@ use Blixt\Persistence\Entities\Position;
 use Blixt\Persistence\Entities\Schema;
 use Blixt\Persistence\Entities\Term;
 use Blixt\Persistence\Entities\Word;
+use Blixt\Persistence\Repositories\AbstractRepository;
 use Blixt\Persistence\Repositories\ColumnRepository;
 use Blixt\Persistence\Repositories\DocumentRepository;
 use Blixt\Persistence\Repositories\FieldRepository;
 use Blixt\Persistence\Repositories\OccurrenceRepository;
 use Blixt\Persistence\Repositories\PositionRepository;
-use Blixt\Persistence\Repositories\Repository;
 use Blixt\Persistence\Repositories\SchemaRepository;
 use Blixt\Persistence\Repositories\TermRepository;
 use Blixt\Persistence\Repositories\WordRepository;
@@ -95,9 +95,9 @@ class StorageManager
      *
      * @param string $class
      *
-     * @return \Blixt\Persistence\Repositories\Repository
+     * @return \Blixt\Persistence\Repositories\AbstractRepository
      */
-    public function repository(string $class): Repository
+    public function repository(string $class): AbstractRepository
     {
         if (isset($this->repositories[$class = $this->getEntityClassName($class)])) {
             return $this->repositories[$class];
@@ -109,7 +109,7 @@ class StorageManager
     /**
      * Get the column repository.
      *
-     * @return \Blixt\Persistence\Repositories\ColumnRepository|\Blixt\Persistence\Repositories\Repository
+     * @return \Blixt\Persistence\Repositories\ColumnRepository|\Blixt\Persistence\Repositories\AbstractRepository
      */
     public function columns(): ColumnRepository
     {
@@ -119,7 +119,7 @@ class StorageManager
     /**
      * Get the document repository.
      *
-     * @return \Blixt\Persistence\Repositories\DocumentRepository|\Blixt\Persistence\Repositories\Repository
+     * @return \Blixt\Persistence\Repositories\DocumentRepository|\Blixt\Persistence\Repositories\AbstractRepository
      */
     public function documents(): DocumentRepository
     {
@@ -129,7 +129,7 @@ class StorageManager
     /**
      * Get the field repository.
      *
-     * @return \Blixt\Persistence\Repositories\FieldRepository|\Blixt\Persistence\Repositories\Repository
+     * @return \Blixt\Persistence\Repositories\FieldRepository|\Blixt\Persistence\Repositories\AbstractRepository
      */
     public function fields(): FieldRepository
     {
@@ -139,7 +139,7 @@ class StorageManager
     /**
      * Get the occurrence repository.
      *
-     * @return \Blixt\Persistence\Repositories\OccurrenceRepository|\Blixt\Persistence\Repositories\Repository
+     * @return \Blixt\Persistence\Repositories\OccurrenceRepository|\Blixt\Persistence\Repositories\AbstractRepository
      */
     public function occurrences(): OccurrenceRepository
     {
@@ -149,7 +149,7 @@ class StorageManager
     /**
      * Get the position repository.
      *
-     * @return \Blixt\Persistence\Repositories\PositionRepository|\Blixt\Persistence\Repositories\Repository
+     * @return \Blixt\Persistence\Repositories\PositionRepository|\Blixt\Persistence\Repositories\AbstractRepository
      */
     public function positions(): PositionRepository
     {
@@ -159,7 +159,7 @@ class StorageManager
     /**
      * Get the schema repository.
      *
-     * @return \Blixt\Persistence\Repositories\SchemaRepository|\Blixt\Persistence\Repositories\Repository
+     * @return \Blixt\Persistence\Repositories\SchemaRepository|\Blixt\Persistence\Repositories\AbstractRepository
      */
     public function schemas(): SchemaRepository
     {
@@ -169,7 +169,7 @@ class StorageManager
     /**
      * Get the term repository.
      *
-     * @return \Blixt\Persistence\Repositories\TermRepository|\Blixt\Persistence\Repositories\Repository
+     * @return \Blixt\Persistence\Repositories\TermRepository|\Blixt\Persistence\Repositories\AbstractRepository
      */
     public function terms(): TermRepository
     {
@@ -179,7 +179,7 @@ class StorageManager
     /**
      * Get the word repository.
      *
-     * @return \Blixt\Persistence\Repositories\WordRepository|\Blixt\Persistence\Repositories\Repository
+     * @return \Blixt\Persistence\Repositories\WordRepository|\Blixt\Persistence\Repositories\AbstractRepository
      */
     public function words(): WordRepository
     {
@@ -210,9 +210,9 @@ class StorageManager
      *
      * @param string $class
      *
-     * @return \Blixt\Persistence\Repositories\Repository
+     * @return \Blixt\Persistence\Repositories\AbstractRepository
      */
-    protected function makeRepository(string $class): Repository
+    protected function makeRepository(string $class): AbstractRepository
     {
         $repositoryClassName = $this->repositoryMappings[$class];
 
