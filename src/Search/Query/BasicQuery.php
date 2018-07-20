@@ -41,6 +41,8 @@ class BasicQuery extends AbstractQuery implements Query
     {
         $this->clauses = $clauses->map(function (Clause $clause) {
             return $clause;
+        })->keyBy(function (Clause $clause) {
+            return $clause->getValue();
         });
     }
 }
