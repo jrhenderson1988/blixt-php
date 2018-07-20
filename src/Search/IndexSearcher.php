@@ -4,6 +4,7 @@ namespace Blixt\Search;
 
 use Blixt\Persistence\Entities\Field;
 use Blixt\Persistence\Entities\Schema;
+use Blixt\Persistence\Entities\Term;
 use Blixt\Persistence\Entities\Word;
 use Blixt\Persistence\StorageManager;
 use Blixt\Search\Query\Clause\Clause;
@@ -83,23 +84,40 @@ class IndexSearcher
 
     protected function getCandidateDocumentIds(Query $query): Collection
     {
-        $clauses = $query->getClauses();
-
+        // Get all of the clauses from the given query and key each clause by its value. We can then use this to
+        // determine the required, prohibited and optional clauses.
+        $clauses = $this->getClausesKeyedByValues($query);
         $requiredClauses = $this->getRequiredClauses($clauses);
+        $prohibitedClauses = $this->getProhibitedClauses($clauses);
+        $optionalClauses = $this->getOptionalClauses($clauses);
 
         // Load the words from storage as given by the set of clauses. If any of the required clause values are not
         // present in the set of words returned, we can't go any further so we should return an empty collection.
         $words = $this->storage->words()->getByWords($this->getClauseValues($clauses));
-        if (! $this->wordsContainAllRequiredClauses($words, $requiredClauses)) {
+        if (! $this->wordsContainAllClauses($words, $requiredClauses)) {
             return Collection::make([]);
         }
+
+        $requiredWords = $this->filterWordsForClauses($words, $requiredClauses);
+        $prohibitedWords = $this->filterWordsForClauses($words, $prohibitedClauses);
+        $optionalWords = $this->filterWordsForClauses($words, $optionalClauses);
 
         // Load the terms from storage by the given schema and set of words. If any of the required words are not
         // represented in the set of returned terms, we can't go any further so should return an empty collection.
         $terms = $this->storage->terms()->getBySchemaAndWords($this->schema, $words);
+        if (! $this->termsContainAllWords($terms, $requiredWords)) {
+            return Collection::make([]);
+        }
 
-        dd($words, $clauses);
+        $requiredTerms = $this->filterTermsForWords($terms, $requiredWords);
+        $prohibitedTerms = $this->filterTermsForWords($terms, $prohibitedWords);
+        $optionalTerms = $this->filterTermsForWords($terms, $optionalWords);
 
+
+        dd($optionalTerms, $optionalWords);
+
+        // TODO - Continue by extracting occurrences and then fields...
+        // TODO - Make sure that we keep track of any occurrences and fields we want to reject so we can ultimately reject associated documents.
 
 
 
@@ -123,6 +141,20 @@ class IndexSearcher
 //        return $fields->map(function (Field $field) {
 //            return $field->getDocumentId();
 //        })->unique();
+    }
+
+    /**
+     * Extract the clauses from the given query and key them by their respective values.
+     *
+     * @param \Blixt\Search\Query\Query $query
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    protected function getClausesKeyedByValues(Query $query)
+    {
+        return $query->getClauses()->keyBy(function (Clause $clause) {
+            return $clause->getValue();
+        });
     }
 
     /**
@@ -168,26 +200,78 @@ class IndexSearcher
     }
 
     /**
-     * Tell if the given Collection of Words contains all of the required clauses present in the given set.
+     * Extract a collection of clauses that are considered optional (neither required nor prohibited) from the given set
+     * of clauses.
+     *
+     * @param \Illuminate\Support\Collection $clauses
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    protected function getOptionalClauses(Collection $clauses): Collection
+    {
+        return $clauses->filter(function (Clause $clause) {
+            return ! $clause->isProhibited() && ! $clause->isRequired();
+        });
+    }
+
+    /**
+     * Tell if the given Collection of Words contains all of the given set of Clauses.
      *
      * @param \Illuminate\Support\Collection $words
      * @param \Illuminate\Support\Collection $clauses
      *
      * @return bool
      */
-    protected function wordsContainAllRequiredClauses(Collection $words, Collection $clauses): bool
+    protected function wordsContainAllClauses(Collection $words, Collection $clauses): bool
     {
         // Convert the collection of Word objects to a collection of word strings for easy lookup.
         $words = $words->map(function (Word $word) {
             return $word->getWord();
         });
 
-        // The idea here is to find a required clause that is missing from the collection of words. If we find such a
-        // clause it is returned. If $missing is null, then it means we were unable to find a clause that was missing a
-        // required word, so we can be sure that
-        return $clauses->first(function (Clause $clause) use ($words) {
-            return $clause->isRequired() && ! $words->contains($clause->getValue());
-        }) === null;
+        // Try to find a Clause who's value is not present in $words. Finding such a Clause means that there is at least
+        // one Clause that is not present in the collection of Words. Null will be returned otherwise, indicating that
+        // the given collection of Words contains all the given Clauses.
+        return null === $clauses->first(function (Clause $clause) use ($words) {
+            return ! $words->contains($clause->getValue());
+        });
+    }
+
+    /**
+     * Tell if the given Collection of Terms contains all of the given set of Words.
+     *
+     * @param \Illuminate\Support\Collection $terms
+     * @param \Illuminate\Support\Collection $words
+     *
+     * @return bool
+     */
+    protected function termsContainAllWords(Collection $terms, Collection $words): bool
+    {
+        // Convert the collection of Term objects into a collection of word IDs for easy lookup.
+        $termWordIds = $terms->map(function (Term $term) {
+            return $term->getWordId();
+        });
+
+        // Try to find a Word who's ID is not present in $termWordIds. Finding such a Word means that there is at least
+        // one word that is not present in the collection of Terms. Null will be returned otherwise, indicating that the
+        // given collection of Terms contains all the given Words.
+        return null === $words->first(function (Word $word) use ($termWordIds) {
+            return ! $termWordIds->contains($word->getId());
+        });
+    }
+
+    protected function filterWordsForClauses(Collection $words, Collection $clauses): Collection
+    {
+        return $words->filter(function (Word $word) use ($clauses) {
+            return $clauses->has($word->getWord());
+        });
+    }
+
+    protected function filterTermsForWords(Collection $terms, Collection $words): Collection
+    {
+        return $terms->filter(function (Term $term) use ($words) {
+            return $words->has($term->getWordId());
+        });
     }
 
 

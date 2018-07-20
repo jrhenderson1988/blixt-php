@@ -18,7 +18,9 @@ class IndexSearcherTest extends TestCase
     }
 
     /**
+     * @throws \Blixt\Exceptions\DocumentAlreadyExistsException
      * @throws \Blixt\Exceptions\InvalidBlueprintException
+     * @throws \Blixt\Exceptions\InvalidDocumentException
      * @throws \Blixt\Exceptions\InvalidSchemaException
      * @throws \Blixt\Exceptions\SchemaDoesNotExistException
      * @throws \Blixt\Exceptions\StorageException
@@ -28,18 +30,31 @@ class IndexSearcherTest extends TestCase
 //        $this->markTestSkipped('In progress');
         $blixt = new Blixt(new MemoryStorage(), new DefaultTokenizer(), new EnglishStemmer());
         $blixt->install();
-        $index = $blixt->open('test', function (Blueprint $blueprint) {
+
+        $people = $blixt->open('people', function (Blueprint $blueprint) {
             $blueprint->createDefinition('name', true, false);
             $blueprint->createDefinition('age', false, true);
         });
-        $index->add(new Indexable(1, Collection::make([
+        $people->add(new Indexable(1, Collection::make([
             'name' => 'Joe Bloggs',
             'age' => 30
         ])));
-        $index->add(new Indexable(2, Collection::make([
+        $people->add(new Indexable(2, Collection::make([
             'name' => 'Jane Doe',
             'age' => 25
         ])));
-        $index->search('jane +doe');
+
+        $dogs = $blixt->open('dogs', function (Blueprint $blueprint) {
+            $blueprint->createDefinition('name', true, false);
+        });
+        $dogs->add(new Indexable(1, Collection::make([
+            'name' => 'Rover'
+        ])));
+        $dogs->add(new Indexable(2, Collection::make([
+            'name' => 'Fido'
+        ])));
+
+
+        $people->search('jane +doe -joe fido');
     }
 }
