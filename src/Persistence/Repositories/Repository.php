@@ -101,6 +101,8 @@ abstract class Repository
     {
         return Collection::make($items)->map(function (Record $record) {
             return static::fromRecord($record);
+        })->keyBy(function (Entity $entity) {
+            return $entity->getId();
         });
     }
 
