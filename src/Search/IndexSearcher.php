@@ -3,6 +3,7 @@
 namespace Blixt\Search;
 
 use Blixt\Persistence\Entities\Field;
+use Blixt\Persistence\Entities\Occurrence;
 use Blixt\Persistence\Entities\Schema;
 use Blixt\Persistence\Entities\Term;
 use Blixt\Persistence\Entities\Word;
@@ -52,7 +53,7 @@ class IndexSearcher
         // - A scorer class is responsible for scoring each document and different scorers can alter the ordering of
         //   results and how each document is placed.
 
-        $this->getCandidateDocumentIds($query);
+        $candidateIds = $this->getCandidateDocumentIds($query);
 
 
         // Initialisation --
@@ -90,8 +91,8 @@ class IndexSearcher
         // determine the required, prohibited and optional clauses.
         $clauses = $this->getClausesKeyedByValues($query);
         $requiredClauses = $this->getRequiredClauses($clauses);
-        $prohibitedClauses = $this->getProhibitedClauses($clauses);
-        $optionalClauses = $this->getOptionalClauses($clauses);
+//        $prohibitedClauses = $this->getProhibitedClauses($clauses);
+//        $optionalClauses = $this->getOptionalClauses($clauses);
 
         // Load the words from storage as given by the set of clauses. If any of the required clause values are not
         // present in the set of words returned, we can't go any further so we should return an empty collection.
@@ -101,8 +102,8 @@ class IndexSearcher
         }
 
         $requiredWords = $this->filterWordsForClauses($words, $requiredClauses);
-        $prohibitedWords = $this->filterWordsForClauses($words, $prohibitedClauses);
-        $optionalWords = $this->filterWordsForClauses($words, $optionalClauses);
+//        $prohibitedWords = $this->filterWordsForClauses($words, $prohibitedClauses);
+//        $optionalWords = $this->filterWordsForClauses($words, $optionalClauses);
 
         // Load the terms from storage by the given schema and set of words. If any of the required words are not
         // represented in the set of returned terms, we can't go any further so should return an empty collection.
@@ -111,40 +112,32 @@ class IndexSearcher
             return Collection::make([]);
         }
 
-        $requiredTerms = $this->filterTermsForWords($terms, $requiredWords);
-        $prohibitedTerms = $this->filterTermsForWords($terms, $prohibitedWords);
-        $optionalTerms = $this->filterTermsForWords($terms, $optionalWords);
+//        $requiredTerms = $this->filterTermsForWords($terms, $requiredWords);
+//        $prohibitedTerms = $this->filterTermsForWords($terms, $prohibitedWords);
+//        $optionalTerms = $this->filterTermsForWords($terms, $optionalWords);
 
+        $occurrences = $this->storage->occurrences()->getByTerms($terms);
+        if ($occurrences->isEmpty()) {
+            return Collection::make([]);
+        }
 
-//        dd($optionalTerms, $optionalWords);
+        // There is a possibility at this point to further optimise the search process. By figuring out which fields are
+        // prohibited, using the occurrences (which give us IDs of fields and terms) we've just loaded and the
+        // prohibited terms we have. We can use this information to grab a smaller set of candidate document IDs by
+        // immediately rejecting documents that contain fields that we've determined are prohibited. We could do this
+        // either by trying to keep track of fields that contain prohibited terms and then documents that contain those
+        // fields so we can remove them from the list of candidate IDs at the end or we could reduce the number of
+        // documents loaded by trying to only retrieve documents that contain fields that contain optional/required
+        // terms. A document that contains a prohibited term could still be loaded though, as another field belonging to
+        // the document could contain no prohibited terms and would be loaded by the query that only passes
+        // optional/required fields. In which case we still need to make sure that we go through an accept/reject
+        // process on all of the documents before they're scored and sorted.
 
-        // TODO - Continue by extracting occurrences and then fields...
-        // TODO - Make sure that we keep track of any occurrences and fields we want to reject so we can ultimately reject associated documents.
+        // TODO - consider NOT loading field content here. They aren't needed and increase memory usage significantly.
 
-
-
-
-
-
-//        $prohibitedWordIds = collect([]);
-//        $requiredWordIds = collect([]);
-//
-//        $words = $this->getMatchingWords($query->getClauses());
-//        $words->each(function (Word $word) {
-//
-//        });
-//
-//        $terms = $this->getTermsFromWords($words);
-//
-//        $occurrences = $this->getOccurrencesFromTerms($terms);
-//        // TODO - Filter out occurrences that
-//        $fields = $this->getFieldsFromOccurrences($occurrences);
-//
-//        return $fields->map(function (Field $field) {
-//            return $field->getDocumentId();
-//        })->unique();
-
-        return Collection::make([]);
+        return $this->getDocumentIdsFromFields(
+            $this->storage->fields()->getByOccurrences($occurrences)
+        );
     }
 
     /**
@@ -276,6 +269,20 @@ class IndexSearcher
         return $terms->filter(function (Term $term) use ($words) {
             return $words->has($term->getWordId());
         });
+    }
+
+    protected function filterOccurrencesForTerms(Collection $occurrences, Collection $terms): Collection
+    {
+        return $occurrences->filter(function (Occurrence $occurrence) use ($terms) {
+            return $terms->has($occurrence->getTermId());
+        });
+    }
+
+    protected function getDocumentIdsFromFields(Collection $fields)
+    {
+        return $fields->map(function (Field $field) {
+            return $field->getDocumentId();
+        })->unique()->values();
     }
 
 

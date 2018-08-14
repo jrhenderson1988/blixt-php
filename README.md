@@ -217,6 +217,36 @@ order are allowed.
 It is also intended to implement query parsing so that an input search string can be converted to the correct query type
 before searching is performed.
 
+## Improvements
+
+These are improvements that are intended for the future.
+
+### Caching
+
+Implement a storage agnostic cache (Redis, Memcached, Filesystem etc.) that we can use to improve search performance. 
+There are a number of use cases for a cache in this project:
+
+- Cache recently executed searches. Saves us needing to re-run the entire search process again for a repeated search. We
+  can consider storing the entire scored and sorted result set for really quick paging of results too.
+- Reduce memory usage by caching candidate document IDs during the search process in the case that there could be quite
+  a lot of them.
+- Cache certain mappings of data for quick look-ups and to be able to avoid hitting the database storage. For example we 
+  could store a look-ups from terms to documents which would tell us which terms are present in which documents as well
+  as how many times etc.
+
+*Note:* To implement some of the above features we would potentially need to use a unique session identifier to pass 
+back and receive from the user to ensure that cached searches are only valid for that user and to stop those cached 
+objects being cleared. This is definitely the case when caching a full set of search results to allow the user to 
+paginate. It could also be worth caching versions that are not considered session-specific to allow many users searching
+for the same thing to see the same search results quickly.
+
+### Term -> document reverse lookup table
+
+During the indexing process we can use an extra table to store a mapping of terms to documents, which will tell us which
+documents a given term appears in. This would allow us to skip a lot of the process of trying to determine candidate 
+document IDs by simply grabbing the list of documents that a term appears in to allow us to rapidly generate (or in the 
+case of prohibited terms, reduce the number of) candidate document IDs.
+
 ## Reading
 
 - https://www.elastic.co/guide/en/elasticsearch/guide/current/controlling-relevance.html
