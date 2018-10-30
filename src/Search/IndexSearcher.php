@@ -14,6 +14,37 @@ use Blixt\Search\Results\ResultSet;
 use Blixt\Tokenization\Tokenizer;
 use Illuminate\Support\Collection;
 
+// TODO
+// - Change all of the fancy query stuff to just be a DefaultQuery. Query should act as a DTO for the clauses.
+// - IndexSearcher carries out all the logic for searching, filtering and using scorer to score each document.
+// - A scorer class is responsible for scoring each document and different scorers can alter the ordering of
+//   results and how each document is placed.
+
+// Initialisation --
+// - Look up words related to each clause
+// - Look up corresponding terms in that schema
+
+// Build up candidates --
+// - Look up occurrences that correspond to terms in our OR / AND clause lists
+// - Look up the fields that correspond to each of those occurrences (Only indexed fields as determine by
+//   corresponding columns)
+// - Build a set of candidate document IDs for those fields
+
+// Evaluation --
+// - Look up all of the documents in our set of candidate document IDs and load in ALL of their corresponding
+//   indexed fields and their occurrences
+// - Reject any documents that contain occurrences that are to be excluded (NOT)
+// - Build a set of terms that are required (AND) whether or not they appeared in the given document
+// - Reject any documents that are missing a required term
+// - What is left is our result set.
+// - Need to handle offsets and limits by ignoring documents up until the offset and stopping after the limit has
+//   been reached.
+
+// Performance:
+// - Consider storing reverse references to be able to look up associate items quickly
+// - Consider using a configurable cache that stores documents with all the required entities for quick lookups
+// - Consider chunking when evaluating documents, loading X at once with all the required entities in a few
+//   queries instead of doing single queries for each document.
 class IndexSearcher
 {
     /**
@@ -32,6 +63,13 @@ class IndexSearcher
     protected $tokenizer;
 
     /**
+     * The number of documents to load from storage to evaluate at any one time.
+     *
+     * @var int
+     */
+    protected $chunkSize = 1024;
+
+    /**
      * IndexSearcher constructor.
      *
      * @param \Blixt\Persistence\Entities\Schema $schema
@@ -47,44 +85,23 @@ class IndexSearcher
 
     public function search(Query $query): ResultSet
     {
-        // TODO
-        // - Change all of the fancy query stuff to just be a DefaultQuery. Query should act as a DTO for the clauses.
-        // - IndexSearcher carries out all the logic for searching, filtering and using scorer to score each document.
-        // - A scorer class is responsible for scoring each document and different scorers can alter the ordering of
-        //   results and how each document is placed.
-
         $candidateIds = $this->getCandidateDocumentIds($query);
-
-
-        // Initialisation --
-        // - Look up words related to each clause
-        // - Look up corresponding terms in that schema
-
-        // Build up candidates --
-        // - Look up occurrences that correspond to terms in our OR / AND clause lists
-        // - Look up the fields that correspond to each of those occurrences (Only indexed fields as determine by
-        //   corresponding columns)
-        // - Build a set of candidate document IDs for those fields
-
-        // Evaluation --
-        // - Look up all of the documents in our set of candidate document IDs and load in ALL of their corresponding
-        //   indexed fields and their occurrences
-        // - Reject any documents that contain occurrences that are to be excluded (NOT)
-        // - Build a set of terms that are required (AND) whether or not they appeared in the given document
-        // - Reject any documents that are missing a required term
-        // - What is left is our result set.
-        // - Need to handle offsets and limits by ignoring documents up until the offset and stopping after the limit has
-        //   been reached.
-
-        // Performance:
-        // - Consider storing reverse references to be able to look up associate items quickly
-        // - Consider using a configurable cache that stores documents with all the required entities for quick lookups
-        // - Consider chunking when evaluating documents, loading X at once with all the required entities in a few
-        //   queries instead of doing single queries for each document.
+        // - Chunk out the candidate IDs and go through each chunk
+        // - For each chunk we need to load the set of Documents, Fields, Occurrences, Terms, Words and Positions in
+        //   order to evaluate each potential match.
+        // - Run through each document in each chunk and either reject (remove it from consideration) it or score it.
+        //
 
         return new ResultSet();
     }
 
+    /**
+     * Determine a collection of Document IDs that are potential matches for the query.
+     *
+     * @param \Blixt\Search\Query\Query $query
+     *
+     * @return \Illuminate\Support\Collection
+     */
     protected function getCandidateDocumentIds(Query $query): Collection
     {
         // Get all of the clauses from the given query and key each clause by its value. We can then use this to
@@ -257,6 +274,14 @@ class IndexSearcher
         });
     }
 
+    /**
+     * Filter the given collection of Words to remove those that do not refer to the given set of clauses.
+     *
+     * @param \Illuminate\Support\Collection $words
+     * @param \Illuminate\Support\Collection $clauses
+     *
+     * @return \Illuminate\Support\Collection
+     */
     protected function filterWordsForClauses(Collection $words, Collection $clauses): Collection
     {
         return $words->filter(function (Word $word) use ($clauses) {
@@ -264,6 +289,14 @@ class IndexSearcher
         });
     }
 
+    /**
+     * Filter the given collection of Terms to remove those that do not refer to the given set of Words.
+     *
+     * @param \Illuminate\Support\Collection $terms
+     * @param \Illuminate\Support\Collection $words
+     *
+     * @return \Illuminate\Support\Collection
+     */
     protected function filterTermsForWords(Collection $terms, Collection $words): Collection
     {
         return $terms->filter(function (Term $term) use ($words) {
@@ -271,6 +304,14 @@ class IndexSearcher
         });
     }
 
+    /**
+     * Filter the given set of Occurrences to remote those that do not refer to the given set of Terms.
+     *
+     * @param \Illuminate\Support\Collection $occurrences
+     * @param \Illuminate\Support\Collection $terms
+     *
+     * @return \Illuminate\Support\Collection
+     */
     protected function filterOccurrencesForTerms(Collection $occurrences, Collection $terms): Collection
     {
         return $occurrences->filter(function (Occurrence $occurrence) use ($terms) {
@@ -278,40 +319,17 @@ class IndexSearcher
         });
     }
 
+    /**
+     * Get a unique collection of Document IDs from the given collection of Fields.
+     *
+     * @param \Illuminate\Support\Collection $fields
+     *
+     * @return \Illuminate\Support\Collection
+     */
     protected function getDocumentIdsFromFields(Collection $fields)
     {
         return $fields->map(function (Field $field) {
             return $field->getDocumentId();
         })->unique()->values();
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    protected function getTermsFromWords(Collection $words)
-    {
-        return $this->storage->terms()->getBySchemaAndWords($this->schema, $words);
-    }
-
-    protected function getOccurrencesFromTerms(Collection $terms)
-    {
-        return $this->storage->occurrences()->getByTerms($terms);
-    }
-
-    protected function getFieldsFromOccurrences(Collection $occurrences)
-    {
-        return $this->storage->fields()->getByOccurrences($occurrences);
     }
 }

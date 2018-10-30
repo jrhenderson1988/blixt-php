@@ -13,13 +13,34 @@ abstract class AbstractQuery implements Query
     protected $clauses;
 
     /**
+     * @var int
+     */
+    protected $page;
+
+    /**
+     * @var int
+     */
+    protected $limit;
+
+    /**
+     * @var int|null
+     */
+    protected $chunkSize;
+
+    /**
      * AbstractQuery constructor.
      *
      * @param \Illuminate\Support\Collection $clauses
+     * @param int $page
+     * @param int|null $limit
+     * @param int|null $chunkSize
      */
-    public function __construct(Collection $clauses)
+    public function __construct(Collection $clauses, int $page = 1, ?int $limit = null, ?int $chunkSize = null)
     {
         $this->setClauses($clauses);
+        $this->page = $page;
+        $this->limit = $limit;
+        $this->chunkSize = $chunkSize;
     }
 
     /**
@@ -44,5 +65,36 @@ abstract class AbstractQuery implements Query
         })->keyBy(function (Clause $clause) {
             return $clause->getValue();
         });
+    }
+
+    /**
+     * Get the total number of results desired per page.
+     *
+     * @return int|null
+     */
+    public function getLimit(): ?int
+    {
+        return $this->limit;
+    }
+
+    /**
+     * Get the page for which we're getting results.
+     *
+     * @return int
+     */
+    public function getPage(): int
+    {
+        return $this->page;
+    }
+
+    /**
+     * The developer may wish to change the default number of documents that are evaluated at any one time for different
+     * queries. This method can be used to serve that purpose.
+     *
+     * @return int|null
+     */
+    public function getChunkSize(): ?int
+    {
+        return $this->chunkSize;
     }
 }
